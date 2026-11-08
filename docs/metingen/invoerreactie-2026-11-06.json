@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-06",
+  "scope": "Lokale headless Chrome; toetsgebeurtenissen via CDP en tijdstempels van de aan de tekenlaag aangeboden spelerpositie. Geen fysieke key-to-photon-meting.",
+  "before": {
+    "method": "CDP key events; drawn hero translation timestamp; includes test instrumentation; not physical keyboard-to-display measurement",
+    "trials": [
+      {
+        "start": {
+          "firstDrawMs": 3.200000047683716,
+          "onePixelMs": 27.899999976158142,
+          "inputEventAgeMs": 18
+        },
+        "reverse": {
+          "reverseDrawMs": 58.10000002384186
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3.299999952316284,
+          "onePixelMs": 24.799999952316284,
+          "inputEventAgeMs": 16.600000023841858
+        },
+        "reverse": {
+          "reverseDrawMs": 68.19999992847443
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3.799999952316284,
+          "onePixelMs": 30.700000047683716,
+          "inputEventAgeMs": 25.200000047683716
+        },
+        "reverse": {
+          "reverseDrawMs": 67.20000004768372
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3,
+          "onePixelMs": 43,
+          "inputEventAgeMs": 21.799999952316284
+        },
+        "reverse": {
+          "reverseDrawMs": 64.09999990463257
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 2.8000000715255737,
+          "onePixelMs": 22.600000023841858,
+          "inputEventAgeMs": 20.5
+        },
+        "reverse": {
+          "reverseDrawMs": 68.10000002384186
+        }
+      }
+    ],
+    "errors": []
+  },
+  "after": {
+    "method": "CDP key events; drawn hero translation timestamp; includes test instrumentation; not physical keyboard-to-display measurement",
+    "trials": [
+      {
+        "start": {
+          "firstDrawMs": 5.700000047683716,
+          "onePixelMs": 5.700000047683716,
+          "inputEventAgeMs": 21.899999976158142
+        },
+        "reverse": {
+          "reverseDrawMs": 4.899999976158142,
+          "wrongWayPixels": 0
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 5.099999904632568,
+          "onePixelMs": 40.39999997615814,
+          "inputEventAgeMs": 29.40000009536743
+        },
+        "reverse": {
+          "reverseDrawMs": 2.700000047683716,
+          "wrongWayPixels": 0
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3.0999999046325684,
+          "onePixelMs": 3.0999999046325684,
+          "inputEventAgeMs": 18
+        },
+        "reverse": {
+          "reverseDrawMs": 3.200000047683716,
+          "wrongWayPixels": 0
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3.600000023841858,
+          "onePixelMs": 3.600000023841858,
+          "inputEventAgeMs": 24.299999952316284
+        },
+        "reverse": {
+          "reverseDrawMs": 3,
+          "wrongWayPixels": 0
+        }
+      },
+      {
+        "start": {
+          "firstDrawMs": 3.600000023841858,
+          "onePixelMs": 3.600000023841858,
+          "inputEventAgeMs": 24.100000023841858
+        },
+        "reverse": {
+          "reverseDrawMs": 3.3000000715255737,
+          "wrongWayPixels": 0
+        }
+      }
+    ],
+    "errors": []
+  },
+  "shortTaps": {
+    "cases": [
+      {
+        "rightTap": 0.625,
+        "leftTap": -0.625,
+        "stationaryAfterRelease": true,
+        "noMovementFromPausedTap": true,
+        "touchTap": 0.625,
+        "version": "HTTP"
+      },
+      {
+        "rightTap": 0.625,
+        "leftTap": -0.625,
+        "stationaryAfterRelease": true,
+        "noMovementFromPausedTap": true,
+        "touchTap": 0.625,
+        "version": "offline"
+      }
+    ],
+    "errors": []
+  },
+  "summary": {
+    "beforeOnePixelMedianMs": 27.899999976158142,
+    "afterOnePixelMedianMs": 3.600000023841858,
+    "beforeReverseMedianMs": 67.20000004768372,
+    "afterReverseMedianMs": 3.200000047683716
+  },
+  "cautions": [
+    "Vijf proefrondes per versie; variatie in browserplanning, opwarming en eventaflevering.",
+    "De volledige door de gebruiker gemelde 0,3-0,5 seconde is niet gereproduceerd.",
+    "Snelheid, remmen en camera zijn codewijzigingen; browser- en beeldschermvertraging kunnen daarnaast blijven bestaan.",
+    "De verkeerde-richtingafstand uit de oude meetcode had een eerdere startpositie dan het keydown-event en is daarom weggelaten."
+  ]
+}

@@ -1,0 +1,17 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Boos stekelrotsblok</title>
+<style>body{font:16px system-ui;margin:20px;background:#e7efdd;color:#293e4a}button{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;width:min(100%,960px);border-radius:12px}#detail{width:160px;height:160px;margin:10px 0}</style>
+<h1>Boos stekelrotsblok</h1><p>Deze proef gebruikt de echte spelmotor en verandert geen opgeslagen levels.</p>
+<button id="dodge">Eronder lopen en ontwijken</button><button id="hit">Laat het blok mij raken</button><button id="reset">Opnieuw</button><button id="pause">Pauzeren / doorgaan</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="detail" width="160" height="160"></canvas><canvas id="world" width="960" height="512"></canvas>
+<script type="module">
+import { blankLevel,createGame,stepGame } from '../engine.mjs?v=23';import {drawWorld,drawCrusher} from '../art.mjs?v=24';import{loadLook}from'../look.mjs?v=8';
+const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d'),detail=document.querySelector('#detail').getContext('2d'),status=document.querySelector('#status');let level,game,dodge=false,previous=0,accumulator=0;
+function reset(){level=blankLevel(40);level.tiles[5][10]=61;game=createGame(level);dodge=false;accumulator=0;}
+function underneath(){reset();Object.assign(game.player,{x:325,y:420,vy:0,grounded:true});}
+await loadLook();reset();document.querySelector('#dodge').onclick=()=>{underneath();dodge=true;};document.querySelector('#hit').onclick=underneath;document.querySelector('#reset').onclick=reset;document.querySelector('#pause').onclick=()=>game.state=game.state==='paused'?'playing':'paused';
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{left:dodge&&game.player.x>250});accumulator-=1/120;}
+ const rock=game.enemies[0];drawWorld(ctx,level,{game,grid:false,time:game.time,viewport:{left:0,right:960,top:0,bottom:512}});detail.clearRect(0,0,160,160);drawCrusher(detail,0,0,160,rock.phase);
+ const phase={waiting:'wacht boven',falling:'valt',rest:`blijft beneden · nog ${Math.max(0,5-rock.phaseTime).toFixed(1)} s`,rising:'gaat terug omhoog'}[rock.phase];status.textContent=`Rotsblok ${phase} · ${game.state==='dead'?'geraakt: leven kwijt':game.state} · ${game.time.toFixed(1)} s`;
+ requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

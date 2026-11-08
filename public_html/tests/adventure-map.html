@@ -1,0 +1,15 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><base href="../"><title>Bravios · Wereldkaartproef</title><link rel="stylesheet" href="styles.css?v=14"><body style="padding:24px;overflow:auto"><h1>Wereldkaartproef</h1><p>Testkaart met velden 1–3 voltooid en 40 muntjes. Beide takken en de eerste winkel zijn open.</p><button class="button primary" id="open-map">Open testkaart</button><p id="test-status" role="status"></p>  <dialog id="adventure-map" class="adventure-map"><div class="dialog-heading"><div><span class="eyebrow">EEN GROTE REIS</span><h2>De avonturiers</h2></div><button class="icon-button" data-close aria-label="Sluiten">×</button></div><p data-adventure-status role="status"></p><p class="dialog-note">Klik op een plek om erheen te lopen, of gebruik de pijltjestoetsen. Enter opent het veld. Donkere plekken zijn nog gesloten. Bij een splitsing kies je zelf je route.</p><div class="adventure-terrain" tabindex="0" role="group" aria-label="Wereldkaart met velden en winkels"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg><span class="adventure-sea">De schitterende zee</span></div><p data-adventure-info aria-live="polite"></p><button data-adventure-enter class="button primary">Ga het veld in ▶</button><div data-adventure-shop class="menu-actions" hidden></div></dialog>
+<script type="module">
+import {setupAdventureMap} from './adventure-map.mjs?v=3';
+import {adventureState} from './adventurers.mjs?v=2';
+import {loadLook} from './look.mjs?v=8';
+await loadLook();
+const state=adventureState({completed:[0,1,2],coins:40,position:2});
+const status=document.querySelector('#test-status');
+const map=setupAdventureMap({state:()=>state,save:()=>{status.textContent=`Tas: ${state.coins} · Kracht: ${state.power||'geen'} · Positie: ${state.position+1}`;},launch:index=>{status.textContent=`Gekozen veld: ${index+1}`;},character:()=> 'boaz',appearance:()=>null});
+const simulated=document.createElement('div');simulated.className='menu-actions';
+for(const [label,action] of [['←','left'],['↑','up'],['↓','pipe'],['→','right'],['A','jump'],['B','fire']]){const b=document.createElement('button');b.className='button';b.textContent='Controller '+label;b.onclick=()=>map.handleController({pressed:[action]});simulated.append(b);}
+document.querySelector('#adventure-map').append(simulated);
+document.querySelector('#open-map').onclick=()=>map.open();
+document.querySelector('[data-close]').onclick=()=>document.querySelector('#adventure-map').close();
+</script></body></html>

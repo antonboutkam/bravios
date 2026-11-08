@@ -1,0 +1,197 @@
+{
+  "date": "2026-11-07",
+  "scope": "Local isolated headless Chrome. Not the user device or production session.",
+  "method": {
+    "viewportCSS": [
+      1280,
+      800
+    ],
+    "devicePixelRatio": 2,
+    "warmupSeconds": 4,
+    "measurementSecondsPerCase": 3,
+    "simulation": "Real app animate loop and example level; standing and right+jump input",
+    "before": "Same current app, adaptive density disabled through RenderQuality.prototype.observe in this isolated test page before opening the builder",
+    "after": "Same app with adaptive density enabled; fresh navigation",
+    "order": [
+      "fixed density",
+      "adaptive density"
+    ],
+    "measurements": "Actual requestAnimationFrame timestamp intervals and animate callback wall time; milliseconds",
+    "limitations": [
+      "One sequential comparison; timings vary with system load.",
+      "Median interval inverse describes the typical interval, not average delivered FPS.",
+      "Headless frame callbacks do not prove physical screen presentation.",
+      "An earlier exploratory after-run overlapped the test suite and was slower; the comparison here ran after the suite finished."
+    ]
+  },
+  "fixedDensity": {
+    "results": [
+      {
+        "interval": {
+          "median": 66.69999999999982,
+          "p95": 100
+        },
+        "cpu": {
+          "median": 2.5,
+          "p95": 3
+        },
+        "frames": 41,
+        "bitmap": [
+          2560,
+          1600
+        ],
+        "dpr": 2,
+        "name": "builder"
+      },
+      {
+        "interval": {
+          "median": 66.69999999999891,
+          "p95": 100
+        },
+        "cpu": {
+          "median": 3.899999976158142,
+          "p95": 4.900000095367432
+        },
+        "frames": 44,
+        "bitmap": [
+          2560,
+          1600
+        ],
+        "dpr": 2,
+        "name": "playing-still"
+      },
+      {
+        "interval": {
+          "median": 66.69999999999891,
+          "p95": 83.39999999999964
+        },
+        "cpu": {
+          "median": 4,
+          "p95": 5.299999952316284
+        },
+        "frames": 44,
+        "bitmap": [
+          2560,
+          1600
+        ],
+        "dpr": 2,
+        "name": "playing-moving"
+      }
+    ],
+    "errors": []
+  },
+  "adaptiveDensity": {
+    "results": [
+      {
+        "interval": {
+          "median": 16.700000000000728,
+          "p95": 33.400000000000546
+        },
+        "cpu": {
+          "median": 2.600000023841858,
+          "p95": 3.200000047683716
+        },
+        "frames": 123,
+        "bitmap": [
+          1280,
+          800
+        ],
+        "dpr": 2,
+        "name": "builder"
+      },
+      {
+        "interval": {
+          "median": 16.700000000000728,
+          "p95": 33.399999999999636
+        },
+        "cpu": {
+          "median": 3,
+          "p95": 4.600000023841858
+        },
+        "frames": 142,
+        "bitmap": [
+          1280,
+          800
+        ],
+        "dpr": 2,
+        "name": "playing-still"
+      },
+      {
+        "interval": {
+          "median": 16.700000000000728,
+          "p95": 33.399999999999636
+        },
+        "cpu": {
+          "median": 3.1999999284744263,
+          "p95": 4.700000047683716
+        },
+        "frames": 136,
+        "bitmap": [
+          1280,
+          800
+        ],
+        "dpr": 2,
+        "name": "playing-moving"
+      }
+    ],
+    "errors": []
+  },
+  "integration": [
+    {
+      "mode": "HTTP",
+      "placement": {
+        "expected": {
+          "x": 22,
+          "y": 14
+        },
+        "actual": 4,
+        "bitmap": [
+          1280,
+          800
+        ],
+        "scroll": [
+          620,
+          300
+        ]
+      },
+      "errors": 0
+    },
+    {
+      "mode": "offline",
+      "placement": {
+        "expected": {
+          "x": 22,
+          "y": 14
+        },
+        "actual": 4,
+        "bitmap": [
+          1280,
+          800
+        ],
+        "scroll": [
+          620,
+          300
+        ]
+      },
+      "errors": 0
+    }
+  ],
+  "animation": {
+    "contactSheet": "loopanimatie-2026-11-07.png",
+    "verified": [
+      "Boaz and Ravi",
+      "Custom overalls, dress and coat",
+      "Mirroring",
+      "Different pixels at opposite stride phases",
+      "Reduced motion freezes custom character"
+    ],
+    "errors": 0
+  },
+  "checks": {
+    "javascriptTests": 354,
+    "roomTests": 114,
+    "failures": 0,
+    "phpSyntax": "passed",
+    "offlineBuild": "passed"
+  }
+}

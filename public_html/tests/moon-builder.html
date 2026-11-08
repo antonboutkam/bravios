@@ -1,0 +1,7 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><title>Maanonderdelen · visuele test</title><style>body{margin:20px;background:#10182e;color:#fff;font:16px sans-serif}canvas{border:1px solid #5d7190;max-width:100%}p{max-width:1000px}</style><h1>Maanonderdelen · visuele test</h1><p>Vier kettingballen, quad, wolkenblok, bonenstaakdoosje en piloot. Deze pagina gebruikt geen opgeslagen bouwveld.</p><canvas id="scene" width="1100" height="480"></canvas><div id="parts"></div><script type="module">
+import {drawTile,background} from '../art.mjs?v=29';
+import {ITEMS} from '../engine.mjs?v=26';
+const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d');
+function frame(t){background(ctx,1100,480,'moon');for(let x=0;x<35;x++)drawTile(ctx,1,x*32,448,32,'moon');for(let i=0;i<4;i++)drawTile(ctx,70+i,90+i*160,90,32,'moon',{time:t/1000});drawTile(ctx,74,90,416);drawTile(ctx,75,790,300);drawTile(ctx,76,900,350);drawTile(ctx,79,720,350);for(let y=94;y<350;y+=32)drawTile(ctx,78,720,y);drawTile(ctx,77,910,130);requestAnimationFrame(frame)}requestAnimationFrame(frame);
+for(const item of ITEMS.filter(i=>i.id>=70&&i.id<=77)){const p=document.createElement('p');p.textContent=item.name;const c=document.createElement('canvas');c.width=c.height=48;p.prepend(c);document.querySelector('#parts').append(p);drawTile(c.getContext('2d'),item.id,4,4,40,'moon',{icon:true});}
+</script></html>

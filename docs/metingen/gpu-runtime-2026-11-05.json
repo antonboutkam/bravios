@@ -1,0 +1,365 @@
+{
+  "existingProbe": [
+    {
+      "weergave": "Hele veld",
+      "tekenaanroepenPerFrame": 5280,
+      "mediaanMs": 58.9
+    },
+    {
+      "weergave": "Alleen zichtbaar",
+      "tekenaanroepenPerFrame": 1224,
+      "mediaanMs": 6.3
+    },
+    {
+      "simulatie120StappenMs": 2869.3,
+      "vijanden": 1100
+    }
+  ],
+  "environment": {
+    "browser": "Chrome/157.0.8103.38",
+    "devices": [
+      {
+        "vendorString": "Google Inc. (Google)",
+        "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+      }
+    ],
+    "featureStatus": {
+      "2d_canvas": "unavailable_software",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "disabled_software",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "disabled_off",
+      "rasterization": "disabled_software",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "disabled_software",
+      "video_encode": "disabled_software",
+      "vulkan": "disabled_off",
+      "webgl": "unavailable_software",
+      "webgpu": "unavailable_software",
+      "webgpu_on_vk_via_gl_interop": "disabled_off",
+      "webnn": "unavailable_software"
+    }
+  },
+  "apis": {
+    "secureContext": true,
+    "offscreen": true,
+    "webgpu": true,
+    "webgpuAdapter": false,
+    "webgl2": true
+  },
+  "measurements": [
+    {
+      "name": "Regulier veld 1",
+      "mode": "world",
+      "width": 40,
+      "height": 16,
+      "enemies": 1,
+      "bitmap": [
+        2560,
+        1024
+      ],
+      "scale": 2,
+      "simulation2StepsMedianMs": 0.2999999523162842,
+      "simulation2StepsP95Ms": 3.5,
+      "effectsMedianMs": 0,
+      "drawSubmitMedianMs": 2.399999976158142,
+      "drawSubmitP95Ms": 12.5,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Regulier veld 1",
+      "mode": "viewport",
+      "width": 40,
+      "height": 16,
+      "enemies": 1,
+      "bitmap": [
+        1280,
+        1024
+      ],
+      "scale": 2,
+      "simulation2StepsMedianMs": 0.20000004768371582,
+      "simulation2StepsP95Ms": 1.0999999046325684,
+      "effectsMedianMs": 0,
+      "drawSubmitMedianMs": 1.399999976158142,
+      "drawSubmitP95Ms": 3.5,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Maanveld avonturiers",
+      "mode": "world",
+      "width": 264,
+      "height": 32,
+      "enemies": 10,
+      "bitmap": [
+        8192,
+        992
+      ],
+      "scale": 0.9696969696969697,
+      "simulation2StepsMedianMs": 1.2000000476837158,
+      "simulation2StepsP95Ms": 12,
+      "effectsMedianMs": 0.10000002384185791,
+      "drawSubmitMedianMs": 1.5,
+      "drawSubmitP95Ms": 15.800000071525574,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Maanveld avonturiers",
+      "mode": "viewport",
+      "width": 264,
+      "height": 32,
+      "enemies": 10,
+      "bitmap": [
+        620,
+        496
+      ],
+      "scale": 0.9696969696969697,
+      "simulation2StepsMedianMs": 1.2000000476837158,
+      "simulation2StepsP95Ms": 7.5,
+      "effectsMedianMs": 0.10000002384185791,
+      "drawSubmitMedianMs": 1.2999999523162842,
+      "drawSubmitP95Ms": 12.600000023841858,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Wonderland veld 1",
+      "mode": "world",
+      "width": 192,
+      "height": 20,
+      "enemies": 0,
+      "bitmap": [
+        8192,
+        853
+      ],
+      "scale": 1.3333333333333333,
+      "simulation2StepsMedianMs": 0.5,
+      "simulation2StepsP95Ms": 1.600000023841858,
+      "effectsMedianMs": 0.10000002384185791,
+      "drawSubmitMedianMs": 2,
+      "drawSubmitP95Ms": 13.899999976158142,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Wonderland veld 1",
+      "mode": "viewport",
+      "width": 192,
+      "height": 20,
+      "enemies": 0,
+      "bitmap": [
+        853,
+        682
+      ],
+      "scale": 1.3333333333333333,
+      "simulation2StepsMedianMs": 0.6000000238418579,
+      "simulation2StepsP95Ms": 2.5,
+      "effectsMedianMs": 0.10000002384185791,
+      "drawSubmitMedianMs": 2,
+      "drawSubmitP95Ms": 8.600000023841858,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Stress 1100 robots",
+      "mode": "world",
+      "width": 120,
+      "height": 16,
+      "enemies": 1100,
+      "bitmap": [
+        7680,
+        1024
+      ],
+      "scale": 2,
+      "simulation2StepsMedianMs": 48.10000002384186,
+      "simulation2StepsP95Ms": 72.29999995231628,
+      "effectsMedianMs": 0,
+      "drawSubmitMedianMs": 7.200000047683716,
+      "drawSubmitP95Ms": 19.90000009536743,
+      "frames": 60,
+      "finalState": "playing"
+    },
+    {
+      "name": "Stress 1100 robots",
+      "mode": "viewport",
+      "width": 120,
+      "height": 16,
+      "enemies": 1100,
+      "bitmap": [
+        1280,
+        1024
+      ],
+      "scale": 2,
+      "simulation2StepsMedianMs": 43.10000002384186,
+      "simulation2StepsP95Ms": 77.70000004768372,
+      "effectsMedianMs": 0,
+      "drawSubmitMedianMs": 4.799999952316284,
+      "drawSubmitP95Ms": 19,
+      "frames": 60,
+      "finalState": "playing"
+    }
+  ],
+  "simulationProfile": [
+    {
+      "function": "stepGame",
+      "source": "engine.mjs?v=41",
+      "line": 1022,
+      "sampledMs": 8681.08
+    },
+    {
+      "function": "updateEnemyBase",
+      "source": "engine.mjs?v=41",
+      "line": 858,
+      "sampledMs": 1611.92
+    },
+    {
+      "function": "move",
+      "source": "engine.mjs?v=41",
+      "line": 397,
+      "sampledMs": 728.36
+    },
+    {
+      "function": "(program)",
+      "source": "",
+      "line": 0,
+      "sampledMs": 195.86
+    },
+    {
+      "function": "(garbage collector)",
+      "source": "",
+      "line": 0,
+      "sampledMs": 183.47
+    },
+    {
+      "function": "updateEnemy",
+      "source": "engine.mjs?v=41",
+      "line": 841,
+      "sampledMs": 72.25
+    },
+    {
+      "function": "pipeConnections",
+      "source": "engine.mjs?v=41",
+      "line": 598,
+      "sampledMs": 35.6
+    },
+    {
+      "function": "(anonymous)",
+      "source": "",
+      "line": 1,
+      "sampledMs": 16.62
+    },
+    {
+      "function": "meetCaves",
+      "source": "engine.mjs?v=41",
+      "line": 334,
+      "sampledMs": 15.57
+    },
+    {
+      "function": "(anonymous)",
+      "source": "mechanisms.mjs?v=2",
+      "line": 37,
+      "sampledMs": 14.45
+    },
+    {
+      "function": "(anonymous)",
+      "source": "engine.mjs?v=41",
+      "line": 215,
+      "sampledMs": 14.13
+    },
+    {
+      "function": "(anonymous)",
+      "source": "engine.mjs?v=41",
+      "line": 1037,
+      "sampledMs": 7.32
+    },
+    {
+      "function": "rainbowFartHits",
+      "source": "engine.mjs?v=41",
+      "line": 648,
+      "sampledMs": 7.31
+    },
+    {
+      "function": "seaCurrent",
+      "source": "sea-life.mjs?v=2",
+      "line": 93,
+      "sampledMs": 7.09
+    },
+    {
+      "function": "chainBalls",
+      "source": "engine.mjs?v=41",
+      "line": 1220,
+      "sampledMs": 4.9
+    }
+  ],
+  "errors": [],
+  "initializedWonderland": {
+    "name": "Wonderland veld 1 met campagne-initialisatie",
+    "enemies": 5,
+    "simulation2StepsMedianMs": 0.6000000238418579,
+    "simulation2StepsP95Ms": 3.8000000715255737,
+    "drawSubmitMedianMs": 4.5,
+    "drawSubmitP95Ms": 12,
+    "frames": 60,
+    "finalState": "playing"
+  },
+  "cpuExperiment": {
+    "counts": {
+      "calls": 1101,
+      "visits": 1211100
+    },
+    "samples": [
+      {
+        "enemies": 100,
+        "originalMsPerStep": 1.606666668256124,
+        "candidateMsPerStep": 1.5066666682561238,
+        "batches": 5,
+        "measuredStepsPerBatch": 30
+      },
+      {
+        "enemies": 300,
+        "originalMsPerStep": 2.563333336512248,
+        "candidateMsPerStep": 2.3766666690508527,
+        "batches": 5,
+        "measuredStepsPerBatch": 30
+      },
+      {
+        "enemies": 600,
+        "originalMsPerStep": 5.816666666666666,
+        "candidateMsPerStep": 4.713333336512248,
+        "batches": 5,
+        "measuredStepsPerBatch": 30
+      },
+      {
+        "enemies": 1100,
+        "originalMsPerStep": 20.27999999920527,
+        "candidateMsPerStep": 6.633333333333334,
+        "batches": 5,
+        "measuredStepsPerBatch": 30
+      }
+    ],
+    "equalDryStressStateAfter120Steps": true,
+    "limitation": "Alleen droog robotveld zonder geisers; geen algemene regressie- of gameplayvalidatie.",
+    "method": "Verse pagina; beide modules vooraf opgewarmd; vijf afwisselende batches; iterator-proxy pas na de timingmetingen."
+  },
+  "date": "2026-11-05",
+  "scope": "Lokaal onderzoek; spelruntime niet gewijzigd; geen meting op een fysieke GPU of het apparaat van de gebruiker.",
+  "cautions": [
+    "Draw submit meet CPU-tijd voor JavaScript en Canvas-aanroepen, niet de voltooide GPU-frame- of presentatietijd.",
+    "De twee oorspronkelijke Wonderland-rijen missen prepareWonderlandGame; gebruik initializedWonderland voor de campagne.",
+    "Viewport-rijen zijn een bitmapformaat-experiment, geen volledige cameramigratie of visuele equivalentietest.",
+    "CPU-experiment is een afzonderlijke opgewarmde meting; vergelijk alleen original en candidate binnen dezelfde rij.",
+    "120 Hz simulatie: twee stappen per beeld bij 60 Hz.",
+    "Geen echte GPU-backend gebouwd; dus geen gemeten GPU-snelheidswinst."
+  ],
+  "sourceSha256": {
+    "public_html/app.mjs": "f2777df0f537afd6679099e4cfe71d75b37225e55cd8afe889c5afed30a0dff9",
+    "public_html/engine.mjs": "93abe4107013b54097d568d46f14c2ddc859681be5c8caed51c2500c5bdc28b5",
+    "public_html/art.mjs": "fb5ef672051c5c1a8165250bc653d96a9d89ef96fd58318e71c0953d68e0f2ff",
+    "public_html/sea-life.mjs": "568cc7a47129a2b8701ae98013112a3cea33fa86316cdd1ac43e2b267e27d99e",
+    "public_html/presentation.mjs": "3d437ce848558c116625e76fa723a31bb8f5e99056559b10ec402fff5d103f30",
+    "public_html/tests/performance.html": "805361198cfc31a832f299f09c984326c1ab118d1041e32bbed8178b9bc90dae"
+  }
+}

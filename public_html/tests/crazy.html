@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bravios · Gekke velden en Rainbowfart</title>
+<style>body{margin:0;background:#172238;color:#fff;font:16px system-ui}header{padding:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}button,select{font:inherit;padding:10px;border-radius:8px;border:0}canvas{display:block;width:min(100%,1100px);margin:auto;background:#29324a}p{padding:0 16px}</style>
+<header><strong>Bravios · Gekke velden</strong><select id="field" aria-label="Kies een gek veld"></select><button id="rainbow">Rainbowfart tonen</button><button id="pause">Pauzeren / doorgaan</button></header>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="scene" width="960" height="640"></canvas>
+<script type="module">
+import { TILE, blankLevel, createGame, stepGame } from '../engine.mjs?v=13';
+import { CRAZY_FIELDS, crazyLevel } from '../levels.mjs?v=13';
+import { drawWorld, loadCrazyBackgrounds } from '../art.mjs?v=14';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),select=document.querySelector('select'),status=document.querySelector('#status');
+for(const [i,field] of CRAZY_FIELDS.entries()){const option=document.createElement('option');option.value=i;option.textContent=`${i+1}. ${field.name}`;select.append(option);}
+let level,game,frame=0,demo=false,paused=false,kills=0;
+function start(index){paused=false;demo=false;level=crazyLevel(index);game=createGame(level);frame=0;kills=0;}
+function rainbow(){
+ demo=true;level=blankLevel(120);level.background='teapots';level.tiles[13][3]=41;game=createGame(level);frame=0;kills=0;
+ for(let i=0;i<330;i++)stepGame(game,{right:i>30});
+ const source=blankLevel(120);for(const [x,id] of [[8,27],[10,25],[12,21],[24,22]])source.tiles[13][x]=id;
+ game.enemies=createGame(source).enemies;
+ stepGame(game,{});kills=game.enemies.filter(e=>!e.alive).length;
+}
+select.onchange=()=>start(Number(select.value));document.querySelector('#rainbow').onclick=rainbow;document.querySelector('#pause').onclick=()=>{paused=!paused;};
+await Promise.all([loadLook(),loadCrazyBackgrounds()]);rainbow();
+let previous=0,accumulator=0;
+function animate(time){
+ const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;
+ if(!paused){accumulator+=elapsed;while(accumulator>=1/120){
+ if(demo){if(frame>220)rainbow();stepGame(game,{right:true});}
+ else if(game.state==='playing'){
+ const field=CRAZY_FIELDS[Number(select.value)],p=game.player;let target=game.finish.x*TILE;
+ if(field.route==='down'){const floors=[];for(let y=8;y<field.height-5;y+=8)floors.push(y);const floor=floors.findIndex(y=>p.y+p.h<=y*TILE+.1);if(floor>=0)target=(floor%2===0?field.width-2:1)*TILE;}
+ stepGame(game,{left:p.x>target+8,right:p.x<target-3,jump:frame%100<65});}
+ frame++;accumulator-=1/120;}}
+ const vw=768,vh=512;game.player.fartLength=vw/2;
+ const left=Math.max(0,Math.min(level.width*TILE-vw,game.player.x-vw*.6)),top=Math.max(0,Math.min(level.tiles.length*TILE-vh,game.player.y-vh*.6));
+ ctx.setTransform(1.25,0,0,1.25,-left*1.25,-top*1.25);
+ drawWorld(ctx,level,{game,grid:false,time:game.time,viewport:{left,right:left+vw,top,bottom:top+vh}});
+ status.textContent=demo?`Rainbowfart · ${Math.ceil(game.player.rainbowFart)} s · ${game.enemies.filter(e=>!e.alive).length} tegenstanders verslagen · spoor maximaal ${vw/2} pixels (halve schermbreedte)`:`${level.name} · ${game.state} · y=${Math.round(game.player.y)} · ${CRAZY_FIELDS[Number(select.value)].hint}`;
+ requestAnimationFrame(animate);
+}requestAnimationFrame(animate);
+</script></html>

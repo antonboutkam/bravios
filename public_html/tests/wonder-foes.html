@@ -1,0 +1,35 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><title>Wonderland · vijanden en eindbazen</title>
+<style>
+body{margin:0;padding:24px;background:#211744;color:#fff4db;font:16px system-ui}h1{font-size:26px;margin:0 0 8px}p{margin:8px 0 16px}button,select{font:inherit;padding:8px;margin:0 8px 12px 0;border:1px solid #bdacdf;border-radius:8px;background:#3a285b;color:#fff4db}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid article{border:1px solid #9c86c2;border-radius:12px;background:#37245c;padding:12px}h2{font-size:15px;margin:0 0 8px}.grid canvas{width:100%;height:160px}.variants{width:100%;height:120px}#play{width:min(100%,1100px);height:auto;border:1px solid #c2aedc}body.gray canvas{filter:grayscale(1)}small{display:block;color:#ded0f5}label{display:inline-block;margin:0 12px 10px 0}
+</style>
+<h1>Wonderland · kleine vijanden en grote eindbazen</h1><p>Dezelfde figuren en spelcode als in Wonderland. Elk personage heeft een eigen vorm, palet en beweging.</p>
+<button id="gray">Kleur / grijstinten</button><button id="motion">Beweging aan / uit</button><div class="grid"></div>
+<h2>Twaalf verschillende kleine exemplaren</h2><select id="type"></select><canvas class="variants" width="1200" height="120"></canvas>
+<h2>Probeer een echt baasgevecht</h2><p>Pijltjes: lopen · spatie: springen · F: vuur. De platen werken door erop te stappen. Je begint hier veilig met bescherming.</p><select id="field"></select><button id="retry">Opnieuw</button><p id="hint"></p><canvas id="play" width="1100" height="640"></canvas>
+<script type="module">
+import { WONDER_FOES,createWonderFoe,wonderEncounterHint } from '../wonder-foes.mjs?v=1';
+import { drawWonderFoe } from '../wonder-foe-art.mjs?v=1';
+import { wonderlandLevel,prepareWonderlandGame,WONDERLAND_FIELDS } from '../wonderland.mjs';
+import { createGame,stepGame } from '../engine.mjs';
+import { drawWorld } from '../art.mjs';
+const grid=document.querySelector('.grid'),entries=[];let frozen=false,time=0;
+for(let i=0;i<8;i++){
+ const article=document.createElement('article'),title=document.createElement('h2'),canvas=document.createElement('canvas');title.textContent=WONDER_FOES[i].name;canvas.width=300;canvas.height=160;article.append(title,canvas);grid.append(article);entries.push({canvas,type:i});
+ const option=document.createElement('option');option.value=i;option.textContent=WONDER_FOES[i].name;document.querySelector('#type').append(option);
+}
+for(let i=0;i<15;i++){const option=document.createElement('option');option.value=i;option.textContent=`${i+1}. ${WONDERLAND_FIELDS[i].name}`;document.querySelector('#field').append(option);}
+let level,game;const keys=new Set();
+function restart(){const i=Number(document.querySelector('#field').value);level=wonderlandLevel(i);game=prepareWonderlandGame(createGame(level),i);game.enemies=game.enemies.filter(e=>e.boss);game.wonderland.locked=false;game.player.x=158*32;game.player.y=18*32-game.player.h;game.player.fire=true;game.player.invincible=9999;}
+const params=new URLSearchParams(location.search);if(params.has('field'))document.querySelector('#field').value=params.get('field');if(params.has('gray'))document.body.classList.add('gray');
+restart();document.querySelector('#retry').onclick=restart;document.querySelector('#field').onchange=restart;
+document.querySelector('#gray').onclick=()=>document.body.classList.toggle('gray');document.querySelector('#motion').onclick=()=>frozen=!frozen;
+window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','KeyF'].includes(e.code)){keys.add(e.code);e.preventDefault();}});window.addEventListener('keyup',e=>keys.delete(e.code));
+function checker(c,w,h){c.clearRect(0,0,w,h);for(let x=0;x<w;x+=16)for(let y=0;y<h;y+=16){c.fillStyle=(x+y)%32?'#463365':'#392954';c.fillRect(x,y,16,16);}}
+function paint(){
+ for(const {canvas,type} of entries){const c=canvas.getContext('2d');checker(c,300,160);const large=createWonderFoe(type,0,135,{boss:true});large.y=55;large.phase='exposed';large.hp=large.maxHp;drawWonderFoe(c,large,time,frozen);for(let i=0;i<3;i++){const small=createWonderFoe(type,i,15+i*36);small.y=100;drawWonderFoe(c,small,time,frozen);}}
+ const canvas=document.querySelector('.variants'),c=canvas.getContext('2d');checker(c,1200,120);for(let i=0;i<12;i++){const small=createWonderFoe(Number(document.querySelector('#type').value),i,30+i*98);small.y=40;drawWonderFoe(c,small,time,frozen);}
+ const pc=document.querySelector('#play').getContext('2d');pc.clearRect(0,0,1100,640);const left=Math.max(0,Math.min(game.width*32-1100,game.player.x-400));pc.save();pc.translate(-left,0);drawWorld(pc,level,{game,grid:false,time,reducedMotion:frozen,viewport:{left,right:left+1100,top:0,bottom:640}});pc.restore();document.querySelector('#hint').textContent=wonderEncounterHint(game);
+ document.body.dataset.ready='true';
+}
+let last=performance.now();function frame(now){const dt=Math.min(1/30,(now-last)/1000);last=now;if(!frozen){time+=dt;stepGame(game,{left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),jump:keys.has('Space'),fire:keys.has('KeyF')},dt);}paint();requestAnimationFrame(frame);}paint();requestAnimationFrame(frame);
+</script></html>

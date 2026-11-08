@@ -1,0 +1,32 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Bubblegun</title>
+<style>body{font:16px system-ui;margin:20px;background:#e4ecd9;color:#283a38}button{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;max-width:100%;margin:12px 0;border-radius:12px}</style>
+<h1>Bubblegun</h1><p>Deze proef gebruikt de echte beloning en schietknop. Gevangen tegenstanders zweven ongevaarlijk het beeld uit. Je opgeslagen levels blijven bewaard.</p>
+<button id="restart" disabled>Opnieuw</button><button id="pause" disabled>Pauzeren / doorgaan</button><button id="character" disabled>Boaz / Ravi</button><button id="direction" disabled>Andere kant</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="world" width="1280" height="1024"></canvas>
+<script type="module">
+import { blankLevel, createGame, stepGame } from '../engine.mjs?v=16';
+import { drawWorld } from '../art.mjs?v=17';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
+let game,level,paused=false,character='boaz',reverse=false;
+function reset(){
+ level=blankLevel(40);level.tiles[13][3]=10;level.tiles[13][2]=42;
+ [6,17,22,29,27,24,23].forEach((id,i)=>level.tiles[13][6+i*3]=id);
+ if(reverse)level.tiles=level.tiles.map(row=>row.reverse());
+ game=createGame(level);game.player.x=(reverse?37:2)*32+5;game.player.facing=reverse?-1:1;game.player.character=character;game.bubbleViewTop=0;
+ for(let i=0;i<24;i++)stepGame(game,{});
+ for(let i=0;i<120;i++)stepGame(game,{fire:true});
+}
+await loadLook();reset();for(const button of document.querySelectorAll('button'))button.disabled=false;
+document.querySelector('#restart').onclick=reset;document.querySelector('#pause').onclick=()=>paused=!paused;
+document.querySelector('#character').onclick=()=>{character=character==='boaz'?'ravi':'boaz';reset();};
+document.querySelector('#direction').onclick=()=>{reverse=!reverse;reset();};
+let previous=0,accumulator=0;
+function frame(time){
+ const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;
+ if(!paused){accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{fire:true});accumulator-=1/120;}}
+ const left=reverse?640:0;ctx.setTransform(2,0,0,2,-left*2,0);drawWorld(ctx,level,{game,grid:false,time:game.time,viewport:{left,right:left+640,top:0,bottom:512}});
+ status.textContent=`${character==='boaz'?'Boaz':'Ravi'} · bubblegun: ${game.player.bubblegun?'opgepakt':'kwijt'} · ${game.enemies.filter(e=>e.bubbled&&e.alive).length} in een luchtbel · ${game.enemies.filter(e=>e.bubbled&&!e.alive).length} het beeld uit · ${game.state}`;
+ requestAnimationFrame(frame);
+}requestAnimationFrame(frame);
+</script></html>

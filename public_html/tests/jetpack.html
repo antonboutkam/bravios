@@ -1,0 +1,32 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Vuurpijl en parachute</title>
+<style>body{font:16px system-ui;margin:20px;background:#fff0db;color:#493749}button,select{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;max-width:100%;margin:12px 0;border-radius:12px}</style>
+<h1>Vuurpijl en parachute</h1><p>Deze proef gebruikt de echte beloning en engine. Je opgeslagen levels blijven bewaard.</p>
+<select id="height" aria-label="Hoogte van het veld"><option value="16">16 blokjes</option><option value="32" selected>32 blokjes</option><option value="64">64 blokjes</option></select>
+<button data-phase="intro" disabled>Circusportret</button><button data-phase="fuse" disabled>Aftellen</button><button data-phase="flight" disabled>Lancering</button><button data-phase="parachute" disabled>Parachute</button><button id="character" disabled>Boaz / Ravi</button><button id="pause" disabled>Pauzeren / doorgaan</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="world" width="1280" height="1024"></canvas>
+<script type="module">
+import { TILE, blankLevel, createGame, stepGame, rocketCountdown } from '../engine.mjs?v=18';
+import { drawWorld } from '../art.mjs?v=19';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status'),select=document.querySelector('select');
+let game,level,character='boaz',paused=false;
+function reset(phase='intro'){
+ const height=Number(select.value);level=blankLevel(40,height);level.tiles[height-3][2]=44;level.tiles[height-3][3]=10;
+ game=createGame(level);Object.assign(game.player,{x:2*TILE+5,character});stepGame(game,{});
+ if(phase!=='intro')for(let i=0;i<300&&game.rocketIntro>0;i++)stepGame(game,{});
+ if(['flight','parachute'].includes(phase))for(let i=0;i<700&&game.player.rocketStage==='fuse';i++)stepGame(game,{});
+ if(phase==='parachute')for(let i=0;i<800&&!game.player.parachute;i++)stepGame(game,{});
+ paused=false;
+}
+await loadLook();reset();for(const b of document.querySelectorAll('button'))b.disabled=false;
+for(const b of document.querySelectorAll('[data-phase]'))b.onclick=()=>reset(b.dataset.phase);
+select.onchange=()=>reset();document.querySelector('#character').onclick=()=>{character=character==='boaz'?'ravi':'boaz';reset();};document.querySelector('#pause').onclick=()=>paused=!paused;
+let previous=0,accumulator=0;
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;
+ if(!paused){accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{});accumulator-=1/120;}}
+ const p=game.player,left=Math.max(0,Math.min(level.width*TILE-640,p.x-240)),top=Math.max(0,Math.min(level.tiles.length*TILE-512,p.y-260));
+ ctx.setTransform(2,0,0,2,-left*2,-top*2);drawWorld(ctx,level,{game,grid:false,time:game.time,character,viewport:{left,right:left+640,top,bottom:top+512}});
+ const phase=game.rocketIntro>0?'circusportret':p.rocketStage==='fuse'?`aftellen ${rocketCountdown(p)}`:p.rocketStage==='flight'?'vliegt omhoog':p.parachute?'parachute open':p.grounded?'geland':'valt';
+ status.textContent=`${character==='boaz'?'Boaz':'Ravi'} · ${phase} · y=${Math.round(p.y)} · valsnelheid ${Math.round(p.vy)} · losse pijlen ${game.departingRockets.length}`;requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

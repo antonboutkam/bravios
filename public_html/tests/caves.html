@@ -1,0 +1,18 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Grotten en sleutels</title>
+<style>body{font:16px system-ui;margin:20px;background:#e7efdd;color:#293e4a}button{font:inherit;padding:10px;margin:0 6px 10px 0}#view{width:min(100%,800px);height:420px;overflow:hidden;border-radius:12px}canvas{display:block}</style>
+<h1>Grotten en sleutels</h1><p>Deze proef gebruikt de echte spelmotor en verandert geen opgeslagen levels.</p><button id="key">Loop naar de sleutel</button><button id="enter">Ga de grot in</button><button id="leave">Verlaat de grot</button><button id="reset">Opnieuw</button>
+<p id="status" role="status">Afbeeldingen laden…</p><div id="view"><canvas width="2304" height="512"></canvas></div>
+<script type="module">
+import{blankLevel,createGame,stepGame}from'../engine.mjs?v=23';import{drawWorld}from'../art.mjs?v=24';import{loadLook}from'../look.mjs?v=8';import{keyCameraFrame}from'../presentation.mjs?v=3';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),view=document.querySelector('#view'),status=document.querySelector('#status');let game,level,previous=0,accumulator=0,origin=null;
+function reset(){level=blankLevel(72);level.tiles[13][55]=63;level.tiles[13][7]=64;game=createGame(level);origin=null;accumulator=0;}
+function at(x){if(game.keyReveal)return;Object.assign(game.player,{x:x*32+5,y:420,vy:0,vx:0,grounded:true});}
+await loadLook();reset();document.querySelector('#key').onclick=()=>{if(game.caveState.active===null)at(7);};document.querySelector('#enter').onclick=()=>{if(game.caveState.active===null)at(55);};document.querySelector('#leave').onclick=()=>{if(game.caveState.active!==null)at(2);};document.querySelector('#reset').onclick=reset;
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{});accumulator-=1/120;}
+ canvas.width=game.width*32;const normal={x:Math.max(0,Math.min(canvas.width-view.clientWidth,game.player.x-view.clientWidth*.42)),y:92};
+ if(game.keyReveal){origin ||= normal;const frame=keyCameraFrame(game.keyReveal,origin,{x:Math.max(0,Math.min(canvas.width-view.clientWidth,game.keyReveal.door.x*32-view.clientWidth/2)),y:92});view.scrollLeft=frame.x;view.scrollTop=frame.y;}else{origin=null;view.scrollLeft=normal.x;view.scrollTop=normal.y;}
+ drawWorld(ctx,game.sceneLevel,{game,grid:false,time:game.time,viewport:{left:view.scrollLeft,right:view.scrollLeft+view.clientWidth,top:92,bottom:512}});
+ status.textContent=`${game.caveState.active!==null?'Binnen: kleine donkere grot':'Buitenwereld'} · ${game.keyReveal?'Camera toont het slot · '+(game.keyReveal.opened?'deur open':'deur gaat open'):game.caveState.active!==null?'uitgang links':game.tiles[13][55]===62?'deur open':'deur op slot'} · ${game.width} × ${game.tiles.length} · ${game.state}`;
+ requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

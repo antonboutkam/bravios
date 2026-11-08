@@ -1,0 +1,19 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bravios · Controle van afbeeldingen</title>
+<style>body{font:14px system-ui;margin:24px;background:#edf3ed;color:#263831}#sprites{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px}figure{margin:0;background:white;border-radius:10px;padding:12px}canvas{display:block;width:100%;height:180px;object-fit:contain;background:repeating-conic-gradient(#e0e4df 0% 25%,#fafbf7 0% 50%) 0/16px 16px}figcaption{padding-top:8px}#status{font-weight:bold}</style>
+<h1>Controle van de nieuwe afbeeldingen</h1><p id="status">Afbeeldingen laden…</p><div id="sprites"></div>
+<script type="module">
+import {loadLook,LOOK_REGIONS,LOOK_ATLASES,lookSprite,drawLook} from '../look.mjs?v=8';
+try {
+  await loadLook();
+  const names=[...Object.keys(LOOK_REGIONS),...Object.values(LOOK_ATLASES).flatMap(atlas=>atlas.frames)];
+  for(const name of names) {
+    const figure=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');
+    canvas.width=320;canvas.height=320;caption.textContent=name;
+    const b=lookSprite(name).bounds, scale=Math.min(280/b.width,280/b.height);
+    drawLook(canvas.getContext('2d'),name,(320-b.width*scale)/2,(320-b.height*scale)/2,b.width*scale,b.height*scale);
+    figure.append(canvas,caption);document.getElementById('sprites').append(figure);
+  }
+  document.getElementById('status').textContent=`${names.length} uitsneden geladen.`;
+} catch(error) { document.getElementById('status').textContent=error.message; }
+</script></html>

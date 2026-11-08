@@ -1,0 +1,30 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Achterstevoren</title>
+<style>body{font:16px system-ui;margin:20px;background:#e7dff3;color:#29324b}button,select{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;max-width:100%;margin:12px 0;border-radius:12px}</style>
+<h1>Achterstevoren</h1><p>Echte beloning en engine. De gekozen speler pakt de wervelwind op; daarna gaat de route terug naar de oude start. Je opgeslagen levels blijven bewaard.</p>
+<select id="field" aria-label="Kies een gek veld"></select><button id="collect" disabled>Wervelwind oppakken</button><button id="character" disabled>Boaz / Ravi</button><button id="pause" disabled>Pauzeren / doorgaan</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="icon" width="96" height="96" aria-label="Wervelwind met een pijl vooruit en achteruit"></canvas><canvas id="world" width="1280" height="1024"></canvas>
+<script type="module">
+import { TILE, createGame, stepGame, positions } from '../engine.mjs?v=17';
+import { CRAZY_FIELDS, crazyLevel } from '../levels.mjs?v=17';
+import { drawWorld, drawTile, loadCrazyBackgrounds } from '../art.mjs?v=18';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d'),status=document.querySelector('#status'),select=document.querySelector('select');
+let game,level,character='boaz',paused=false,frames=0;
+for(const [i,f] of CRAZY_FIELDS.entries()){const o=document.createElement('option');o.value=i;o.textContent=`${i+1}. ${f.name}`;select.append(o);}
+function reset(){level=crazyLevel(Number(select.value));game=createGame(level);game.player.character=character;frames=0;paused=false;
+ const reward=positions(level,43)[0];Object.assign(game.player,{x:reward.x*TILE+5,y:(reward.y+1)*TILE-game.player.h,grounded:true,vy:0});stepGame(game,{});
+}
+await Promise.all([loadLook(),loadCrazyBackgrounds()]);reset();
+const icon=document.querySelector('#icon');drawTile(icon.getContext('2d'),43,0,0,96,'grass',{icon:true});
+for(const b of document.querySelectorAll('button'))b.disabled=false;select.onchange=reset;
+document.querySelector('#collect').onclick=reset;document.querySelector('#character').onclick=()=>{character=character==='boaz'?'ravi':'boaz';reset();};document.querySelector('#pause').onclick=()=>paused=!paused;
+let previous=0,accumulator=0;
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;
+ if(!paused){accumulator+=elapsed;while(accumulator>=1/120){const p=game.player,entry=game.reverseReturnPipe;let target=game.finish.x*TILE+5,jump=frames%100<65,pipe=false;
+ if(entry&&p.y>16*TILE){target=entry.x*TILE+5;if(Math.abs(p.x-target)<8){jump=false;pipe=p.grounded;}}
+ stepGame(game,{left:p.x>target+4,right:p.x<target-4,jump,pipe});frames++;accumulator-=1/120;}}
+ const left=Math.max(0,Math.min(level.width*TILE-640,game.player.x-320)),top=Math.max(0,Math.min(level.tiles.length*TILE-512,game.player.y-300));
+ ctx.setTransform(2,0,0,2,-left*2,-top*2);drawWorld(ctx,level,{game,grid:false,time:game.time,character,viewport:{left,right:left+640,top,bottom:top+512}});
+ status.textContent=`${character==='boaz'?'Boaz':'Ravi'} · ${game.reversed?'achterstevoren':'gewoon'} · intro ${game.reverseIntro.toFixed(1)} s · finish (${game.finish.x}, ${game.finish.y}) · ${game.state}`;requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

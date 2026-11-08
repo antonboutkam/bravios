@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bravios · Kat en dino controleren</title>
+<style>
+body { margin: 24px; background: #e7f1dc; color: #263831; font: 16px system-ui; }
+button { padding: 10px; border: 1px solid #c6b7e5; border-radius: 10px; background: #fffdf5; font: inherit; cursor: pointer; }
+button:disabled { opacity: .4; }
+nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+canvas { border-radius: 16px; max-width: 100%; }
+#world { width: 960px; height: auto; }
+#detail { width: 320px; height: 320px; display: block; margin-top: 12px; }
+</style>
+<h1>Kat en dino</h1>
+<p>Deze controlepagina gebruikt de echte engine en renderer. Je bouwveld blijft bewaard.</p>
+<nav><button data-mode="boaz" disabled>Boaz op de dino</button><button data-mode="ravi" disabled>Ravi op de dino</button><button data-mode="cat" disabled>Echt katje</button><button data-mode="cat-dino" disabled>Kat op de dino</button></nav>
+<nav><button data-action="left" disabled>Loop naar links</button><button data-action="right" disabled>Loop naar rechts</button><button data-action="jump" disabled>Spring</button><button data-action="mount" disabled>Stap op / af</button></nav>
+<p id="status" role="status">Afbeeldingen laden…</p>
+<canvas id="world" width="1920" height="1024" aria-label="Speelveld met nieuwe kat en dino"></canvas>
+<canvas id="detail" width="320" height="320" aria-label="Vergrote weergave van speler en dino"></canvas>
+<script type="module" src="creatures.mjs?v=3"></script>
+</html>

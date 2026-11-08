@@ -1,0 +1,21 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Mechaniekenproef</title>
+<style>body{font:16px system-ui;margin:20px;background:#e7efdd;color:#293e4a}button{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;width:min(100%,960px);border-radius:12px}</style>
+<h1>Mechaniekenproef</h1><p>Deze proef gebruikt de echte spelmotor en verandert geen opgeslagen levels.</p>
+<button id="wall">Op het beweegblok</button><button id="belt">Op de lopende band</button><button id="jump">Springen</button><button id="pause">Pauzeren / doorgaan</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas width="960" height="512"></canvas>
+<script type="module">
+import { blankLevel, createGame, stepGame } from '../engine.mjs?v=20';
+import { drawWorld } from '../art.mjs?v=21';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
+let level,game,mode='wall',jump=false,previous=0,accumulator=0;
+function reset(next){mode=next;level=blankLevel(40);level.tiles[11][8]=46;level.belts=[{a:{x:14,y:10},b:{x:26,y:7}}];game=createGame(level);const surface=mode==='wall'?game.movingWalls[0]:game.belts[0].platforms[0];Object.assign(game.player,{x:surface.x+1,y:surface.y-game.player.h,grounded:true});accumulator=0;}
+await loadLook();reset('wall');
+document.querySelector('#wall').onclick=()=>reset('wall');document.querySelector('#belt').onclick=()=>reset('belt');document.querySelector('#jump').onclick=()=>jump=true;document.querySelector('#pause').onclick=()=>{game.state=game.state==='paused'?'playing':'paused';};
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{jump});jump=false;accumulator-=1/120;}
+ ctx.setTransform(1,0,0,1,0,0);drawWorld(ctx,level,{game,grid:false,time:game.time,viewport:{left:0,right:960,top:0,bottom:512}});
+ const body=mode==='wall'?game.movingWalls[0]:game.belts[0].platforms[0],riding=game.player.grounded&&Math.abs(game.player.y+game.player.h-body.y)<.1;
+ status.textContent=`${mode==='wall'?'Beweegblok':'Lopende band'} · ${game.state} · ${riding?'held lift mee':'held los van platform'} · band ${game.belts[0].running?'draait':'staat stil'} · ${game.time.toFixed(1)} s`;
+ requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

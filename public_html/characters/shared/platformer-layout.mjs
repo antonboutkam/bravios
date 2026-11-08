@@ -1,0 +1,4 @@
+export const PLATFORMER_CHARACTER_FRAMES = {
+  idle:[277,190,230,334],side:[591,189,240,335],run:[892,190,277,338],
+  jump:[1222,190,283,322],victory:[898,578,288,333],land:[1225,620,293,292]
+};

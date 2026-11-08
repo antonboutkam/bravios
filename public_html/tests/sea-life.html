@@ -1,0 +1,19 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><title>Onderwaterleven · kijkproef</title>
+<style>body{margin:0;padding:28px;background:#e7f3f4;color:#163349;font:16px system-ui}h1{margin:0 0 8px}button{padding:10px 18px;border:1px solid #94b7c3;border-radius:12px;background:white;color:#163349;margin:0 8px 18px 0;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:16px}article{background:white;border-radius:16px;overflow:hidden;box-shadow:0 3px 14px #21435115}h2,p{margin:12px 16px}h2{font-size:18px}p{font-size:13px;min-height:48px}canvas{width:100%;height:170px;display:block}.night{background:#071426;color:#dcfaff}.night article{background:#122c40}.night button{background:#17394c;color:white}@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}}</style>
+<h1>Onderwaterleven</h1><p>Bewegende kijkproef met de echte spelcode. De nachtknop verandert alleen het uiterlijk. Deze pagina bewaart niets.</p>
+<button id="night">Nacht aan / uit</button><button id="near">Held dichtbij / ver weg</button><button id="look">Kijkrichting wisselen</button><button id="skip">15 seconden verder</button><span id="clock"></span><div class="grid"></div>
+<script type="module">
+import {blankLevel,createGame,stepGame} from '../engine.mjs';
+import {SEA_ITEMS,isSeaMount} from '../sea-life.mjs';
+import {drawSeaCreature,drawSeaEffects} from '../sea-art.mjs';
+let night=false,near=false,looking=false,time=0;
+const entries=SEA_ITEMS.map(item=>{
+ const level=blankLevel(40);level.theme='underwater';level.tiles[8][15]=item.id;const game=createGame(level);game.player.invincible=1e6;
+ const actor=game.enemies[0]||game.dinos[0];const article=document.createElement('article');const heading=document.createElement('h2');heading.textContent=item.name;const canvas=document.createElement('canvas');canvas.width=600;canvas.height=340;const p=document.createElement('p');p.textContent=item.description;article.append(heading,canvas,p);document.querySelector('.grid').append(article);
+ return {game,actor,canvas,origin:{x:actor.x,y:actor.y}};
+});
+function advance(dt){time+=dt;for(const {game,actor,origin} of entries){Object.assign(game.player,{x:origin.x+(near?55:260),y:origin.y,facing:looking?-1:1,vx:0,vy:0});stepGame(game,{},dt);}}
+function paint(){for(const {game,actor,canvas,origin} of entries){const c=canvas.getContext('2d');c.fillStyle=night?'#071b32':'#8bd6df';c.fillRect(0,0,600,340);c.save();c.scale(2,2);c.translate(95-actor.x,75-actor.y);c.fillStyle=night?'#496377':'#e6d3a7';c.fillRect(actor.x-100,Math.max(actor.y+actor.h+8,448),400,20);drawSeaCreature(c,actor,time,night);drawSeaEffects(c,game,time);c.restore();}document.querySelector('#clock').textContent=`${time.toFixed(1)} seconden`;}
+document.querySelector('#night').onclick=()=>{night=!night;document.body.classList.toggle('night',night);};document.querySelector('#near').onclick=()=>{near=!near;};document.querySelector('#look').onclick=()=>{looking=!looking;};document.querySelector('#skip').onclick=()=>{for(let i=0;i<1800;i++)advance(1/120);paint();};
+let last=performance.now();function frame(now){const dt=Math.min(1/30,(now-last)/1000);last=now;advance(dt);paint();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+</script></html>

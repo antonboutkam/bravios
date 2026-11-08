@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-06",
+  "environment": "Lokale headless Chrome, venster 1280x800, deviceScaleFactor 1, softwarematige grafische verwerking; geen hardware-GPU- of gebruikerssessiemeting.",
+  "method": "Per wereld 65 requestAnimationFrame-callbacks van animate; eerste 5 uitgesloten. Canvasmaten en mediane/p95-callbackduur en frame-interval. Zelfde lege velden met vaste grond en zonder vijanden.",
+  "before": [
+    {
+      "bitmap": [
+        2560,
+        1024
+      ],
+      "css": [
+        2000,
+        800
+      ],
+      "medianWorkMs": 2.100000023841858,
+      "p95WorkMs": 3.1999999284744263,
+      "medianIntervalMs": 66.69999999999982,
+      "p95IntervalMs": 83.40000000000009,
+      "scroll": [
+        0,
+        0
+      ],
+      "width": 40,
+      "height": 16,
+      "theme": "grass"
+    },
+    {
+      "bitmap": [
+        8192,
+        992
+      ],
+      "css": [
+        13200,
+        1600
+      ],
+      "medianWorkMs": 3.799999952316284,
+      "p95WorkMs": 5.799999952316284,
+      "medianIntervalMs": 33.40000000000009,
+      "p95IntervalMs": 50.100000000000364,
+      "scroll": [
+        0,
+        800
+      ],
+      "width": 264,
+      "height": 32,
+      "theme": "moon"
+    }
+  ],
+  "after": [
+    {
+      "bitmap": [
+        1280,
+        800
+      ],
+      "css": [
+        1280,
+        800
+      ],
+      "medianWorkMs": 2.5,
+      "p95WorkMs": 4,
+      "medianIntervalMs": 16.699999999999818,
+      "p95IntervalMs": 33.40000000000009,
+      "scroll": [
+        0,
+        0
+      ],
+      "width": 40,
+      "height": 16,
+      "theme": "grass"
+    },
+    {
+      "bitmap": [
+        1280,
+        800
+      ],
+      "css": [
+        1280,
+        800
+      ],
+      "medianWorkMs": 2.8000000715255737,
+      "p95WorkMs": 6.200000047683716,
+      "medianIntervalMs": 16.699999999999818,
+      "p95IntervalMs": 33.30000000000018,
+      "scroll": [
+        0,
+        800
+      ],
+      "width": 264,
+      "height": 32,
+      "theme": "moon"
+    }
+  ],
+  "browserChecks": [
+    "Bouwen na horizontaal en verticaal scrollen",
+    "Venster verkleinen naar 390x844 op DPR2",
+    "Juiste plaatsing op beide schermformaten",
+    "Camera beweegt tijdens lopen",
+    "HTTP en zelfstandige speel.html",
+    "Geen JavaScript-excepties in deze browserproef"
+  ]
+}

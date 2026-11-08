@@ -1,0 +1,23 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Paddenstoelenvrienden</title>
+<style>body{font:16px system-ui;margin:20px;background:#e7efdd;color:#293e4a}button,select{font:inherit;padding:10px;margin:0 6px 10px 0}canvas{display:block;max-width:100%;margin:12px 0;border-radius:12px}</style>
+<h1>Paddenstoelenvrienden</h1><p>Loop naar de helper voor één cadeau. Je opgeslagen levels blijven bewaard.</p>
+<select id="reward" aria-label="Cadeau van de helper"></select><button id="meet" disabled>Loop naar de helper</button><button id="reset" disabled>Opnieuw</button><button id="character" disabled>Boaz / Ravi</button><button id="pause" disabled>Pauzeren / doorgaan</button>
+<p id="status" role="status">Afbeeldingen laden…</p><canvas id="world" width="1280" height="768"></canvas><canvas id="detail" width="480" height="320"></canvas>
+<script type="module">
+import { ITEMS, HELPER_REWARDS, blankLevel, createGame, stepGame } from '../engine.mjs?v=20';
+import { drawWorld } from '../art.mjs?v=21';
+import { loadLook } from '../look.mjs?v=8';
+const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d'),detail=document.querySelector('#detail'),dc=detail.getContext('2d'),select=document.querySelector('select'),status=document.querySelector('#status');
+let game,level,character='boaz',paused=false,walking=false;
+for(const id of HELPER_REWARDS){const o=document.createElement('option');o.value=id;o.textContent=ITEMS.find(item=>item.id===id).name;select.append(o);}
+function reset(){level=blankLevel(40);level.tiles[13][8]=45;game=createGame(level);game.player.character=character;game.helpers[0].reward=Number(select.value);paused=false;walking=false;}
+await loadLook();reset();for(const b of document.querySelectorAll('button'))b.disabled=false;
+select.onchange=reset;document.querySelector('#meet').onclick=()=>walking=true;document.querySelector('#reset').onclick=reset;document.querySelector('#character').onclick=()=>{character=character==='boaz'?'ravi':'boaz';reset();};document.querySelector('#pause').onclick=()=>paused=!paused;
+let previous=0,accumulator=0;
+function render(time){const elapsed=Math.min(.05,(time-previous)/1000||0);previous=time;
+ if(!paused){accumulator+=elapsed;while(accumulator>=1/120){stepGame(game,{right:walking&&game.player.x<game.helpers[0].x-25});accumulator-=1/120;}}
+ ctx.setTransform(2,0,0,2,0,-128*2);drawWorld(ctx,level,{game,grid:false,time:game.time,character,viewport:{left:0,right:640,top:128,bottom:512}});
+ dc.setTransform(1,0,0,1,0,0);dc.clearRect(0,0,480,320);const helper=game.helpers[0];dc.setTransform(4,0,0,4,240-(helper.x+helper.w/2)*4,180-(helper.y+10)*4);drawWorld(dc,level,{game,grid:false,time:game.time,character,viewport:{left:helper.x-60,right:helper.x+60,top:helper.y-40,bottom:helper.y+40}});
+ status.textContent=`${character==='boaz'?'Boaz':'Ravi'} · cadeau: ${ITEMS.find(item=>item.id===helper.reward).name} · ${helper.givenTo.length?'ontvangen!':'nog beschikbaar'} · ${game.state}`;requestAnimationFrame(render);
+}requestAnimationFrame(render);
+</script></html>

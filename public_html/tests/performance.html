@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bravios · Rendertest</title>
+<style>body{font:16px system-ui;background:#eef6f2;color:#263831;margin:24px}canvas{display:block;max-width:100%;image-rendering:pixelated}pre{white-space:pre-wrap}button{padding:12px}</style>
+<h1>Rendertest met 1.100 robots</h1>
+<p>Vergelijkt het tekenen van het hele veld met een zichtbaar venster van 640 spelpixels. Beide gebruiken dezelfde spritecache. De tijden meten JavaScript en tekenopdrachten, geen gegarandeerde FPS.</p>
+<button id="measure">Meet opnieuw</button><pre id="results" role="status">Meten…</pre><canvas id="sample" width="640" height="512"></canvas>
+<script type="module">
+import { blankLevel, createGame, stepGame } from '../engine.mjs';
+import { drawWorld } from '../art.mjs';
+const level = blankLevel(120);
+for(let x = 6; x < 116; x++) for(let y = 4; y < 14; y++) level.tiles[y][x] = 17;
+const game = createGame(level); game.player.rainbow = 120;
+function measure() {
+  const report = [];
+  for(const viewport of [null, {left:0, right:640}]) {
+    const canvas = document.createElement('canvas'); canvas.width = 3840; canvas.height = 512;
+    const real = canvas.getContext('2d'); let calls = 0;
+    const ctx = new Proxy(real, {get(target, key) { const value=target[key]; return typeof value === 'function' ? (...args) => {calls++;return value.apply(target,args);} : value; }, set(target,key,value){target[key]=value;return true;}});
+    drawWorld(ctx, level, {game, viewport}); calls = 0;
+    const times = [];
+    for(let frame = 0; frame < 20; frame++) {
+      const start = performance.now(); drawWorld(ctx, level, {game, viewport, time:frame/60}); times.push(performance.now()-start);
+    }
+    times.sort((a,b)=>a-b);
+    report.push({weergave:viewport?'Alleen zichtbaar':'Hele veld',tekenaanroepenPerFrame:Math.round(calls/20),mediaanMs:+times[10].toFixed(2)});
+  }
+  const start = performance.now(); for(let step=0;step<120;step++) stepGame(game,{});
+  report.push({simulatie120StappenMs:+(performance.now()-start).toFixed(2),vijanden:game.enemies.length});
+  document.getElementById('results').textContent = JSON.stringify(report,null,2);
+  drawWorld(document.getElementById('sample').getContext('2d'),level,{game,viewport:{left:0,right:640}});
+}
+document.getElementById('measure').addEventListener('click',measure); requestAnimationFrame(measure);
+</script></html>

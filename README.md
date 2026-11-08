@@ -14,7 +14,7 @@ npm start
 
 Open **http://localhost:8080**. Kies **Bouw je eigen veld**, plaats onderdelen en klik op **Speel je level**. Bewaar je wijzigingen in de editor en herlaad de browser om codewijzigingen te zien. Stop de server met Ctrl+C. Is poort 8080 bezet? Stop de andere server of gebruik in Bash `PORT=8090 npm start`.
 
-Alleen spelen zonder ontwikkelserver? Open [public_html/speel.html](public_html/speel.html) direct in je browser. Dit is een gegenereerde kopie. **Wijzig de bronbestanden en bouw daarna opnieuw:**
+Alleen spelen zonder ontwikkelserver? Maak eerst de offlineversie met het onderstaande commando. Open daarna `public_html/speel.html` direct in je browser. Dit gegenereerde bestand staat niet in Git. **Wijzig de bronbestanden en bouw daarna opnieuw:**
 
 ```sh
 npm run build
@@ -101,15 +101,9 @@ Bij aanhoudend lage FPS schakelt de speelcanvas nu automatisch van extra pixeldi
 
 De achtergrond wordt nu standaard op **50% resolutie** getekend, onafhankelijk van speler, platforms en voorgrond. Via **F8 → Achtergrondresolutie** kies je 100%, 50%, 35% of 25%. De aparte keuzelijst **Tekenresolutie** geldt voor het hele spelcanvas en biedt 100%, 95%, 90%, 85%, 75% en 50%. De winst van deze afzonderlijke achtergrondverlaging moet nog op de getroffen computer worden gemeten.
 
-**Nieuw systeembewijs:** op een leeg werkblad kost 4K/60 Hz met YCbCr 4:2:0 circa 77–90% GPU; dezelfde resolutie op 30 Hz schakelt naar RGB en meet 0–17%. Het scherm staat tijdelijk op 4K/30 Hz, maar de gebruiker meldt daar nog 1,4 FPS in de gewone game. De schermstand verklaart dus niet de volledige vertraging. Zie [de gecontroleerde vergelijking en herstelopdracht](docs/lokale-gpu-diagnose.md#systeembelasting-geïsoleerd-4k60-hz-tegenover-4k30-hz).
+De [automatische grafische vergelijking](http://localhost:8080/tests/graphics-diagnostic.html) meet in ongeveer 45 seconden een lege pagina en het spel met verschillende achtergrondtekenmethoden. Start eerst `npm start`, houd het venster zichtbaar en kopieer na afloop het rapport.
 
-De fysieke 4K-proef haalt 13,43 FPS zonder dieptelagen en 1,98 FPS met lagen. De renderer tekent herhalende decorstukken nu eenmaal per laag, met behoud van resolutie en parallax. De v2-proef bevestigt kortere tekenaanroepen maar geen FPS-winst (2 FPS met lagen). V3 bevestigt circa 8 FPS met vooraf getekende lagen en 19,78 FPS met een halve bitmap. V4 vergelijkt ondoorzichtige weergave en een voorkeur voor softwarematig tekenen. Zie [metingen en wijziging](docs/lokale-gpu-diagnose.md#dubbele-achtergrondtekening-verwijderd).
-
-De [automatische grafische vergelijking](http://mariomaker.nuidev.nl/tests/graphics-diagnostic.html) meet in ongeveer 45 seconden een lege pagina en het spel met verschillende achtergrondtekenmethoden. Houd het venster zichtbaar en kopieer na afloop het rapport.
-
-Het [lokale onderzoek na de reboot](docs/lokale-gpu-diagnose.md) toont hoge GPU- en Xorg-belasting op het 4K-scherm, ook met Chrome op een verborgen werkblad. Tijdelijke 1080p-proeven verlagen de belasting; een vergelijking van de game-FPS op hetzelfde veld staat nog open.
-
-Voor een vergelijking van de extra achtergrondlagen op dezelfde resolutie: druk **F8** en gebruik de knop **Dieptelagen: aan (F9)**, of druk direct **F9**. Ook `?renderprobe=1` opent de meetstand. Die toont FPS, bitmapafmetingen en doorlooptijden van spel/UI en tekenaanroepen en houdt de tekenresolutie vast. Zie [de meetinstructie](docs/lokale-gpu-diagnose.md#achtergrondlagen-afzonderlijk-vergelijken).
+Voor een vergelijking van de extra achtergrondlagen op dezelfde resolutie: druk **F8** en gebruik de knop **Dieptelagen: aan (F9)**, of druk direct **F9**. Ook `?renderprobe=1` opent de meetstand. Die toont FPS, bitmapafmetingen en doorlooptijden van spel/UI en tekenaanroepen en houdt de tekenresolutie vast.
 
 Het [GPU-onderzoek](docs/gpu-onderzoek.md) bevat lokale metingen, een concreet CPU-knelpunt in de waterstromingcontrole en een afweging tussen Canvas 2D, WebGL2, WebGPU en workers. Advies: eerst de onnodige simulatiecontroles en het tekenoppervlak aanpakken; daarna een gerichte GPU-renderproef op echte hardware. De spelruntime is voor dit onderzoek niet gewijzigd.
 
@@ -125,11 +119,16 @@ node public_html/tests/game-runtime.test.mjs
 
 Dit is een gerichte controle voor de kleine games. De volledige bestaande suite draait met `npm test` en vereist ook PHP vanwege de kamertests. Na een codewijziging vernieuw je met `npm run build` de offlineversie en controleer je die apart. Een geslaagde test bewijst alleen het gedrag dat die test controleert.
 
-De bestaande uitgebreide uitleg over onderdelen, campagnes, controllers, bewaren en samenspel staat volledig in de [spelhandleiding](docs/spelhandleiding.md). Voor bestaande Apache-installatie-instructies is er de [configuratiehandleiding](config/apache2/README.md).
+De bestaande uitgebreide uitleg over onderdelen, campagnes, controllers, bewaren en samenspel staat volledig in de [spelhandleiding](docs/spelhandleiding.md).
 
 ## Stekelsprong
 
 Onder **Kleine games** staat nu **Stekelsprong**, solo of samen op één scherm. Spring op het ritme over stekelballen en houd het ongeveer drie minuten langer vol dan de monsters. [Bediening en spelregels](docs/stekelsprong.md).
 
 Wonderlanddecor staat nu achter de platforms: [oorzaak en visuele controle](docs/renderherstel.md#wonderlanddecor-achter-de-platforms).
-# bravios
+
+## Bestanden in Git
+
+De repository bevat de spelcode, afbeeldingen, bouwcode, tests en algemene documentatie. Lokale serverconfiguratie (`config/`), logs (`log/`), persoonlijke systeemdiagnoses, credentials en lokale editor-/agentinstellingen blijven via `.gitignore` buiten Git. Ook de gegenereerde offlineversie blijft lokaal; maak die met `npm run build`.
+
+Samenspel bewaart tijdelijke kamers in de tijdelijke map van het besturingssysteem. Eigen levels, werelden en personages worden in de browser opgeslagen en zijn geen onderdeel van de repository. Controleer nieuwe bestanden op privégegevens voordat je ze toevoegt; `.gitignore` controleert de inhoud niet.

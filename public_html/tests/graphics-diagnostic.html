@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bravios · Grafische vergelijking</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #19372e; color: #f5fff8; font: 16px system-ui; }
+  [hidden] { display: none !important; }
+  #viewport { position: fixed; inset: 0; overflow: auto; scrollbar-width: none; }
+  #viewport::-webkit-scrollbar { display: none; }
+  #space { position: relative; min-width: 100%; min-height: 100%; }
+  canvas { display: block; left: 0; top: 0; }
+  main { position: relative; z-index: 2; margin: 20px; padding: 18px; max-width: 1000px; background: #19372e; border: 1px solid #a0c8af; border-radius: 10px; }
+  body.running main { margin: 8px; padding: 10px; width: fit-content; }
+  body.running .intro, body.running #start { display: none; }
+  h1 { margin: 0 0 12px; font-size: 24px; }
+  button { font: inherit; padding: 8px 12px; margin: 4px; cursor: pointer; }
+  #status { margin: 8px 0; }
+  textarea { width: 100%; height: 270px; font: 13px monospace; }
+</style>
+<div id="viewport"><div id="space"><canvas id="scene" hidden></canvas></div></div>
+<main>
+  <div class="intro">
+    <h1>Grafische vergelijking op dezelfde schermgrootte</h1>
+    <p>Deze proef vergelijkt zeven situaties in ongeveer 45 seconden. Houd het browservenster groot en zichtbaar. Klik tijdens de proef niet naar een ander venster en verander de venstergrootte niet.</p>
+    <p>Deze proef vergelijkt canvasinstellingen terwijl de camera beweegt: standaard, ondoorzichtig en een voorkeur voor softwarematig tekenen. Deze instellingen gelden alleen voor deze proef. Het proefveld bevat geen vijanden. Je opgeslagen spel wordt niet geopend of gewijzigd. De laatste proef herhaalt de lege pagina als controle.</p>
+  </div>
+  <button id="start" disabled>Proef starten</button><button id="stop" hidden>Stoppen</button>
+  <p id="status" role="status">Afbeeldingen laden…</p>
+  <section id="results" hidden><button id="copy">Resultaten kopiëren</button><textarea id="report" readonly aria-label="Meetresultaten"></textarea></section>
+</main>
+<script type="module">
+import { blankLevel, createGame } from '../engine.mjs?v=44';
+import { drawWorld } from '../art.mjs?v=60';
+import { loadLook } from '../look.mjs?v=8';
+import { loadCharacterArt } from '../character-maker.mjs?v=2';
+import { DepthPanelCache } from '../depth-backgrounds.mjs?v=9';
+import { viewportRenderSize } from '../presentation.mjs?v=12';
+
+const $ = selector => document.querySelector(selector);
+let displayCanvas = $('#scene');
+const viewport = $('#viewport'), space = $('#space');
+const level = blankLevel(40), game = createGame(level);
+// This scene is static: only drawing is measured, not simulation or enemy AI.
+game.enemies = [];
+const cases = [
+  { id: 'idle-before', label: 'Lege pagina vooraf', kind: 'idle' },
+  { id: 'cached-default', label: 'Voorgetekende lagen, standaard canvas', kind: 'world', cached: true },
+  { id: 'cached-opaque', label: 'Voorgetekende lagen, ondoorzichtig canvas', kind: 'world', cached: true, opaque: true },
+  { id: 'cached-software', label: 'Voorgetekende lagen, ondoorzichtig, softwarevoorkeur', kind: 'world', cached: true, opaque: true, software: true },
+  { id: 'vector-software', label: 'Vectorlagen, ondoorzichtig, softwarevoorkeur', kind: 'world', opaque: true, software: true },
+  { id: 'cached-opaque-half', label: 'Voorgetekende lagen, ondoorzichtig, halve bitmap', kind: 'world', cached: true, opaque: true, resolutionScale: .5 },
+  { id: 'idle-after', label: 'Lege pagina achteraf', kind: 'idle' }
+];
+let running = false, runId = 0, report = null;
+const rounded = value => Number(value.toFixed(2));
+function percentile(values, fraction) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a,b) => a-b);
+  return rounded(sorted[Math.min(sorted.length-1, Math.floor((sorted.length-1)*fraction))]);
+}
+function showReport() {
+  const lines = report.cases.map(c => `${c.label}: ${c.fps ?? '?'} FPS; frame p50/p95 ${c.frameP50Ms ?? '?'}/${c.frameP95Ms ?? '?'} ms; tekenaanroepen p50 ${c.drawP50Ms ?? '?'} ms; ${c.bitmapWidth}x${c.bitmapHeight}; ${c.frames} gemeten frames; achtergrondcache ${c.cacheMiB} MiB; context ${JSON.stringify(c.contextAttributes)}`);
+  $('#report').value = `Bravios grafische proef v4 (canvasinstellingen)\n${report.viewportWidth}x${report.viewportHeight} CSS, DPR ${report.devicePixelRatio}\n${report.browser}\nStatus: ${report.status}\n\n${lines.join('\n')}`;
+  $('#results').hidden = false;
+}
+function stop(reason) {
+  if (!running) return;
+  running = false; runId++;
+  document.body.classList.remove('running');
+  $('#start').disabled = false; $('#stop').hidden = true; displayCanvas.hidden = true;
+  report.status = reason; showReport(); $('#status').textContent = reason;
+}
+$('#stop').onclick = () => stop('Afgebroken door gebruiker; niet alle situaties gemeten.');
+document.addEventListener('visibilitychange', () => { if (document.hidden) stop('Afgebroken: tabblad werd verborgen.'); });
+window.addEventListener('blur', () => stop('Afgebroken: een ander venster kreeg de aandacht.'));
+window.addEventListener('resize', () => stop('Afgebroken: venstergrootte veranderde.'));
+
+async function measure(spec, token, index) {
+  // Context attributes are fixed at the first getContext call: use a new canvas.
+  const canvas = document.createElement('canvas'); canvas.id = 'scene';
+  displayCanvas.replaceWith(canvas); displayCanvas = canvas;
+  const ctx = canvas.getContext('2d', {alpha: !spec.opaque, willReadFrequently: !!spec.software});
+  if (!ctx) throw new Error('Canvascontext kon niet worden gemaakt');
+  const width = viewport.clientWidth, height = viewport.clientHeight, pixelsPerUnit = height / (16*32);
+  const raster = viewportRenderSize(width, height, pixelsPerUnit, window.devicePixelRatio, spec.resolutionScale || 1);
+  canvas.width = raster.width; canvas.height = raster.height;
+  canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
+  canvas.style.position = spec.sticky ? 'sticky' : 'absolute';
+  space.style.width = `${Math.max(width, level.width*32*pixelsPerUnit)}px`; space.style.height = `${height}px`;
+  viewport.scrollLeft = 0; viewport.scrollTop = 0;
+  canvas.hidden = spec.kind === 'idle';
+  $('#status').textContent = `${index+1}/${cases.length} · ${spec.label}`;
+  const intervals = [], drawTimes = [];
+  const cache = spec.cached ? new DepthPanelCache(raster.scale, () => {
+    const panel = document.createElement('canvas');
+    // The background panels themselves must stay transparent in all cases.
+    panel.getContext('2d', {alpha: true, willReadFrequently: !!spec.software});
+    return panel;
+  }) : null;
+  return new Promise((resolve,reject) => {
+    let first = null, previous = null;
+    function frame(timestamp) {
+      try {
+      if (token !== runId || !running) { resolve(null); return; }
+      first ??= timestamp;
+      const measured = previous !== null && previous-first >= 1500;
+      if (measured) intervals.push(timestamp-previous);
+      previous = timestamp;
+      const started = performance.now();
+      if (spec.kind !== 'idle') {
+        const camera = 96 + 128 * (.5 + .5*Math.sin(timestamp/1700));
+        ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.setTransform(raster.scale,0,0,raster.scale,-camera*raster.scale,0);
+        drawWorld(ctx,level,{game,grid:false,time:0,depthLayers:true,depthPanelCache:cache,viewport:{left:camera,right:camera+width/pixelsPerUnit,top:0,bottom:height/pixelsPerUnit}});
+      }
+      if (measured) drawTimes.push(performance.now()-started);
+      if (timestamp-first >= 6000) {
+        const elapsed = intervals.reduce((sum,value)=>sum+value,0);
+        resolve({ id:spec.id,label:spec.label,fps:elapsed>0?rounded(intervals.length*1000/elapsed):null,frames:intervals.length,frameP50Ms:percentile(intervals,.5),frameP95Ms:percentile(intervals,.95),drawP50Ms:percentile(drawTimes,.5),bitmapWidth:canvas.width,bitmapHeight:canvas.height,cacheMiB:rounded((cache?.pixels||0)*4/1024/1024),contextAttributes:ctx.getContextAttributes?.() || null,contextLost:ctx.isContextLost?.() || false });
+      } else requestAnimationFrame(frame);
+      } catch(error) { reject(error); }
+    }
+    requestAnimationFrame(frame);
+  }).finally(() => { cache?.dispose(); canvas.width=0; canvas.height=0; });
+}
+$('#start').onclick = async () => {
+  if (running) return;
+  running = true; const token = ++runId;
+  report = {viewportWidth:viewport.clientWidth,viewportHeight:viewport.clientHeight,devicePixelRatio:window.devicePixelRatio,browser:navigator.userAgent,status:'Bezig',cases:[]};
+  $('#results').hidden = true; $('#start').disabled = true; $('#stop').hidden = false; document.body.classList.add('running');
+  try {
+    for (let i=0;i<cases.length;i++) {
+      const result = await measure(cases[i],token,i);
+      if (!result || token !== runId) return;
+      report.cases.push(result);
+      if (result.contextLost) { stop('Afgebroken: de canvascontext is verloren gegaan.'); return; }
+    }
+    stop('Voltooid. Dit zijn browser-frame-intervallen, geen gemeten fysieke schermlatentie.');
+  } catch (error) { stop(`Afgebroken: ${error.message}`); }
+};
+$('#copy').onclick = async () => {
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText($('#report').value);
+    else { $('#report').select(); if (!document.execCommand('copy')) throw new Error('copy'); }
+    $('#status').textContent = 'Resultaten gekopieerd.';
+  } catch { $('#report').select(); $('#status').textContent = 'Druk Ctrl+C om de geselecteerde resultaten te kopiëren.'; }
+};
+try {
+  await Promise.all([loadLook(),loadCharacterArt()]);
+  $('#start').disabled = false; $('#status').textContent = 'Klaar. Maak het venster groot en klik op Proef starten.';
+} catch (error) { $('#status').textContent = `Laden mislukt: ${error.message}`; }
+</script>
+</html>
