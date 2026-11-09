@@ -1004,7 +1004,7 @@ export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hove
         if(painted && enemy.boss && enemy.kind==='spiky')drawCastleBossStatus(ctx,enemy);
       }
       if (enemy.kind === 'robot' && enemy.phase === 'charge' && !enemy.bubbled) {
-        const charge=Math.min(1,enemy.phaseTime/5);rect(ctx,'#536374',enemy.x,enemy.y-12,26,4);rect(ctx,'#f6d186',enemy.x,enemy.y-12,Math.round(26*charge),4);
+        const charge=Math.min(1,enemy.phaseTime/(enemyProfile(enemy)?.settings.chargeSeconds ?? 5));rect(ctx,'#536374',enemy.x,enemy.y-12,26,4);rect(ctx,'#f6d186',enemy.x,enemy.y-12,Math.round(26*charge),4);
       }
       if (enemy.kind === 'spiky'&&!enemy.boss) { rect(ctx, '#665266', enemy.x, enemy.y - 12, enemy.w, 3); rect(ctx, '#dc9a83', enemy.x, enemy.y - 12, enemy.w * enemy.hp / (enemy.maxHp || 3), 3); }
       drawEnemyFront(ctx, enemy.design, enemy.x - 3, enemy.y - 6, enemy.w + 6, enemy.h + 6, designTime, ['shell', 'fallen'].includes(enemy.phase));
@@ -1171,7 +1171,7 @@ export function drawEnemyBody(ctx, enemy, designTime=0, facing=enemy.facing||1, 
       else if (enemy.kind === 'cloud') drawTile(ctx, 82, enemy.x - 3, enemy.y - 3);
       else if (enemy.kind === 'crusher') drawCrusher(ctx, enemy.x, enemy.y, enemy.w, enemy.phase);
       else if (enemy.kind === 'robot') {
-        const charge = enemy.phase === 'charge' ? Math.min(1, enemy.phaseTime / 5) : 0;
+        const charge = enemy.phase === 'charge' ? Math.min(1, enemy.phaseTime / (enemyProfile(enemy)?.settings.chargeSeconds ?? 5)) : 0;
         drawRobot(ctx, enemy.x - 3, enemy.y - 6, charge, facing, designTime, enemy.variant === 'angry');
       } else if (enemy.kind === 'frog') {
         drawFrog(ctx, enemy.x - 3, enemy.y - 6, facing, enemy.phase === 'crawl', designTime, enemy.variant === 'red');

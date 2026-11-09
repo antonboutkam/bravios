@@ -22,6 +22,7 @@ Eén van deze omgevingen is voldoende. Extra pakketten installeren is niet nodig
 
 ## Documentatie
 
+- [Vijanden en bazen aanpassen](public_html/enemies/README.md): eigenschappen in JSON en animaties in PNG.
 - [Studentenhandleiding](docs/student/README.md): installatie, starten, broncode en werking.
 - [Uitgebreide spelhandleiding](docs/student/spelhandleiding.md): bediening, bouwen en spelmogelijkheden.
 - [Technische architectuur](docs/other/architecture/architectuur.md): modules, opslag en resources.

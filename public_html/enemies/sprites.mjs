@@ -3,10 +3,10 @@ const images = new Map();
 export function enemyAnimation(enemy, night=false) {
   const c=enemyProfile(enemy);if(!c)return null;
   let state=enemy.defeated?'defeated':enemy.bubbled?'idle':enemy.phase;
-  if(enemy.kind==='robot' && enemy.phase==='charge')state=`charge-${Math.round(Math.min(1,enemy.phaseTime/5)*10)}`;
+  if(enemy.kind==='robot' && enemy.phase==='charge')state=`charge-${Math.round(Math.min(1,enemy.phaseTime/(c.settings.chargeSeconds ?? 5))*10)}`;
   if(enemy.kind==='bomb' && enemy.fuse>0)state='lit';
   if(enemy.kind==='plant')state=enemy.biteHead?'bite':'idle';
-  if(enemy.kind==='wonder'&&!enemy.boss)state=`palette-${enemy.palette_id||0}`;
+  if(enemy.kind==='wonder'&&!enemy.boss&&!enemy.defeated)state=`palette-${enemy.palette_id||0}`;
   if(['whale','flatfish','moray','geyser'].includes(enemy.kind))state=enemy.active?'active':'idle';
   if(enemy.kind==='bonefish')state=enemy.phase==='fallen'?'fallen':'idle';
   return (night?c.animations[`${state||'idle'}-night`]:null) || c.animations[state] || (night?c.animations['idle-night']:null) || c.animations.idle;
