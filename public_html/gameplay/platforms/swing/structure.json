@@ -1,0 +1,41 @@
+{
+  "id": "swing",
+  "name": "swing",
+  "description": "Wonderland-structuur: swing",
+  "kind": "wonder-swing",
+  "tileIds": [],
+  "editor": {
+    "visible": false,
+    "group": "mechanisms"
+  },
+  "collision": {
+    "solid": true,
+    "oneWay": true,
+    "breakFromBelow": false,
+    "damage": false,
+    "lethal": false,
+    "topOffset": 0
+  },
+  "pSwitchConvertible": false,
+  "settings": {
+    "horizontalSpeed": 1.2,
+    "verticalSpeed": 2.4,
+    "horizontalReach": 72,
+    "verticalReach": 24
+  },
+  "visuals": {
+    "default": {
+      "image": "images/default.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    }
+  }
+}

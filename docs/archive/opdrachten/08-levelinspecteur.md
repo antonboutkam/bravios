@@ -12,13 +12,13 @@ Een levelmaker wil vóór het delen een kort technisch rapport: hoe groot is het
 
 ## Begin hier
 
-Open [engine.mjs](../../../public_html/engine.mjs) bij `validateLevel` en `positions`. Download via het spel een levelbestand en bekijk de inhoud. Maak daarna in de projectroot een nieuw script `levelinspecteur.mjs`; dit draait in Node en hoeft niet in de spelserver of offlinebuild.
+Open [engine.mjs](../../../public_html/engine/engine.mjs) bij `validateLevel` en `positions`. Download via het spel een levelbestand en bekijk de inhoud. Maak daarna in de projectroot een nieuw script `levelinspecteur.mjs`; dit draait in Node en hoeft niet in de spelserver of offlinebuild.
 
 ## Maak de basisversie
 
 1. Lees het bestandspad uit `process.argv[2]`. Geef zonder pad een korte gebruiksuitleg.
 2. Lees het bestand met `readFile` uit `node:fs/promises` en gebruik `JSON.parse`.
-3. Importeer `validateLevel` en `positions` uit `./public_html/engine.mjs`. Laat de bestaande validator de gegevens beoordelen; bouw geen tweede validator na.
+3. Importeer `validateLevel` en `positions` uit `./public_html/engine/engine.mjs`. Laat de bestaande validator de gegevens beoordelen; bouw geen tweede validator na.
 4. Rapporteer over het teruggegeven level: naam, thema, breedte, aantal rijen, losse muntjes (4), startplek (10) en finish (11).
 5. Vang een ontbrekend bestand, ongeldige JSON en afkeuring door de validator op. Geef een begrijpelijke fout en stel `process.exitCode = 1` in.
 6. Schrijf of wijzig het invoerbestand niet.

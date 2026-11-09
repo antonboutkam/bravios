@@ -1,0 +1,395 @@
+{
+  "id": "vine",
+  "name": "Liaan",
+  "description": "Plaats het anker hoog, met vier vakjes vrije ruimte eronder. Raak de liaan in de lucht om vast te pakken. Links/rechts slingert; springen laat los; ↓ laat je afspringen.",
+  "kind": "vine",
+  "tileIds": [
+    99
+  ],
+  "editor": {
+    "visible": true,
+    "group": "mechanisms"
+  },
+  "collision": {
+    "solid": false,
+    "oneWay": false,
+    "breakFromBelow": false,
+    "damage": false,
+    "lethal": false,
+    "topOffset": 0
+  },
+  "pSwitchConvertible": false,
+  "settings": {
+    "length": 128,
+    "gravity": 1400,
+    "damping": 0.12,
+    "maxAngle": 1.2,
+    "pump": 5
+  },
+  "visuals": {
+    "grass": {
+      "image": "images/grass.png",
+      "frameWidth": 144,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -8,
+        -8,
+        48,
+        48
+      ]
+    },
+    "grass-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 144,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -8,
+        -8,
+        48,
+        48
+      ]
+    },
+    "grass-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 144,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -8,
+        -8,
+        48,
+        48
+      ]
+    },
+    "sunset": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "sunset-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "sunset-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night-inside": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night-editor": {
+      "image": "images/sunset.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "rope": {
+      "image": "images/rope.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "anchor": {
+      "image": "images/anchor.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "tip": {
+      "image": "images/tip.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "default": {
+      "image": "images/grass.png",
+      "frameWidth": 144,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -8,
+        -8,
+        48,
+        48
+      ]
+    }
+  }
+}

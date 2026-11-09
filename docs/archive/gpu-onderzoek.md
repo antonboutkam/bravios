@@ -12,11 +12,11 @@ Een passende vervolgstap is eerst de waterstromingcontrole optimaliseren, daarna
 
 ## Wat gebeurt er nu?
 
-De hoofdcanvas wordt in [app.mjs](../../public_html/app.mjs) met `getContext('2d')` geopend. De browser kan Canvas 2D al via hardware versnellen; er is geen instelling die ook JavaScript-spelregels automatisch naar de GPU verplaatst. De `willReadFrequently: true`-optie is bedoeld voor pixelteruglezing en kan software-rendering kiezen. In dit project staat die optie op tijdelijke afbeeldingen voor het voorbereiden van sprites en terrein, niet op de hoofdcanvas. Die opties blind verwijderen is dus geen onderbouwde runtime-optimalisatie. Zie [de Canvas-contextopties](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext) en [Chrome over Canvas 2D en pixelteruglezing](https://developer.chrome.com/blog/canvas2d/).
+De hoofdcanvas wordt in [app.mjs](../../public_html/engine/app.mjs) met `getContext('2d')` geopend. De browser kan Canvas 2D al via hardware versnellen; er is geen instelling die ook JavaScript-spelregels automatisch naar de GPU verplaatst. De `willReadFrequently: true`-optie is bedoeld voor pixelteruglezing en kan software-rendering kiezen. In dit project staat die optie op tijdelijke afbeeldingen voor het voorbereiden van sprites en terrein, niet op de hoofdcanvas. Die opties blind verwijderen is dus geen onderbouwde runtime-optimalisatie. Zie [de Canvas-contextopties](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext) en [Chrome over Canvas 2D en pixelteruglezing](https://developer.chrome.com/blog/canvas2d/).
 
-`animate` in `app.mjs` voert fysica uit op 120 stappen per seconde en tekent via `requestAnimationFrame`. Bij 60 beelden per seconde zijn dat normaal twee simulatiestappen per beeld. Invoer, HUD, geluid, effecten en tekenen delen de hoofdthread. [engine.mjs](../../public_html/engine.mjs) verwerkt onder meer botsingen en vijanden; [art.mjs](../../public_html/art.mjs) tekent de wereld.
+`animate` in `app.mjs` voert fysica uit op 120 stappen per seconde en tekent via `requestAnimationFrame`. Bij 60 beelden per seconde zijn dat normaal twee simulatiestappen per beeld. Invoer, HUD, geluid, effecten en tekenen delen de hoofdthread. [engine.mjs](../../public_html/engine/engine.mjs) verwerkt onder meer botsingen en vijanden; [art.mjs](../../public_html/engine/art.mjs) tekent de wereld.
 
-Er bestaan al optimalisaties: tekenen van zichtbare kolommen en entiteiten, spritecaches, begrensde HUD-updates en een bitmaplimiet. [worldRenderResolution](../../public_html/presentation.mjs) begrenst het tekenoppervlak tot 8192 pixels per zijde en 8 × 1024 × 1024 pixels totaal. Toch is de bitmap nog gebaseerd op de hele wereld. Het maanveld van 264 × 32 blokjes gebruikt bijvoorbeeld 8192 × 992 pixels. Horizontale zichtbaarheid wordt doorgegeven; verticale zichtbaarheid wordt in `drawWorld` nog niet als algemene rijbegrenzing benut.
+Er bestaan al optimalisaties: tekenen van zichtbare kolommen en entiteiten, spritecaches, begrensde HUD-updates en een bitmaplimiet. [worldRenderResolution](../../public_html/engine/presentation.mjs) begrenst het tekenoppervlak tot 8192 pixels per zijde en 8 × 1024 × 1024 pixels totaal. Toch is de bitmap nog gebaseerd op de hele wereld. Het maanveld van 264 × 32 blokjes gebruikt bijvoorbeeld 8192 × 992 pixels. Horizontale zichtbaarheid wordt doorgegeven; verticale zichtbaarheid wordt in `drawWorld` nog niet als algemene rijbegrenzing benut.
 
 ## Wat is gemeten en wat niet?
 
@@ -35,11 +35,11 @@ Per scène zijn na 15 tekenrondes 60 rondes gemeten, met twee simulatiestappen p
 
 Wonderland is afzonderlijk gemeten met `prepareWonderlandGame`, zodat magie en tegenstanders aanwezig zijn. De oorspronkelijke twee basislevel-rijen in het JSON-bestand missen die initialisatie en dienen niet als campagnebewijs. De andere scènes gebruiken de wereldbitmap. Voor kleine meetwaarden is de klokresolutie relevant; een gemeten 0 ms betekent niet dat de functie gratis is.
 
-De bestaande [performanceproef](../../public_html/tests/performance.html) is ook uitgevoerd: ongeveer 5.280 Canvas-methodeaanroepen voor het hele robotveld tegenover 1.224 voor het zichtbare deel. Dat zijn Canvas-aanroepen, geen getelde GPU-drawcalls. Ze tonen vooral waarom de bestaande beperking tot zichtbare objecten nuttig is.
+De bestaande [performanceproef](../../public_html/engine/tests/performance.html) is ook uitgevoerd: ongeveer 5.280 Canvas-methodeaanroepen voor het hele robotveld tegenover 1.224 voor het zichtbare deel. Dat zijn Canvas-aanroepen, geen getelde GPU-drawcalls. Ze tonen vooral waarom de bestaande beperking tot zichtbare objecten nuttig is.
 
 ## Concreet CPU-knelpunt: waterstroming
 
-In de vijandenlus in `stepGame` wordt voor vrijwel elke vijand `seaCurrent` aangeroepen. [seaCurrent in sea-life.mjs](../../public_html/sea-life.mjs) doorloopt vervolgens de volledige vijandenlijst om actieve geisers te vinden. Dat gebeurt ook op droge velden zonder geisers.
+In de vijandenlus in `stepGame` wordt voor vrijwel elke vijand `seaCurrent` aangeroepen. [seaCurrent in sea-life.mjs](../../public_html/engine/sea-life.mjs) doorloopt vervolgens de volledige vijandenlijst om actieve geisers te vinden. Dat gebeurt ook op droge velden zonder geisers.
 
 Met 1.100 robots zijn er **1.101 aanroepen en 1.211.100 lijstbezoeken per simulatiestap**: één aanroep voor de speler plus één per robot. Dit deel groeit kwadratisch met het aantal vijanden. Een CPU-profiel bevestigt dat in de stresssituatie vooral `stepGame`, vijandupdates en botsingen tijd kosten; inlining kan de onderliggende stromingcontrole aan `stepGame` toeschrijven.
 

@@ -12,7 +12,7 @@ Een jongere speler vindt Fruitvanger te snel; een klasgenoot wil juist meer uitd
 
 ## Begin hier
 
-Open [small-games.mjs](../../../public_html/small-games.mjs). Zoek `createSmallGame`, `stepSmallGame`, `begin` en `refreshSmallUI`. In de fruit-tak staat de valsnelheid `115 + g.score * 6`. Gebruik [small-games.test.mjs](../../../public_html/tests/small-games.test.mjs) als testvoorbeeld.
+Open [small-games.mjs](../../../public_html/engine/small-games.mjs). Zoek `createSmallGame`, `stepSmallGame`, `begin` en `refreshSmallUI`. In de fruit-tak staat de valsnelheid `115 + g.score * 6`. Gebruik [small-games.test.mjs](../../../public_html/engine/tests/small-games.test.mjs) als testvoorbeeld.
 
 ## Maak de basisversie
 

@@ -1,0 +1,30 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bravios · Vuur in het kasteel</title>
+<style>body{font:16px system-ui;margin:0;background:#181822;color:#fff1d9}main{max-width:1120px;margin:auto;padding:24px}h1{margin:12px 0}p{line-height:1.6;max-width:850px;color:#d4c8be}canvas{width:100%;display:block;background:#22202a;border:1px solid #887258;border-radius:14px;outline-offset:4px}select,button{font:inherit;color:#fff2df;background:#433645;border:1px solid #927059;border-radius:8px;padding:10px;margin:4px}a{color:#ffcb7f}label{display:inline-flex;gap:10px;align-items:center;margin-right:12px}input[type=range]{width:240px}#status{color:#ffcb7f}</style>
+<main><a href="../../">Terug naar Bravios</a><h1>Vuur in het kasteel</h1><p>Spring via de stenen platforms over de lavabaden. Vier vlammen draaien rond iedere vuurmolen. Wacht op een opening of neem het hogere platform. De gouden muntjes wijzen de bovenroute aan.</p>
+<label>Kasteel <select id="field"><option value="2">Kasteel Vuursteen</option><option value="5">Kasteel van de tweesprong</option><option value="10">Kasteel aan de sterrenrand</option><option value="11">De troon van de lavakoning</option></select></label>
+<button id="start">Spelen vanaf de start</button><button id="reset">Opnieuw bekijken</button>
+<p><label>Bekijk het veld <input id="camera" type="range" min="0" value="288" step="16"></label><label><input id="motion" type="checkbox"> Minder beweging</label></p>
+<canvas id="game" width="1100" height="512" tabindex="0" aria-label="Kasteelveld met lavabaden en draaiende vlammen"></canvas>
+<p id="status" role="status">Afbeeldingen laden…</p><p>Spelen: pijltjestoetsen om te lopen, spatie om te springen, F om te schieten. Klik eerst op Spelen vanaf de start. Alleen zolang het speelveld focus heeft, loopt de simulatie. De veldschuif werkt tijdens het bekijken.</p></main>
+<script type="module">
+import {adventureLevel,prepareAdventureGame,adventureState} from '../adventurers.mjs?v=5';
+import {createGame,stepGame} from '../engine.mjs?v=44';
+import {drawWorld} from '../art.mjs?v=54';
+import {loadLook} from '../look.mjs?v=8';
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),camera=document.querySelector('#camera'),status=document.querySelector('#status'),keys=new Set();
+let level,game,playing=false,previous,accumulator=0;
+function reset(){level=adventureLevel(Number(document.querySelector('#field').value));game=createGame(level);prepareAdventureGame(game,Number(document.querySelector('#field').value),adventureState());playing=false;camera.disabled=false;camera.max=level.width*32-canvas.width;camera.value=288;accumulator=0;status.textContent='Bekijk de lavabaden en vuurmolens. De proef bevat ook de monsters en eindbaas.';}
+document.querySelector('#field').onchange=reset;document.querySelector('#reset').onclick=reset;
+document.querySelector('#start').onclick=()=>{reset();playing=true;camera.disabled=true;canvas.focus();status.textContent='Ontwijk de vlammen en bereik de eindbaas. Pijltjes · spatie · F';};
+canvas.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','KeyF'].includes(e.code)){e.preventDefault();keys.add(e.code);}});
+canvas.addEventListener('keyup',e=>keys.delete(e.code));canvas.addEventListener('blur',()=>keys.clear());
+function frame(now){const dt=Math.min((now-(previous??now))/1000,.05);previous=now;
+ if(playing&&document.activeElement===canvas){accumulator+=dt;while(accumulator>=1/120){stepGame(game,{left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),jump:keys.has('Space'),fire:keys.has('KeyF')});accumulator-=1/120;}}
+ const left=playing?Math.max(0,Math.min(level.width*32-canvas.width,game.player.x-220)):Number(camera.value);
+ if(playing&&game.state!=='playing')status.textContent=game.state==='won'?'Kasteel gehaald!':'Geraakt! Kies Spelen vanaf de start om opnieuw te proberen.';
+ // Preview time advances the visible obstacles; gameplay always uses game.time.
+ if(!playing)game.time+=dt;
+ ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.translate(-left,0);drawWorld(ctx,level,{game,grid:false,time:game.time,reducedMotion:document.querySelector('#motion').checked,viewport:{left,right:left+canvas.width,top:0,bottom:512}});ctx.restore();requestAnimationFrame(frame);}
+await loadLook();reset();requestAnimationFrame(frame);
+</script></html>

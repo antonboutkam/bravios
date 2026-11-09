@@ -1,4 +1,4 @@
-s# Aan de slag met Bravios
+# Aan de slag met Bravios
 
 [Documentatieoverzicht](../README.md)
 
@@ -9,6 +9,8 @@ Volg deze volgorde:
 1. [Installeren](installatie/README.md): zet het project en de benodigde software klaar.
 2. [Starten en uitproberen](starten.md): start de webserver en bouw je eerste level.
 3. [Broncode en werking](broncode.md): ontdek welke bestanden waarvoor dienen en volg een actie door de code.
+
+Begin voor JSON en afbeeldingen bij [gameplay](../../public_html/gameplay/README.md). De technische code staat apart in [src](../../public_html/engine/README.md).
 
 Wil je zelf een figuur tekenen? Lees [actiefiguren met losse afbeeldingen](actiefiguren.md).
 

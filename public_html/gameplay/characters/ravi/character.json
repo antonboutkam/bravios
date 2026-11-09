@@ -1,0 +1,18 @@
+{
+  "id": "ravi",
+  "name": "Ravi",
+  "portrait": "images/portrait.png",
+  "poses": {
+    "idle": "images/platform/idle.png",
+    "side": "images/platform/side.png",
+    "run": "images/platform/run.png",
+    "run-1": "images/platform/run-1.png",
+    "run-2": "images/platform/run-2.png",
+    "run-3": "images/platform/run-3.png",
+    "run-4": "images/platform/run-4.png",
+    "jump": "images/platform/jump.png",
+    "victory": "images/platform/victory.png",
+    "land": "images/platform/land.png",
+    "ride": "images/platform/ride.png"
+  }
+}

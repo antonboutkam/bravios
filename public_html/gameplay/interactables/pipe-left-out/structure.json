@@ -1,0 +1,355 @@
+{
+  "id": "pipe-left-out",
+  "name": "Buis opening links \u00b7 uitgang",
+  "description": "Opening naar links. Ingangen en uitgangen koppelen op volgorde; tweerichtingsbuizen per paar. Houd de opening vrij. Beweeg de opening in of gebruik de buisknop / S.",
+  "kind": "pipe",
+  "tileIds": [
+    56
+  ],
+  "editor": {
+    "visible": true,
+    "group": "pipes"
+  },
+  "collision": {
+    "solid": true,
+    "oneWay": false,
+    "breakFromBelow": false,
+    "damage": false,
+    "lethal": false,
+    "topOffset": 0
+  },
+  "pSwitchConvertible": false,
+  "settings": {},
+  "pipe": {
+    "opening": "left",
+    "mode": "out"
+  },
+  "visuals": {
+    "grass": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "grass-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "grass-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "sunset": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "sunset-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "sunset-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "night-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "castle-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "winter-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "moon-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night-inside": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "underwater-night-editor": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    },
+    "default": {
+      "image": "images/grass.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    }
+  },
+  "imageOpening": "left"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "plane",
+  "name": "Vliegtuigje met piloot",
+  "kind": "plane",
+  "tileIds": [
+    77
+  ],
+  "variant": "normal",
+  "size": [
+    26,
+    26
+  ],
+  "movement": {
+    "type": "fly",
+    "speed": 100,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "fire",
+    "interval": 1.6,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    }
+  },
+  "description": "Vliegt steeds heen en weer en laat vuurballen vallen."
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pixel — hardcoded character artwork</title>
+<style>body{font:16px sans-serif;background:#eee}main{display:flex;flex-wrap:wrap;gap:12px}figure{margin:0}canvas{width:128px;background:#fff;image-rendering:pixelated}button{display:block}</style>
+<h1>Pixel</h1>
+<p>Edit drawPixel below, reload, and save each PNG. The game loads the PNG files listed in character.json.</p>
+<main></main>
+<script>
+// Original character drawn entirely with code. Coordinates use a 64 x 96 grid.
+function drawPixel(canvas, pose) {
+ const c=canvas.getContext('2d');c.clearRect(0,0,256,384);c.scale(4,4);
+ const ink='#14263f',blue='#16b9c5',light='#8ef3df',orange='#ff9d32';
+ function box(x,y,w,h,color){c.fillStyle=ink;c.fillRect(x-1,y-1,w+2,h+2);c.fillStyle=color;c.fillRect(x,y,w,h);}
+ const front=pose==='idle'||pose==='portrait'||pose==='victory';
+ const crouch=pose==='land'?9:0;c.translate(0,crouch);
+ // antenna and head
+ box(31,5,2,6,orange);box(28,2,8,4,orange);
+ box(17,12,30,25,blue);box(front?21:29,17,front?22:17,14,ink);
+ c.fillStyle=light;c.fillRect(front?25:38,21,4,5);
+ if(front)c.fillRect(37,21,4,5);
+ c.fillStyle=orange;c.fillRect(front?27:36,29,12,2);
+ box(12,19,4,12,orange);box(48,19,4,12,orange);
+ // body, orange belt and glowing chest emblem
+ box(21,40,24,24,blue);box(19,61,28,5,orange);
+ box(28,45,10,10,ink);c.fillStyle=light;c.fillRect(32,47,3,6);c.fillRect(30,49,7,2);
+ // arms distinguish the action poses
+ if(pose==='victory'||pose==='jump'){
+  box(11,30,7,17,blue);box(10,24,9,7,orange);
+  box(48,30,7,17,blue);box(47,24,9,7,orange);
+ }else if(pose==='run'){
+  box(10,39,8,16,blue);box(8,36,10,7,orange);
+  box(48,45,7,16,blue);box(49,59,10,7,orange);
+ }else if(pose==='ride'){
+  box(44,43,12,7,blue);box(54,43,7,9,orange);
+  box(15,45,11,7,blue);
+ }else{
+  box(11,43,7,18,blue);box(10,60,9,7,orange);
+  box(48,43,7,18,blue);box(47,60,9,7,orange);
+ }
+ // legs and boots
+ if(pose==='run'){
+  box(17,67,9,13,blue);box(10,79,16,7,orange);
+  box(39,65,9,12,blue);box(41,75,15,7,orange);
+ }else if(pose==='jump'||pose==='ride'){
+  box(22,67,10,10,blue);box(13,73,18,7,orange);
+  box(36,67,10,10,blue);box(38,73,17,7,orange);
+ }else{
+  box(22,67,9,pose==='land'?9:18,blue);box(36,67,9,pose==='land'?9:18,blue);
+  const y=pose==='land'?76:85;box(18,y,14,7,orange);box(35,y,16,7,orange);
+ }
+ c.resetTransform();
+}
+for(const pose of ['portrait','idle','side','run','jump','victory','land','ride']){
+ const figure=document.createElement('figure'),canvas=document.createElement('canvas');
+ canvas.width=256;canvas.height=384;canvas.dataset.pose=pose;drawPixel(canvas,pose);
+ const button=document.createElement('button');button.textContent=pose+'.png';
+ button.onclick=()=>{const a=document.createElement('a');a.download=pose+'.png';a.href=canvas.toDataURL('image/png');a.click();};
+ figure.append(canvas,button);document.querySelector('main').append(figure);
+}
+</script>

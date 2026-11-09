@@ -1,6 +1,6 @@
 # Directere reactie op de bediening
 
-[README](../../README.md) · [Spelhandleiding](../student/spelhandleiding.md#directere-besturing) · [Gerichte tests](../../public_html/tests/input-response.test.mjs) · [Browsermetingen](metingen/invoerreactie-2026-11-06.json)
+[README](../../README.md) · [Spelhandleiding](../student/spelhandleiding.md#directere-besturing) · [Gerichte tests](../../public_html/engine/tests/input-response.test.mjs) · [Browsermetingen](metingen/invoerreactie-2026-11-06.json)
 
 De gebruiker meldde lokaal in Chrome ongeveer 0,3–0,5 seconde vertraging bij de eerste speler. Die volledige vertraging is in de lokale browserproef niet gereproduceerd. Wel bleken optrekken, afremmen, omkeren en de camera een merkbare aanlooptijd te hebben. Ook kon een heel korte richtingstoets volledig tussen twee simulatiestappen vallen.
 

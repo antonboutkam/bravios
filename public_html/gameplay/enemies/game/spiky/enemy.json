@@ -1,0 +1,74 @@
+{
+  "id": "spiky",
+  "name": "Dikke stekelschildpad",
+  "kind": "spiky",
+  "tileIds": [
+    27
+  ],
+  "variant": "normal",
+  "size": [
+    38,
+    32
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 26,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0.15
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 172,
+      "frameHeight": 160,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 32,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        80
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 172,
+      "frameHeight": 160,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 32,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        80
+      ]
+    }
+  },
+  "description": "Een dikke boze schildpad met rugstekels. Versla hem met 3 vuurballen of een ster; ijs bevriest hem."
+}

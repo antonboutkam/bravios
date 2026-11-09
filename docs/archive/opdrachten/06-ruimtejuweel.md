@@ -12,7 +12,7 @@ Een ontwerper wil muntjes vervangen door lichtgevende ruimtejuwelen. De beloning
 
 ## Begin hier
 
-Open [art.mjs](../../../public_html/art.mjs) bij `drawTile`. Zoek `id === 4` en `drawLook(ctx, 'coin'`. Let op: er is tekenwerk voor geladen sprites en ook een terugvalweergave. `ctx.save`, `translate`, `scale` en `restore` bepalen de lokale tekenruimte.
+Open [art.mjs](../../../public_html/engine/art.mjs) bij `drawTile`. Zoek `id === 4` en `drawLook(ctx, 'coin'`. Let op: er is tekenwerk voor geladen sprites en ook een terugvalweergave. `ctx.save`, `translate`, `scale` en `restore` bepalen de lokale tekenruimte.
 
 ## Maak de basisversie
 

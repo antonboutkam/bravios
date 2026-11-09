@@ -2,7 +2,7 @@
   "generator": "imagegen built-in",
   "references": [
     "docs/other/design/source-images/Boaz.png",
-    "public_html/characters/ravi/portrait.png"
+    "public_html/gameplay/characters/ravi/portrait.png"
   ],
   "assets": {
     "cat-sprites.png": "Use-case: stylized-concept. Generate a production sprite atlas for Bravios, matching the polished hand-painted cartoon style, bold clean dark outlines and warm shaded colors of the two reference hero sheets. References are STYLE ONLY, do not include boys. Subject: one actual adorable orange tabby kitten, four paws, green eyes, cream muzzle and chest, pink collar with tiny gold bell, expressive tail. Not a human in a costume. Transparent background with real alpha, no scenery, shadows, lettering, labels, panels or grid lines. EXACT regular 4 columns x 2 rows, eight equally sized square cells. Each sprite fully contained with generous transparent margins, consistent character proportions and right-facing SIDE VIEW. Row 1 left to right: standing idle on four paws; running contact pose A; running passing pose B; running contact pose C. Row 2: running passing pose D; leaping upward with tucked rear paws; falling with paws extended forward/down; crouched landing on four paws. Consistent side profile, same kitten identity in all eight cells. Production game cutouts, readable when rendered at 36 pixels tall.",

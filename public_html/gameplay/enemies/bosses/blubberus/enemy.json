@@ -1,0 +1,197 @@
+{
+  "id": "blubberus",
+  "name": "Blubberus the Slime King",
+  "kind": "wonder",
+  "wonderType": 0,
+  "tileIds": [],
+  "size": [
+    86,
+    60
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 75,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": false,
+    "bubbleable": false,
+    "hitCooldown": 0.7
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "boss": {
+    "restSeconds": 1.4,
+    "warningSeconds": 1.5,
+    "attackSeconds": 1.2,
+    "exposedSeconds": 5
+  },
+  "metadata": {
+    "id": "blubberus",
+    "number": 1,
+    "name": "Blubberus the Slime King",
+    "realm": "The Slime Kingdom",
+    "primary_color": "#8D42EF",
+    "secondary_color": "#B99AFF",
+    "accent_color": "#F7C746",
+    "silhouette": "wide seven-eyed jelly blob with golden crown",
+    "materials": [
+      "translucent jelly",
+      "polished crown metal"
+    ],
+    "signature_animation": "wobble and bounce",
+    "arena_feature": "wobbling jelly tiles",
+    "attacks": [
+      "Royal Belly Flop",
+      "Mini-Me Mayhem",
+      "Super Sneeze"
+    ],
+    "weakness": "Hit the crown when it flies off during a sneeze.",
+    "hit_windows": 3,
+    "reward_ability": "Slime Bounce",
+    "defeat_form": "a giggling jelly mound",
+    "boss_file": "bosses/01-blubberus-the-slime-king.md"
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "warning": {
+      "image": "images/warning.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "attack": {
+      "image": "images/attack.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "puzzle": {
+      "image": "images/puzzle.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "exposed": {
+      "image": "images/exposed.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "rest": {
+      "image": "images/rest.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    },
+    "clone": {
+      "image": "images/clone.png",
+      "frameWidth": 268,
+      "frameHeight": 216,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 86,
+      "bodyHeight": 60,
+      "bounds": [
+        -24,
+        -24,
+        134,
+        108
+      ]
+    }
+  },
+  "description": "Hit the crown when it flies off during a sneeze."
+}

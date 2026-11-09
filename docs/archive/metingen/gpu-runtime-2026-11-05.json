@@ -355,11 +355,11 @@
     "Geen echte GPU-backend gebouwd; dus geen gemeten GPU-snelheidswinst."
   ],
   "sourceSha256": {
-    "public_html/app.mjs": "f2777df0f537afd6679099e4cfe71d75b37225e55cd8afe889c5afed30a0dff9",
-    "public_html/engine.mjs": "93abe4107013b54097d568d46f14c2ddc859681be5c8caed51c2500c5bdc28b5",
-    "public_html/art.mjs": "fb5ef672051c5c1a8165250bc653d96a9d89ef96fd58318e71c0953d68e0f2ff",
-    "public_html/sea-life.mjs": "568cc7a47129a2b8701ae98013112a3cea33fa86316cdd1ac43e2b267e27d99e",
-    "public_html/presentation.mjs": "3d437ce848558c116625e76fa723a31bb8f5e99056559b10ec402fff5d103f30",
-    "public_html/tests/performance.html": "805361198cfc31a832f299f09c984326c1ab118d1041e32bbed8178b9bc90dae"
+    "public_html/engine/app.mjs": "f2777df0f537afd6679099e4cfe71d75b37225e55cd8afe889c5afed30a0dff9",
+    "public_html/engine/engine.mjs": "93abe4107013b54097d568d46f14c2ddc859681be5c8caed51c2500c5bdc28b5",
+    "public_html/engine/art.mjs": "fb5ef672051c5c1a8165250bc653d96a9d89ef96fd58318e71c0953d68e0f2ff",
+    "public_html/engine/sea-life.mjs": "568cc7a47129a2b8701ae98013112a3cea33fa86316cdd1ac43e2b267e27d99e",
+    "public_html/engine/presentation.mjs": "3d437ce848558c116625e76fa723a31bb8f5e99056559b10ec402fff5d103f30",
+    "public_html/engine/tests/performance.html": "805361198cfc31a832f299f09c984326c1ab118d1041e32bbed8178b9bc90dae"
   }
 }

@@ -12,7 +12,7 @@ Een speler wil onthouden wat zijn snelste voltooide ronde is. Voeg voor één va
 
 ## Begin hier
 
-Open [app.mjs](../../../public_html/app.mjs) bij `showResult` en de bestaande opslagcode. Bekijk `game.time`, `game.state` en `room`. Gebruik voor de opdracht een aparte sleutel, bijvoorbeeld `bravios-student-record-v1`; wijzig de bestaande spelopslag niet.
+Open [app.mjs](../../../public_html/engine/app.mjs) bij `showResult` en de bestaande opslagcode. Bekijk `game.time`, `game.state` en `room`. Gebruik voor de opdracht een aparte sleutel, bijvoorbeeld `bravios-student-record-v1`; wijzig de bestaande spelopslag niet.
 
 ## Maak de basisversie
 

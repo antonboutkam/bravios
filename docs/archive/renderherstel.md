@@ -39,7 +39,7 @@ Controleer bij een nieuwe melding het webadres of de bestandsnaam, de veldnaam, 
 
 De gerichte tests controleren schermresolutie, geheugenbegrenzing, pointercoördinaten na scrollen, vectorlagen zonder grote rasterallocaties en de geiserindex. De geisertest controleert ook activiteit die tijdens dezelfde stap verandert en vervanging van de vijandenlijst. De volledige suite draait met `npm test`.
 
-In lokale Chrome zijn op zowel de HTTP-versie als de opnieuw gebouwde `speel.html` gecontroleerd: bouwen na horizontaal én verticaal scrollen, correcte tegelplaatsing, verkleinen naar 390 × 844 bij pixeldichtheid 2 en lopen met camerabeweging. De browserproeven leverden geen JavaScript-excepties op. Voor de offlineversie is `npm run build` uitgevoerd; PHP-syntax wordt met `php -l public_html/room.php` gecontroleerd.
+In lokale Chrome zijn op zowel de HTTP-versie als de opnieuw gebouwde `speel.html` gecontroleerd: bouwen na horizontaal én verticaal scrollen, correcte tegelplaatsing, verkleinen naar 390 × 844 bij pixeldichtheid 2 en lopen met camerabeweging. De browserproeven leverden geen JavaScript-excepties op. Voor de offlineversie is `npm run build` uitgevoerd; PHP-syntax wordt met `php -l public_html/engine/room.php` gecontroleerd.
 
 ## Wonderlanddecor achter de platforms
 

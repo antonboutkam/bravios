@@ -1,0 +1,74 @@
+{
+  "id": "hammer",
+  "name": "Hamerschildpad",
+  "kind": "hammer",
+  "tileIds": [
+    28
+  ],
+  "variant": "normal",
+  "size": [
+    26,
+    26
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 40,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "hammer",
+    "interval": 2,
+    "speed": 160,
+    "verticalSpeed": -380,
+    "life": 3,
+    "aim": "player"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    }
+  },
+  "description": "Loopt heen en weer en gooit elke 2 seconden een hamer naar een speler."
+}

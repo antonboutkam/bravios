@@ -32,7 +32,7 @@ This is a separate local single-player adventure. Campaign objects are recreated
 
 ## Enemies and bosses
 
-The eight characters from [boss reference data](../../../../public_html/tests/fixtures/wonderland/bosses.json) are implemented at two sizes. Small enemies take one hit and patrol, jump or float. Each level has four small figures with different colors, sizes and patterns. Each species supports twelve combinations of three palettes, two body shapes and two facial patterns. Large bosses are approximately 2.4 times the base size and retain the pack's fixed colors and silhouettes.
+The eight characters from [boss reference data](../../../../public_html/engine/tests/fixtures/wonderland/bosses.json) are implemented at two sizes. Small enemies take one hit and patrol, jump or float. Each level has four small figures with different colors, sizes and patterns. Each species supports twelve combinations of three palettes, two body shapes and two facial patterns. Large bosses are approximately 2.4 times the base size and retain the pack's fixed colors and silhouettes.
 
 | Character | First encounter: escapes | Return: becomes friendly | Weak point in this campaign |
 | --- | --- | --- | --- |
@@ -49,6 +49,6 @@ Battles adapt the concepts to the existing platform campaign: three hits for a r
 
 The boss activates only at its arena. Entry ends temporary gravity and reversed controls, allowing safe combat even after the crystal wall. The floor stays intact. Outside a sparkling vulnerability window, fire, ice and bubbles do not damage a large boss. Jump targets are reachable from the floor; fire is optional. DJ and the mirror princess take hits directly from the correct puzzle choice. The finish works only after both the level puzzle and boss battle are complete.
 
-`public_html/wonder-foes.mjs` contains an explicit copy of the supplied JSON identities and colors; the comparison in `public_html/tests/wonder-foes.test.mjs` checks that they match. `wonder-foe-art.mjs` draws the figures on transparent canvas space. These figures are campaign objects without new builder tile IDs. Existing snapshots also preserve their phases, buttons and temporary effects; Wonderland remains single-player.
+`public_html/engine/wonder-foes.mjs` contains an explicit copy of the supplied JSON identities and colors; the comparison in `public_html/engine/tests/wonder-foes.test.mjs` checks that they match. `wonder-foe-art.mjs` draws the figures on transparent canvas space. These figures are campaign objects without new builder tile IDs. Existing snapshots also preserve their phases, buttons and temporary effects; Wonderland remains single-player.
 
-The [visual and playable test page](../../../../public_html/tests/wonder-foes.html) shows all large bosses, twelve small examples per type and a choice of all fifteen battles. Use color/grayscale and motion on/off for visual checks. The page uses the same rendering and game code and is available through the local server. The standalone `speel.html` includes both new modules.
+The [visual and playable test page](../../../../public_html/engine/tests/wonder-foes.html) shows all large bosses, twelve small examples per type and a choice of all fifteen battles. Use color/grayscale and motion on/off for visual checks. The page uses the same rendering and game code and is available through the local server. The standalone `speel.html` includes both new modules.

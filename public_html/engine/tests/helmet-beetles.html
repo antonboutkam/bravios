@@ -1,0 +1,15 @@
+<!doctype html><html lang="nl"><meta charset="utf-8"><title>Bravios · Kistjes en helmtorren</title><style>body{font:16px system-ui;background:#e8f3e3;color:#263831;margin:30px}canvas{background:#bde5f0;border:2px solid #567b68;border-radius:10px;max-width:100%}p{max-width:850px}a{color:#56419a}</style><h1>Kistjes en helmtorren</h1><p>Vraagkistje · gebruikt kistje · gewone helmtor · ingeklapte helmtor · punthelm.</p><canvas id="samples" width="850" height="150"></canvas><p>Speelveld: links/rechts lopen, spatie springen, F vuur. Klik op het speelveld om te beginnen. Spring op de eerste tor en wacht drie seconden. De punthelm verderop kun je met vuur verslaan.</p><canvas id="game" width="1000" height="400" tabindex="0" aria-label="Testveld met gewone helmtor en punthelm"></canvas><p><a href="../../">Terug naar Bravios</a></p><script type="module">
+import {blankLevel,createGame,stepGame} from '../engine.mjs?v=34';
+import {drawTile,drawWorld,drawHelmetBeetle} from '../art.mjs?v=38';
+import {loadLook} from '../look.mjs?v=8';
+await loadLook();
+const c=document.querySelector('#samples').getContext('2d');
+for(const [id,x] of [[3,35],[13,195],[97,355],[98,675]])drawTile(c,id,x,40,70);
+c.save();c.translate(515,60);c.scale(2.4,2.4);drawHelmetBeetle(c,0,0,{folded:true});c.restore();
+// Draw the folded creature independently via a tiny real game scene.
+const l=blankLevel(40);l.tiles[13][8]=97;l.tiles[13][18]=98;l.tiles[13][5]=3;l.tiles[13][15]=15;
+const g=createGame(l);g.player.fire=true;const el=document.querySelector('#game'),ctx=el.getContext('2d'),keys=new Set();
+el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','KeyF'].includes(e.code)){e.preventDefault();keys.add(e.code);}});el.addEventListener('keyup',e=>keys.delete(e.code));el.addEventListener('blur',()=>keys.clear());
+let previous;
+function frame(t){const dt=Math.min((t-(previous??t))/1000,.04);previous=t;for(let n=0;n<Math.round(dt*120);n++)stepGame(g,{left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),jump:keys.has('Space'),fire:keys.has('KeyF')});ctx.setTransform(.78,0,0,.78,0,0);drawWorld(ctx,l,{game:g,grid:false,time:t/1000});requestAnimationFrame(frame);}requestAnimationFrame(frame);
+</script></html>

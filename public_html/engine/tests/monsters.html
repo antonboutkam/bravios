@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="nl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bravios · Monsteratelier</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf0e6;color:#303347;font:16px system-ui}main{max-width:1100px;margin:auto;padding:32px 24px}header{display:flex;justify-content:space-between;align-items:center;gap:24px}h1{font-size:38px;letter-spacing:-1.5px;margin:8px 0}p{line-height:1.6;max-width:760px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:2px;color:#677c66}a{color:#654778}button,select{font:inherit;border:1px solid #b6bbaa;background:#fffdf4;border-radius:10px;padding:10px 16px;color:inherit}label{display:inline-flex;align-items:center;gap:8px;margin:8px 12px 14px 0}.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}article{border:1px solid #d5d8cb;border-radius:18px;background:#fffcf3;padding:18px}article h2{font-size:16px;margin:12px 0 3px}article p{font-size:13px;color:#657060;margin:0}canvas{max-width:100%}.portrait{width:100%;height:140px;border-radius:10px;background:linear-gradient(#dfeced,#edf3df)}body.dark .portrait{background:linear-gradient(#29283f,#47405c)}#game{background:#c3e3ef;border-radius:14px;display:block;width:100%;outline-offset:4px}h2{margin-top:30px}#status{font-size:13px;color:#56745a}
+</style>
+<main><header><div><div class="eyebrow">BRAVIOS / MONSTERATELIER</div><h1>Kleine monsters, groot karakter.</h1></div><a href="../../">Terug naar het spel</a></header>
+<p>Bekijk de monsters uitvergroot én op hun speelgrootte. Keer ze om en bekijk hoe hun silhouet op een donkere achtergrond leesbaar blijft.</p>
+<label><input id="motion" type="checkbox" checked> Animatie</label><label><input id="dark" type="checkbox"> Donkere achtergrond</label>
+<label>Kijkrichting <select id="facing"><option value="1">Rechts</option><option value="-1">Links</option></select></label>
+<div class="gallery" id="gallery"></div><p id="status" role="status">Monsters laden…</p>
+<h2>Probeer ze in het speelveld</h2><p>Klik in het veld. Loop met de pijltjestoetsen, spring met spatie en schiet met F. Met R begin je opnieuw. De animatieknop hierboven zet ook de extra beweging in het veld stil.</p>
+<canvas id="game" width="1040" height="380" tabindex="0" aria-label="Speelveld met vernieuwde monsters"></canvas></main>
+<script type="module">
+import {drawMonsterArt} from '../monster-art.mjs?v=1';
+import {drawWorld} from '../art.mjs?v=53';
+import {blankLevel,createGame,stepGame} from '../engine.mjs';
+import {loadLook} from '../look.mjs';
+const specimens=[
+ ['walker','Lopertje','Paddenstoelhoed en eigenwijze blik'],['robot','Robot','Metalen platen en laadpaneel',{charge:.9}],
+ ['robot','Boze robot','Warme kleuren en schuine wenkbrauwen',{variant:'angry',charge:1}],
+ ['frog','Kikker','Bolle ogen en stevige achterpoten'],['frog','Rode kikker','Koraalkleurige huid',{variant:'red'}],
+ ['turtle','Schildpad','Groen pantser met zeshoekige platen'],['skeleton','Skeletschildpad','Ivoren botten en donkere oogkas'],
+ ['spiky','Stekelmonster','Paarse rug en herkenbare stekels'],['hammer','Hamerwerper','Metalen hamer en stevig schild'],
+ ['dragon','Draak','Vliezige vleugels en abrikooskleurige kam'],['plant','Bijtplant','Twee koppen die om de beurt bijten'],['bomb','Bom','Glanzend metaal en brandende lont',{fuse:.5}],
+ ['turtle','Ingetrokken','Het pantser blijft duidelijk zichtbaar',{phase:'shell',moving:false}],['skeleton','Uit elkaar','Een herkenbaar hoopje botten',{phase:'fallen',moving:false}]
+];
+const cards=specimens.map(([kind,name,detail,options={}])=>{const card=document.createElement('article'),canvas=document.createElement('canvas');canvas.width=420;canvas.height=280;canvas.className='portrait';canvas.setAttribute('aria-label',name);const h=document.createElement('h2');h.textContent=name;const p=document.createElement('p');p.textContent=detail;card.append(canvas,h,p);document.querySelector('#gallery').append(card);return {kind,options,c:canvas.getContext('2d')};});
+const level=blankLevel(60);for(const [i,id] of [6,17,18,22,23,24,25,27,28,29].entries())level.tiles[13][7+i*5]=id;
+let game=createGame(level);game.player.fire=true;
+const screen=document.querySelector('#game'),c=screen.getContext('2d'),keys=new Set();
+screen.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Space','KeyF','KeyR'].includes(e.code)){e.preventDefault();keys.add(e.code);}if(e.code==='KeyR'){game=createGame(level);game.player.fire=true;}});
+screen.addEventListener('keyup',e=>keys.delete(e.code));screen.addEventListener('blur',()=>keys.clear());
+document.querySelector('#dark').onchange=e=>document.body.classList.toggle('dark',e.target.checked);
+let previous,accumulator=0;
+function frame(now){
+ const moving=document.querySelector('#motion').checked,time=moving?now/1000:0,facing=Number(document.querySelector('#facing').value);
+ for(const {kind,options,c} of cards){c.clearRect(0,0,420,280);c.save();c.scale(6,6);drawMonsterArt(c,kind,19,7,{...options,time,facing});c.restore();c.save();c.scale(2,2);drawMonsterArt(c,kind,8,100,{...options,time,facing});c.fillStyle=document.querySelector('#dark').checked?'#eee9da':'#536553';c.font='11px system-ui';c.fillText('32 px',49,122);c.restore();}
+ accumulator+=Math.min((now-(previous??now))/1000,.05);previous=now;
+ while(accumulator>=1/120){if(document.activeElement===screen)stepGame(game,{left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),jump:keys.has('Space'),fire:keys.has('KeyF')});accumulator-=1/120;}
+ const left=Math.max(0,Math.min(level.width*32-screen.width,game.player.x-180));c.clearRect(0,0,screen.width,screen.height);c.save();c.translate(-left,-100);drawWorld(c,level,{game,time,grid:false,reducedMotion:!moving,viewport:{left,top:100,right:left+screen.width,bottom:480}});c.restore();requestAnimationFrame(frame);
+}
+try{await loadLook();document.querySelector('#status').textContent='14 voorbeelden geladen · dezelfde tekeningen als in het spel';requestAnimationFrame(frame);}catch(error){document.querySelector('#status').textContent=error.message;throw error;}
+</script></html>

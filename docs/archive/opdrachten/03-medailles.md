@@ -12,7 +12,7 @@ Een organisator van een gamewedstrijd wil spelers na de finish een medaille geve
 
 ## Begin hier
 
-Open [app.mjs](../../../public_html/app.mjs) bij `showResult`. Daar staan `game.state`, `game.coins` en `game.totalCoins`. De uitslagelementen staan in [index.html](../../../public_html/index.html) bij `result-title` en `result-copy`.
+Open [app.mjs](../../../public_html/engine/app.mjs) bij `showResult`. Daar staan `game.state`, `game.coins` en `game.totalCoins`. De uitslagelementen staan in [index.html](../../../public_html/index.html) bij `result-title` en `result-copy`.
 
 ## Maak de basisversie
 

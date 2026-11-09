@@ -13,11 +13,11 @@ let browser;
 try {
  browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/__export`);
- const {ENEMY_CATALOG}=await import('../public_html/enemies/catalog.mjs');
+ const {ENEMY_CATALOG}=await import('../public_html/engine/enemies/catalog.mjs');
  for(const config of ENEMY_CATALOG){
   const animations=await page.evaluate(async c=>{
    globalThis.braviosExportEnemies=true;
-   const {drawEnemyBody}=await import('/art.mjs');
+   const {drawEnemyBody}=await import('/engine/art.mjs');
    const result={};
    let states=['idle','walk'];
    if(c.kind==='wonder')states=c.group==='bosses'?['idle','warning','attack','puzzle','exposed','rest','defeated','clone']:['palette-0','palette-1','palette-2','defeated'];
@@ -48,7 +48,7 @@ try {
    }
    return result;
   },config);
-  const file=path.join(root,'enemies',config.group,config.id,'enemy.json');const json=JSON.parse(await readFile(file));json.animations={};
+  const file=path.join(root,'gameplay','enemies',config.group,config.id,'enemy.json');const json=JSON.parse(await readFile(file));json.animations={};
   for(const [state,{data,...a}]of Object.entries(animations)){await writeFile(path.join(path.dirname(file),a.image),Buffer.from(data,'base64'));json.animations[state]=a;}
   await writeFile(file,JSON.stringify(json,null,2)+'\n');
   console.log(`${config.key}: ${Object.keys(animations).length} animaties`);

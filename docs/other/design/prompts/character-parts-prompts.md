@@ -1,6 +1,6 @@
 # Character creator — ChatGPT artwork
 
-Generated on October 17, 2026 with the built-in `image_gen` tool; all four requests used `transparent_background: true`. Original files were copied to `public_html/characters/custom/parts/` without image editing. The application handles cropping and composition. The prompts used are recorded below.
+Generated on October 17, 2026 with the built-in `image_gen` tool; all four requests used `transparent_background: true`. Original files were copied to `public_html/gameplay/characters/custom/parts/` without image editing. The application handles cropping and composition. The prompts used are recorded below.
 
 ## heads.png
 

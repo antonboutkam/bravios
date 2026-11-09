@@ -1,0 +1,197 @@
+{
+  "id": "sockstein",
+  "name": "Sockstein",
+  "kind": "wonder",
+  "wonderType": 2,
+  "tileIds": [],
+  "size": [
+    67,
+    82
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 75,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": false,
+    "bubbleable": false,
+    "hitCooldown": 0.7
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "boss": {
+    "restSeconds": 1.4,
+    "warningSeconds": 1.5,
+    "attackSeconds": 1.2,
+    "exposedSeconds": 5
+  },
+  "metadata": {
+    "id": "sockstein",
+    "number": 3,
+    "name": "Sockstein",
+    "realm": "Lost Sock Island",
+    "primary_color": "#1FA9A2",
+    "secondary_color": "#4D6CB5",
+    "accent_color": "#F68D43",
+    "silhouette": "gangly patchwork figure with eight knitted arms",
+    "materials": [
+      "knitted sock fabric",
+      "stitched seams"
+    ],
+    "signature_animation": "flail and spiral",
+    "arena_feature": "rotating clothesline bridges and giant washing machine",
+    "attacks": [
+      "Stinky Sock Toss",
+      "Vacuum Vortex",
+      "Eight-Arm Whirl"
+    ],
+    "weakness": "Activate the washing machine to make him dizzy and remove his sock helmet.",
+    "hit_windows": 3,
+    "reward_ability": "Sock Cyclone",
+    "defeat_form": "a friendly conga line of paired socks",
+    "boss_file": "bosses/03-sockstein.md"
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "warning": {
+      "image": "images/warning.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "attack": {
+      "image": "images/attack.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "puzzle": {
+      "image": "images/puzzle.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "exposed": {
+      "image": "images/exposed.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "rest": {
+      "image": "images/rest.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    },
+    "clone": {
+      "image": "images/clone.png",
+      "frameWidth": 230,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 67,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        115,
+        130
+      ]
+    }
+  },
+  "description": "Activate the washing machine to make him dizzy and remove his sock helmet."
+}

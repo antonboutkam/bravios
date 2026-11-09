@@ -2,14 +2,14 @@
 
 [Studentenhandleiding](README.md) · [Broncode en werking](broncode.md)
 
-Elk actiefiguur heeft een eigen map onder `public_html/characters/`. Iedere houding is een losse PNG. Je vermeldt alleen de mapnamen in `public_html/characters/characters.json`. Het spel haalt die lijst en de bijbehorende karaktergegevens bij het openen op. Je hoeft geen JavaScript of keuzeknoppen aan te passen.
+Elk actiefiguur heeft een eigen map onder `public_html/gameplay/characters/`. Iedere houding is een losse PNG. Je vermeldt alleen de mapnamen in `public_html/gameplay/characters/characters.json`. Het spel haalt die lijst en de bijbehorende karaktergegevens bij het openen op. Je hoeft geen JavaScript of keuzeknoppen aan te passen.
 
 ## 1. Kopieer een bestaande karaktermap
 
-Kopieer bijvoorbeeld `public_html/characters/boaz/` naar `public_html/characters/luna/`. Gebruik voor de mapnaam kleine letters, cijfers en eventueel streepjes. Begin met een letter.
+Kopieer bijvoorbeeld `public_html/gameplay/characters/boaz/` naar `public_html/gameplay/characters/luna/`. Gebruik voor de mapnaam kleine letters, cijfers en eventueel streepjes. Begin met een letter.
 
 ```text
-public_html/characters/luna/
+public_html/gameplay/characters/luna/
   character.json
   images/
     portrait.png
@@ -17,6 +17,10 @@ public_html/characters/luna/
       idle.png
       side.png
       run.png
+      run-1.png
+      run-2.png
+      run-3.png
+      run-4.png
       jump.png
       land.png
       victory.png
@@ -32,13 +36,14 @@ Maak losse PNG’s met een transparante achtergrond. Laat zijwaartse houdingen n
 | `images/portrait.png` | Portret voor de interface |
 | `images/platform/idle.png` | Stilstaan in vooraanzicht, onder andere bij kleine games |
 | `images/platform/side.png` | Stilstaan in zijaanzicht tijdens het platformspel |
-| `images/platform/run.png` | Rennen |
+| `images/platform/run.png` | Terugval voor karakters zonder loopframes |
+| `images/platform/run-1.png` t/m `run-4.png` | Vier opeenvolgende stapfasen, elke 90 ms een volgend beeld |
 | `images/platform/jump.png` | Springen en vallen |
 | `images/platform/land.png` | Landen |
 | `images/platform/victory.png` | Juichen na winst |
 | `images/platform/ride.png` | Zitten op een dino |
 
-Rennen gebruikt één afbeelding met een kleine beweging; er is nog geen reeks losse loopframes.
+Voor de loopcyclus geef je alle vier de velden `poses.run-1` tot en met `poses.run-4` op. Gebruik voor deze PNG’s dezelfde canvasafmetingen, lichaamsschaal en voetenlijn. Teken een uitgestrekte stap, een passerend been, de tegengestelde stap en het andere passerende been. Het spel bepaalt één gezamenlijke uitsnede, zodat het lichaam tijdens de cyclus niet van grootte verandert. Bij minder beweging blijft het eerste loopframe staan. Zonder deze vier velden blijft de enkele `run.png` werken; een gedeeltelijke reeks geeft een foutmelding.
 
 ## 3. Vul character.json in
 
@@ -53,6 +58,10 @@ Dit bestand bevat de eigenschappen voor identiteit en uiterlijk. De `id` moet pr
     "idle": "images/platform/idle.png",
     "side": "images/platform/side.png",
     "run": "images/platform/run.png",
+    "run-1": "images/platform/run-1.png",
+    "run-2": "images/platform/run-2.png",
+    "run-3": "images/platform/run-3.png",
+    "run-4": "images/platform/run-4.png",
     "jump": "images/platform/jump.png",
     "victory": "images/platform/victory.png",
     "land": "images/platform/land.png",
@@ -67,12 +76,13 @@ Snelheid, sprongkracht en andere spelregels zijn nog niet per figuur instelbaar.
 
 ## 4. Voeg je mapnaam toe en ververs de pagina
 
-Open `public_html/characters/characters.json` en voeg je mapnaam toe:
+Open `public_html/gameplay/characters/characters.json` en voeg je mapnaam toe:
 
 ```json
 [
   "boaz",
   "ravi",
+  "pixel",
   "luna"
 ]
 ```
@@ -95,6 +105,6 @@ npm run build
 
 Ook de build leest `characters.json` en neemt hun afbeeldingen op in `public_html/speel.html`. Open dit bestand apart en controleer je figuur daar opnieuw.
 
-`public_html/characters/catalog.mjs` wordt automatisch gegenereerd. Pas dit bestand niet zelf aan: werk in `characters.json`, je eigen `character.json` en afbeeldingen. Je kunt de configuratie ook controleren zonder een server te starten met `npm run characters:prepare`.
+`public_html/engine/characters/catalog.mjs` wordt automatisch gegenereerd. Pas dit bestand niet zelf aan: werk in `characters.json`, je eigen `character.json` en afbeeldingen. Je kunt de configuratie ook controleren zonder een server te starten met `npm run characters:prepare`.
 
 De map `characters/custom/` is de bestaande karaktermaker die hoofden, kleding en accessoires combineert. De map `characters/shared/` bevat gedeelde code. Dit zijn geen afzonderlijke actiefiguren; neem ze niet op in `characters.json`.

@@ -1,0 +1,39 @@
+{
+  "id": "grow",
+  "name": "grow",
+  "description": "Wonderland-structuur: grow",
+  "kind": "wonder-grow",
+  "tileIds": [],
+  "editor": {
+    "visible": false,
+    "group": "mechanisms"
+  },
+  "collision": {
+    "solid": false,
+    "oneWay": false,
+    "breakFromBelow": false,
+    "damage": false,
+    "lethal": false,
+    "topOffset": 0
+  },
+  "pSwitchConvertible": false,
+  "settings": {
+    "scale": 1.65,
+    "durationSeconds": 12
+  },
+  "visuals": {
+    "default": {
+      "image": "images/default.png",
+      "frameWidth": 120,
+      "frameHeight": 144,
+      "frames": 1,
+      "fps": 0,
+      "bounds": [
+        -4,
+        -12,
+        40,
+        48
+      ]
+    }
+  }
+}

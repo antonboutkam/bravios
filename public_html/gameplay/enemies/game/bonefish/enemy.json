@@ -1,0 +1,134 @@
+{
+  "id": "bonefish",
+  "name": "Skeletvis",
+  "kind": "bonefish",
+  "tileIds": [
+    87
+  ],
+  "variant": "normal",
+  "size": [
+    28,
+    28
+  ],
+  "movement": {
+    "type": "swim",
+    "speed": 24,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    },
+    "fallen": {
+      "image": "images/fallen.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    },
+    "idle-night": {
+      "image": "images/idle-night.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    },
+    "walk-night": {
+      "image": "images/walk-night.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    },
+    "fallen-night": {
+      "image": "images/fallen-night.png",
+      "frameWidth": 152,
+      "frameHeight": 152,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 28,
+      "bodyHeight": 28,
+      "bounds": [
+        -24,
+        -24,
+        76,
+        76
+      ]
+    }
+  },
+  "description": "Volgt je langzaam met lichtgevende ogen als niemand kijkt. Kijk naar hem: hij valt uit elkaar naar de bodem."
+}

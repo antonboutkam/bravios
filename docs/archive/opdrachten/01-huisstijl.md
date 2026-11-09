@@ -12,7 +12,7 @@ Een lokale gameclub wil Bravios tijdens een open dag laten zien. Geef het starts
 
 ## Begin hier
 
-Open [index.html](../../../public_html/index.html) en [styles.css](../../../public_html/styles.css). Zoek `start-screen`, `.button` en `.game-hud`. Gebruik de browserinspecteur om te zien welke CSS-regel een knop opmaakt.
+Open [index.html](../../../public_html/index.html) en [styles.css](../../../public_html/engine/styles.css). Zoek `start-screen`, `.button` en `.game-hud`. Gebruik de browserinspecteur om te zien welke CSS-regel een knop opmaakt.
 
 ## Maak de basisversie
 

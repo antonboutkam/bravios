@@ -1,0 +1,137 @@
+{
+  "id": "whale",
+  "name": "Walvis",
+  "kind": "whale",
+  "tileIds": [
+    85
+  ],
+  "variant": "normal",
+  "size": [
+    96,
+    48
+  ],
+  "movement": {
+    "type": "swim",
+    "speed": 0,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {
+    "mouthInterval": 15,
+    "mouthDuration": 5
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    },
+    "active": {
+      "image": "images/active.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    },
+    "idle-night": {
+      "image": "images/idle-night.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    },
+    "walk-night": {
+      "image": "images/walk-night.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    },
+    "active-night": {
+      "image": "images/active-night.png",
+      "frameWidth": 288,
+      "frameHeight": 192,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 96,
+      "bodyHeight": 48,
+      "bounds": [
+        -24,
+        -24,
+        144,
+        96
+      ]
+    }
+  },
+  "description": "Opent elke 15 seconden zijn bek. Kleine roofvisjes blijven dicht bij hem en bijten als je nadert."
+}

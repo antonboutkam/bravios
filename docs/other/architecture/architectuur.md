@@ -2,6 +2,14 @@
 
 [Back to README](../../../README.md) · [Game packs, characters and encounters](spelpakketten.md)
 
+## Repository layout
+
+`public_html/` remains the web document root. Student-editable JSON, PNGs and their Dutch instructions live under `public_html/gameplay/`, grouped as `characters`, `enemies`, `platforms`, `obstacles`, `powerups` and `interactables`. Shared backgrounds, scenery, effects, music and sounds live under `public_html/assets/`. Browser modules, renderers, CSS, PHP rooms, tests and the offline builder live under `public_html/engine/`.
+
+The runtime loaders read the workshop manifests on refresh. Preparation scripts validate those same files and write generated catalogs into `engine/characters/`, `engine/enemies/` and `engine/structures/`. They never generate JavaScript in the workshop. The structure manifest `gameplay/structures.json` retains logical groups, but entries contain physical paths such as `platforms/rock` or `interactables/pipe-up`. These preserve existing keys and tile IDs. Asset keys begin with `gameplay/` or `assets/`; `engine/paths.mjs` resolves them against the document root, including when deployed under a URL subdirectory. The offline bundle embeds those keys and retains each module's `engine/` location for URL resolution.
+
+The HTML entry loads `engine/bootstrap.mjs` and `engine/styles.css`. Network play calls `engine/room.php`. The generated `speel.html` stays in `public_html/`.
+
 ## Platform
 
 Bravios runs in the browser using standard HTML, CSS and JavaScript. It does not use React, Phaser, Unity or another game library. The `.mjs` files are JavaScript modules with `import` and `export`, loaded from the local web server. HTML defines buttons, dialogs and canvas elements. CSS styles the controls; Canvas 2D draws the game world.
@@ -40,8 +48,8 @@ Paths below are relative to the project root. Where only a filename is listed, i
 | Area | Files | Responsibility |
 | --- | --- | --- |
 | Main page | `public_html/index.html`, `styles.css` | Toolbar, start screen, dialogs and styling |
-| Application | `public_html/app.mjs` | Builder, input, HUD, sound and module integration |
-| Engine | `public_html/engine.mjs` | Level model, tile catalog, movement, collisions and game state |
+| Application | `public_html/engine/app.mjs` | Builder, input, HUD, sound and module integration |
+| Engine | `public_html/engine/engine.mjs` | Level model, tile catalog, movement, collisions and game state |
 | Mechanics | `mechanisms.mjs`, `swing-platforms.mjs`, `firebars.mjs`, `sea-life.mjs`, `wonder-magic.mjs`, `wonder-foes.mjs` | Mechanisms, vines, donut platforms, creatures and Wonderland rules |
 | Rendering | `art.mjs`, `monster-art.mjs`, `sea-art.mjs`, `wonder-foe-art.mjs`, `enemy-design-art.mjs` | Characters, objects and world rendering |
 | Graphics | `look.mjs`, `terrain.mjs`, `terrain-rules.mjs` | Character pose images, sprite regions, terrain variants and edge matching |
@@ -50,16 +58,16 @@ Paths below are relative to the project root. Where only a filename is listed, i
 | Campaigns | `levels.mjs`, `adventurers.mjs`, `wonderland.mjs` | Levels and campaign rules; the latter two also track progress |
 | Maps | `adventure-map.mjs`, `wonderland-map.mjs` | Campaign maps, navigation and shops where applicable |
 | Custom worlds | `worlds.mjs`, `world-editor.mjs` | Custom map data, validation and editor |
-| Small games | `public_html/games/`, `public_html/runtime/` | Four separate game packs, sessions, deferred loading and return to the main game |
+| Small games | `public_html/engine/games/`, `public_html/engine/runtime/` | Four separate game packs, sessions, deferred loading and return to the main game |
 | Storage | `storage.mjs`, storage code in `app.mjs` | Normalizing level collections and saving browser data |
 | Multiplayer | `coop.mjs`, `network.mjs`, `room.php` | Shared simulation, HTTP room traffic and server validation |
 | Controller | `gamepad.mjs` | Converting controller input into actions |
 | Tools | `server.mjs`, `build.mjs` | Serving local files and building the offline file |
-| Tests | `public_html/tests/` | Automated tests and visual test pages |
+| Tests | `public_html/engine/tests/` | Automated tests and visual test pages |
 
 ## Levels and storage
 
-A level contains fields including `name`, `theme`, `width` and `tiles`. `tiles` is an array of rows: `tiles[y][x]` holds the ID of one element. A tile measures 32 world pixels (`TILE`). X increases to the right; Y increases downward. For example, 4 is a coin, 10 a start position and 11 the finish. The complete catalog and `validateLevel` are in [engine.mjs](../../../public_html/engine.mjs).
+A level contains fields including `name`, `theme`, `width` and `tiles`. `tiles` is an array of rows: `tiles[y][x]` holds the ID of one element. A tile measures 32 world pixels (`TILE`). X increases to the right; Y increases downward. For example, 4 is a coin, 10 a start position and 11 the finish. The complete catalog and `validateLevel` are in [engine.mjs](../../../public_html/engine/engine.mjs).
 
 Use an exported level for experiments. The validator determines valid data and may normalize it. Runtime game state is a separate object containing the player, elapsed time, collected coins and moving enemies. Collecting a coin during a run should not change the saved builder level.
 
@@ -72,19 +80,19 @@ For rooms, `network.mjs` sends requests to `room.php`. PHP stores temporary sess
 | Location | Contents and use |
 | --- | --- |
 | [public_html/assets/](../../../public_html/assets) | Runtime world images and logo; heroes are under `characters/` |
-| [public_html/assets/look/](../../../public_html/assets/look) | Scenery and creature sprite sheets, terrain variants, backgrounds and world map |
-| [public_html/characters/](../../../public_html/characters) | Boaz, Ravi and custom heroes; code and images per character/view |
-| [public_html/worlds/](../../../public_html/worlds) | World map illustrations, grouped by world |
+| [public_html/assets/scenery/](../../../public_html/assets/scenery) | Scenery and creature sprite sheets, terrain variants, backgrounds and world map |
+| [public_html/gameplay/characters/](../../../public_html/gameplay/characters) | Boaz, Ravi and custom heroes; code and images per character/view |
+| [public_html/assets/backgrounds/worlds/](../../../public_html/assets/backgrounds/worlds) | World map illustrations, grouped by world |
 | [docs/other/design/](../design/README.md) | Source material and design files outside the document root |
 | [Wonderland design](../design/wonderland) | Specification, level descriptions and boss design pack |
-| [public_html/tegels.html](../../../public_html/tegels.html) | Visual tile reference; locally at `/tegels.html` |
-| [public_html/tests/](../../../public_html/tests) | Animated previews and playable test pages alongside `.test.mjs` files |
+| [public_html/engine/tegels.html](../../../public_html/engine/tegels.html) | Visual tile reference; locally at `/tegels.html` |
+| [public_html/engine/tests/](../../../public_html/engine/tests) | Animated previews and playable test pages alongside `.test.mjs` files |
 
 Boaz and Ravi use individual pose PNGs in their character directories, including the riding pose. `character.json` maps pose names to paths under `images/platform/`. The startup/build preparation script generates `characters/catalog.mjs`; runtime selection and asset lists use that catalog. The loader preserves their alpha transparency and reads each complete image. Scenery and creatures still use sprite sheets. A sprite sheet combines multiple images in one file. The code selects a region. Before replacing a whole sheet to add one object, check `look.mjs`, `terrain.mjs` or `character-maker.mjs`. Many other figures are drawn directly with Canvas. Sounds are generated with oscillators in `playSound` in `app.mjs`; no audio-file directory is required.
 
 ## Source, web server and offline build
 
-Edit `index.html`, `styles.css` and the modules. [build.mjs](../../../public_html/build.mjs) processes modules and registered images, combines CSS and scripts, and embeds images as data URLs. The result is `public_html/speel.html`, which supports solo play without a server. Network play requires a running PHP server.
+Edit `index.html`, `styles.css` and the modules. [build.mjs](../../../public_html/engine/build.mjs) processes modules and registered images, combines CSS and scripts, and embeds images as data URLs. The result is `public_html/speel.html`, which supports solo play without a server. Network play requires a running PHP server.
 
 The bundler follows the module graph from `app.mjs`, including dynamic imports with literal paths. Each module has its own factory and runs on first use. The server uses the same graph to allow module paths; restart it after adding imports. Character images are derived from the generated catalog; other images remain explicitly registered in asset lists. See [game packs](spelpakketten.md) for the supported module subset, cleanup and unloading limits.
 
@@ -92,7 +100,7 @@ The Node server serves a limited set of paths, so an existing file can still ret
 
 ## Choosing checks
 
-Use existing tests as examples: [small-games.test.mjs](../../../public_html/tests/small-games.test.mjs) is small and illustrates `node:test` with `assert`. Run a focused test with `node public_html/tests/<name>.test.mjs`. The complete suite is listed explicitly in `package.json`; add new test files there to include them in `npm test`. That command also uses PHP for `rooms.test.php`.
+Use existing tests as examples: [small-games.test.mjs](../../../public_html/engine/tests/small-games.test.mjs) is small and illustrates `node:test` with `assert`. Run a focused test with `node public_html/engine/tests/<name>.test.mjs`. The complete suite is listed explicitly in `package.json`; add new test files there to include them in `npm test`. That command also uses PHP for `rooms.test.php`.
 
 Check visual changes in the browser. Check game-rule changes with a focused automated test as well. Rebuild the offline version after code changes and open it separately. Tests, builds and local play do not verify deployment to an external server.
 

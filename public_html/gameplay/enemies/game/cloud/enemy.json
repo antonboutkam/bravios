@@ -1,0 +1,74 @@
+{
+  "id": "cloud",
+  "name": "Stekeleiwolkje",
+  "kind": "cloud",
+  "tileIds": [
+    82
+  ],
+  "variant": "normal",
+  "size": [
+    26,
+    26
+  ],
+  "movement": {
+    "type": "fly",
+    "speed": 34,
+    "turnAtEdges": true,
+    "amplitude": 7,
+    "frequency": 2
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "spikeegg",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 12,
+    "aim": "down"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    }
+  },
+  "description": "Zweeft en gooit stekeleieren. Rode mieren knipperen na 3 seconden en verdwijnen na 5 seconden."
+}

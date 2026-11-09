@@ -6,19 +6,21 @@ De **broncode** bestaat uit de bestanden die ontwikkelaars aanpassen om het spel
 
 ## De belangrijkste mappen
 
-Alle paden hieronder beginnen in de projectroot.
+Alle paden hieronder beginnen in de projectroot. Begin voor een eigen tekening of bestaande instelling bij [gameplay](../../public_html/gameplay/README.md). Je hoeft daarvoor de spelcode in `engine/` niet te begrijpen.
 
 | Map of bestand | Wat staat erin? |
 | --- | --- |
-| `public_html/` | De website en de code die het spel gebruikt |
+| `public_html/` | De documentroot van de website |
+| `public_html/gameplay/` | Hier begin je: JSON-bestanden, afbeeldingen en oefeningen |
+| `public_html/engine/` | Technische spelcode, opmaak en tests |
 | `public_html/index.html` | Knoppen, menu’s en de plek waar het spel wordt getekend |
-| `public_html/styles.css` | Kleuren, afmetingen en opmaak van de bediening |
-| `public_html/app.mjs` | Verbindt bediening, bouwer, spelregels, geluid en beeld |
-| `public_html/engine.mjs` | Spelregels, beweging, botsingen en gegevens van een level |
-| `public_html/art.mjs` | Tekent de spelwereld; gebruikt ook andere tekenmodules |
-| `public_html/games/` | Code van de kleine games |
-| `public_html/assets/` en `public_html/characters/` | Afbeeldingen en karakterbestanden die het spel gebruikt |
-| `public_html/tests/` | Automatische controles en pagina’s om gedrag te bekijken |
+| `public_html/engine/styles.css` | Kleuren, afmetingen en opmaak van de bediening |
+| `public_html/engine/app.mjs` | Verbindt bediening, bouwer, spelregels, geluid en beeld |
+| `public_html/engine/engine.mjs` | Spelregels, beweging, botsingen en gegevens van een level |
+| `public_html/engine/art.mjs` | Tekent de spelwereld; gebruikt ook andere tekenmodules |
+| `public_html/engine/games/` | Code van de kleine games |
+| `public_html/assets/` en `public_html/gameplay/characters/` | Afbeeldingen en karakterbestanden die het spel gebruikt |
+| `public_html/engine/tests/` | Automatische controles en pagina’s om gedrag te bekijken |
 | `docs/other/design/` | Bronmateriaal, ontwerpdocumenten en generatieprompts |
 | `docs/` | Handleidingen en technische documentatie |
 | `package.json` | Projectinformatie en de commando’s voor starten, bouwen en testen |
@@ -45,7 +47,7 @@ De engine controleert levelgegevens met `validateLevel`. Gebruik bij het onderzo
 
 ## Waar worden gegevens bewaard?
 
-Het spel gebruikt onder meer `localStorage`: opslag in je browser. JSON-export maakt een bestand dat je zelf kunt bewaren en verplaatsen. Online samenspel gebruikt daarnaast `network.mjs` en `room.php`; de PHP-server bewaart tijdelijke kamers. De gewone Node-server kan geen PHP uitvoeren.
+Het spel gebruikt onder meer `localStorage`: opslag in je browser. JSON-export maakt een bestand dat je zelf kunt bewaren en verplaatsen. Online samenspel gebruikt daarnaast `engine/network.mjs` en `engine/room.php`; de PHP-server bewaart tijdelijke kamers. De gewone Node-server kan geen PHP uitvoeren.
 
 ## Werk in kleine stappen
 

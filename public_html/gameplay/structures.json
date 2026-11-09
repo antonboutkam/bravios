@@ -1,0 +1,89 @@
+{
+  "terrain": [
+    "platforms/ground",
+    "obstacles/spikes",
+    "platforms/platform",
+    "obstacles/lava",
+    "platforms/rock",
+    "platforms/crumbling-rock",
+    "platforms/slope-left",
+    "platforms/slope-right",
+    "platforms/cloud-block"
+  ],
+  "blocks": [
+    "platforms/brick",
+    "interactables/question-coin",
+    "interactables/spent-block",
+    "interactables/question-35",
+    "interactables/question-36",
+    "interactables/question-37",
+    "interactables/question-38",
+    "interactables/question-39",
+    "interactables/question-40",
+    "interactables/beanstalk-box",
+    "interactables/beanstalk",
+    "interactables/used-beanstalk-box"
+  ],
+  "pipes": [
+    "interactables/pipe-up",
+    "interactables/pipe-up-in",
+    "interactables/pipe-up-out",
+    "interactables/pipe-up-both",
+    "interactables/pipe-down-decoration",
+    "interactables/pipe-left-decoration",
+    "interactables/pipe-right-decoration",
+    "interactables/pipe-down-in",
+    "interactables/pipe-down-out",
+    "interactables/pipe-down-both",
+    "interactables/pipe-left-in",
+    "interactables/pipe-left-out",
+    "interactables/pipe-left-both",
+    "interactables/pipe-right-in",
+    "interactables/pipe-right-out",
+    "interactables/pipe-right-both"
+  ],
+  "mechanisms": [
+    "interactables/spring",
+    "platforms/moving-wall-up",
+    "platforms/moving-wall-down",
+    "platforms/conveyor",
+    "obstacles/spike-pendulum",
+    "obstacles/spike-face-pendulum",
+    "obstacles/fire-pendulum",
+    "obstacles/fire-face-pendulum",
+    "interactables/p-switch",
+    "interactables/pressed-switch",
+    "obstacles/chainhead-anchor",
+    "interactables/vine",
+    "platforms/donut",
+    "obstacles/firebar"
+  ],
+  "caves": [
+    "interactables/cave-open",
+    "interactables/cave-locked",
+    "interactables/cave-hidden"
+  ],
+  "markers": [
+    "interactables/start",
+    "interactables/finish"
+  ],
+  "wonderland": [
+    "platforms/low-roof",
+    "platforms/heavy",
+    "platforms/swing",
+    "platforms/boss-step",
+    "platforms/fading",
+    "interactables/shrink",
+    "interactables/grow",
+    "interactables/reverse",
+    "interactables/up",
+    "interactables/right",
+    "interactables/down",
+    "interactables/portal",
+    "interactables/switch",
+    "interactables/color",
+    "interactables/red",
+    "interactables/yellow",
+    "interactables/blue"
+  ]
+}

@@ -8,7 +8,7 @@ De reeks bevat het lopertje, de gewone en boze robot, de groene en rode kikker, 
 
 ## Code en prestaties
 
-De originele tekeningen staan in [monster-art.mjs](../../public_html/monster-art.mjs). Er zijn geen nieuwe externe afbeeldingen of beeldverzoeken nodig. `art.mjs` roept deze module aan via de bestaande tekenfuncties. Botsingen, gedrag, levelgegevens en de vijandeditor behouden hun bestaande contracten.
+De originele tekeningen staan in [monster-art.mjs](../../public_html/engine/monster-art.mjs). Er zijn geen nieuwe externe afbeeldingen of beeldverzoeken nodig. `art.mjs` roept deze module aan via de bestaande tekenfuncties. Botsingen, gedrag, levelgegevens en de vijandeditor behouden hun bestaande contracten.
 
 Elke houding wordt eenmalig getekend op een transparant oppervlak van 96 × 96 pixels: een vak van 48 × 48 op dubbele resolutie, inclusief marge rond de bestaande tekening van 32 × 32. Links en rechts gebruiken dezelfde sprite, gespiegeld tijdens het tekenen. De cache heeft maximaal 512 houdingen (18 MiB ruwe RGBA-pixels, exclusief browseroverhead). Dit beperkt herhaald tekenwerk; de daadwerkelijke FPS moet in de betrokken browser en het betrokken veld worden gemeten.
 
@@ -16,7 +16,7 @@ Bevriezing en de instelling voor minder beweging zetten de extra animatietijd st
 
 ## Controleren
 
-`node public_html/tests/monster-art.test.mjs` controleert tekenstatus, eindige coordinaten, bijzondere houdingen, bestaande tekenfuncties, ongewijzigde invoer en hergebruik van een sprite bij omkeren. Deze tests staan ook in `npm test`.
+`node public_html/engine/tests/monster-art.test.mjs` controleert tekenstatus, eindige coordinaten, bijzondere houdingen, bestaande tekenfuncties, ongewijzigde invoer en hergebruik van een sprite bij omkeren. Deze tests staan ook in `npm test`.
 
 Het Monsteratelier toont veertien voorbeelden, inclusief twee bijzondere houdingen. Zet animatie uit, wissel kijkrichting en achtergrond, en probeer daarna het speelveld met pijltjestoetsen, spatie en F. R herstart de proef. Controleer daarnaast het normale bouwpalet en de opnieuw gebouwde `speel.html`.
 

@@ -12,7 +12,7 @@ Een sounddesigner wil dat het spel klinkt als een ruimteschip, een circus of een
 
 ## Begin hier
 
-Open [app.mjs](../../../public_html/app.mjs) bij `unlockAudio` en `playSound`. In `melodies` staan arrays met frequenties. De lus maakt voor elke toon een oscillator. Het geluid wordt in de browser gemaakt; je hebt geen mp3-bestanden nodig.
+Open [app.mjs](../../../public_html/engine/app.mjs) bij `unlockAudio` en `playSound`. In `melodies` staan arrays met frequenties. De lus maakt voor elke toon een oscillator. Het geluid wordt in de browser gemaakt; je hebt geen mp3-bestanden nodig.
 
 ## Maak de basisversie
 

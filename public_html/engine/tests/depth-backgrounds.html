@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bravios · Drie dieptelagen</title>
+<style>body{margin:0;background:#eff0e5;color:#293d3b;font:16px system-ui}main{max-width:1100px;margin:24px auto;padding:16px}nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}select,input,button{font:inherit}button,select{padding:8px;border-radius:8px;border:1px solid #677c74;background:#fffdf0;color:inherit}canvas{display:block;width:100%;height:auto;border-radius:12px;background:#9ecfd9;margin:16px 0}input[type=range]{width:min(500px,90vw)}.layers{display:flex;gap:12px;flex-wrap:wrap}.layers span{padding:8px 14px;border-radius:9px;background:white}</style></head>
+<body><main><h1>Drie dieptelagen</h1><p>Verre bergen schuiven langzaam, de middenlaag beweegt sneller en nabije bomen en rotsen het snelst. De decorlagen staan allemaal achter het speelveld.</p>
+<nav><label>Omgeving <select id="theme"></select></label><button id="auto">Camera laten lopen</button><label><input type="checkbox" id="reduced"> Minder beweging</label><a href="../../">Naar het spel</a></nav>
+<canvas id="scene" width="960" height="512" aria-label="Speelveld met drie achtergrondlagen"></canvas>
+<label>Camera <input id="camera" type="range" min="0" max="5000" step="1" value="0"></label><output id="position">0</output>
+<div class="layers"><span>1 · Ver weg: 12%</span><span>2 · Middenafstand: 38%</span><span>3 · Dichtbij: 76%</span></div><p id="status" role="status">Afbeeldingen laden…</p>
+<script type="module">
+import {blankLevel,createGame,THEMES} from '../engine.mjs?v=41';
+import {drawWorld} from '../art.mjs?v=60';
+import {loadLook,lookSprite} from '../look.mjs?v=8';
+import {loadTerrain} from '../terrain.mjs?v=3';
+import {wonderlandLevel,prepareWonderlandGame} from '../wonderland.mjs?v=3';
+const scene=document.querySelector('#scene'),ctx=scene.getContext('2d'),selector=document.querySelector('#theme'),camera=document.querySelector('#camera'),reduced=document.querySelector('#reduced'),position=document.querySelector('#position');
+for(const [value,label] of Object.entries({...THEMES,'wonder-forest':'Wonderland · Woud','wonder-chess':'Wonderland · Schaakkasteel','wonder-sea':'Wonderland · Droomzee','wonder-crystal':'Wonderland · Kristallen'})){const o=document.createElement('option');o.value=value;o.textContent=label;selector.append(o);}
+let level,game,running=false,last=0;
+function change(){
+ const theme=selector.value;
+ if(theme.startsWith('wonder-')){level=wonderlandLevel(0);game=prepareWonderlandGame(createGame(level),0);game.wonderland.area=theme.slice(7);}
+ else{level=blankLevel(240);level.theme=theme;for(let x=12;x<230;x+=20){level.tiles[11][x]=12;level.tiles[10][x]=4;}level.tiles[6][20]=99;level.tiles[12][24]=100;game=createGame(level);}
+}
+selector.onchange=change;document.querySelector('#auto').onclick=()=>{running=!running;document.querySelector('#auto').textContent=running?'Camera stoppen':'Camera laten lopen';};
+await loadLook();await loadTerrain(lookSprite('grass'));change();document.querySelector('#status').textContent='Schuif de camera om de verschillende snelheden te bekijken.';
+function frame(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;if(running)camera.value=(Number(camera.value)+dt*120)%5000;
+ const left=Number(camera.value);ctx.setTransform(1,0,0,1,-left,0);game.player.x=left+180;game.player.y=420;
+ drawWorld(ctx,level,{game,grid:false,time:0,viewport:{left,right:left+960},reducedMotion:reduced.checked});position.value=Math.round(left);requestAnimationFrame(frame);}
+window.depthProbe={get level(){return level;},get game(){return game;},setTheme(value){selector.value=value;change();}};requestAnimationFrame(frame);
+</script></main></body></html>

@@ -7,7 +7,7 @@ Eight original, playful end bosses for a surreal, colorful children's game starr
 - `BOSS_ROSTER.md` — a quick reference for all eight bosses.
 - `ENEMY_VISUAL_SPEC.md` — mandatory visual variety rules for **all enemies**, including color variants for repeated enemies.
 - `bosses/` — one complete encounter design per end boss.
-- [bosses.json](../../../../../public_html/tests/fixtures/wonderland/bosses.json) — machine-readable reference data used by the automated test.
+- [bosses.json](../../../../../public_html/engine/tests/fixtures/wonderland/bosses.json) — machine-readable reference data used by the automated test.
 - `ART_PROMPTS.md` — copy-ready English concept-art prompts.
 - `BOSS_LINEUP.png` — original concept-art lineup showing all eight bosses in distinct color schemes.
 
@@ -24,4 +24,4 @@ These are **design concepts and prompts**, not production-ready animation sprite
 
 ## Implementation in Bravios
 
-The two sizes and fifteen encounters are described in the [level design](../levels.md#enemies-and-bosses), including how concept mechanics were adapted to the existing platform campaign. The [visual and playable test page](../../../../../public_html/tests/wonder-foes.html) shows small variants and large bosses using the actual game code.
+The two sizes and fifteen encounters are described in the [level design](../levels.md#enemies-and-bosses), including how concept mechanics were adapted to the existing platform campaign. The [visual and playable test page](../../../../../public_html/engine/tests/wonder-foes.html) shows small variants and large bosses using the actual game code.

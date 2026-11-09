@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="nl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lianen en donutplatforms · Bravios</title>
+<style>body{margin:0;background:#f2efdf;color:#263a36;font:16px system-ui}main{max-width:1100px;margin:24px auto;padding:16px}button,a{font:inherit}button{padding:10px 16px;border:1px solid #52634a;border-radius:9px;background:#fff9df;color:#263a36;cursor:pointer}button:focus-visible{outline:3px solid #7354ac}canvas{width:100%;height:auto;display:block;background:#c8e7df;border-radius:12px;margin:16px 0}#status{min-height:28px}nav{display:flex;flex-wrap:wrap;gap:10px}</style></head>
+<body><main><h1>Lianen en donutplatforms</h1><p>Gebruik ← → om te lopen en te slingeren. Houd spatie vast voor een hoge sprong; raak een liaan om vast te pakken. Laat spatie los en druk opnieuw om af te springen. De donuts veren en vallen 3 seconden na de eerste landing.</p>
+<nav><button id="reset">Opnieuw</button><button id="vine">Begin bij de liaan</button><button id="donut">Begin boven de donuts</button><button id="pause">Pauze</button><a href="../../">Naar de levelbouwer</a></nav><p id="status" role="status"></p><canvas id="canvas" width="1280" height="512" tabindex="0" aria-label="Speelproef met lianen en donutplatforms"></canvas>
+<script type="module">
+import {blankLevel,createGame,stepGame} from '../engine.mjs?v=41';
+import {drawWorld,loadCharacters} from '../art.mjs?v=swing-44';
+import {loadLook} from '../look.mjs?v=8';
+import {loadTerrain} from '../terrain.mjs?v=3';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
+const level=blankLevel(40);level.name='Slinger en stuiter';
+level.tiles[13][2]=0;level.tiles[11][4]=10;
+for(let y=12;y<16;y++)for(let x=8;x<32;x++)level.tiles[y][x]=0;
+for(let x=0;x<8;x++)level.tiles[12][x]=1;
+level.tiles[6][11]=99;level.tiles[5][20]=99;
+for(let x=15;x<19;x++)level.tiles[11][x]=12;
+for(const x of [23,25,27,29])level.tiles[11][x]=100;
+for(const x of [15,17,23,25,27,29])level.tiles[9][x]=4;
+let game,held={},last=0,accumulator=0;
+function reset(){game=createGame(level);held={};last=0;accumulator=0;document.querySelector('#pause').textContent='Pauze';canvas.focus();}
+function preset(kind){reset();const p=game.player;if(kind==='vine')Object.assign(p,{x:234,y:384-p.h,grounded:true});else Object.assign(p,{x:23*32+5,y:11*32-90,vy:100});}
+document.querySelector('#reset').onclick=reset;
+document.querySelector('#vine').onclick=()=>preset('vine');
+document.querySelector('#donut').onclick=()=>preset('donut');
+document.querySelector('#pause').onclick=()=>{if(!['playing','paused'].includes(game.state))return;game.state=game.state==='playing'?'paused':'playing';document.querySelector('#pause').textContent=game.state==='paused'?'Verder spelen':'Pauze';canvas.focus();};
+const keys={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'jump',ArrowUp:'jump',ArrowDown:'pipe'};
+window.addEventListener('keydown',e=>{if(keys[e.code]&&!e.target.closest('button,a')){e.preventDefault();held[keys[e.code]]=true;}});
+window.addEventListener('keyup',e=>{if(keys[e.code])held[keys[e.code]]=false;});window.addEventListener('blur',()=>held={});
+// Character image URLs are resolved relative to their runtime modules.
+await Promise.all([loadCharacters(),loadLook(),loadTerrain()]);reset();
+function frame(t){accumulator+=Math.min((t-last)/1000||0,.05);last=t;while(accumulator>=1/120){stepGame(game,held);accumulator-=1/120;}drawWorld(ctx,level,{game,grid:false,time:game.time});status.textContent=`${game.state==='dead'?'Gevallen! Kies Opnieuw.':game.state==='paused'?'Pauze':game.player.vineId?'Vast! ← → slingeren · spatie loslaten en opnieuw drukken om af te springen':'Spring naar een liaan of land op een donut.'} · Donuts: ${game.donuts.map(d=>d.phase==='armed'?Math.ceil(d.remaining)+'s':d.phase==='idle'?'klaar':'gevallen').join(' · ')}`;requestAnimationFrame(frame);}
+// Exposes only this isolated test world, never the player's saved collection.
+window.swingProbe={get game(){return game;},level,preset};requestAnimationFrame(frame);
+</script></main></body></html>

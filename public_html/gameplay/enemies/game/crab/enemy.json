@@ -1,0 +1,104 @@
+{
+  "id": "crab",
+  "name": "Krab",
+  "kind": "crab",
+  "tileIds": [
+    96
+  ],
+  "variant": "normal",
+  "size": [
+    32,
+    20
+  ],
+  "movement": {
+    "type": "swim",
+    "speed": 28,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {},
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 160,
+      "frameHeight": 136,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 20,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        68
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 160,
+      "frameHeight": 136,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 20,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        68
+      ]
+    },
+    "idle-night": {
+      "image": "images/idle-night.png",
+      "frameWidth": 160,
+      "frameHeight": 136,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 20,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        68
+      ]
+    },
+    "walk-night": {
+      "image": "images/walk-night.png",
+      "frameWidth": 160,
+      "frameHeight": 136,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 20,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        68
+      ]
+    }
+  },
+  "description": "Loopt over de bodem met gevaarlijke scharen."
+}

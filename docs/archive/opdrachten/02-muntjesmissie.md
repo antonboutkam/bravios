@@ -12,7 +12,7 @@ Een speler wil tijdens het spelen zien hoeveel muntjes er nog te verzamelen zijn
 
 ## Begin hier
 
-Open [app.mjs](../../../public_html/app.mjs) bij `updateGameHud`. Bekijk `game.coins`, `game.totalCoins` en `coin-count`. Voeg je eigen element toe naast de bestaande teller in [index.html](../../../public_html/index.html). De HUD is de informatiebalk boven het spel.
+Open [app.mjs](../../../public_html/engine/app.mjs) bij `updateGameHud`. Bekijk `game.coins`, `game.totalCoins` en `coin-count`. Voeg je eigen element toe naast de bestaande teller in [index.html](../../../public_html/index.html). De HUD is de informatiebalk boven het spel.
 
 ## Maak de basisversie
 
