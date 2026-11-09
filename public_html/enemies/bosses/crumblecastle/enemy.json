@@ -1,0 +1,197 @@
+{
+  "id": "crumblecastle",
+  "name": "Crumblecastle the Walking Fortress",
+  "kind": "wonder",
+  "wonderType": 5,
+  "tileIds": [],
+  "size": [
+    77,
+    82
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 75,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": false,
+    "bubbleable": false,
+    "hitCooldown": 0.7
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "boss": {
+    "restSeconds": 1.4,
+    "warningSeconds": 1.5,
+    "attackSeconds": 1.2,
+    "exposedSeconds": 5
+  },
+  "metadata": {
+    "id": "crumblecastle",
+    "number": 6,
+    "name": "Crumblecastle the Walking Fortress",
+    "realm": "The Wandering Castle",
+    "primary_color": "#5F9660",
+    "secondary_color": "#C2AE80",
+    "accent_color": "#AA3B48",
+    "silhouette": "asymmetric castle with towers, drawbridge mouth and four chicken legs",
+    "materials": [
+      "moss-covered masonry",
+      "wooden drawbridge",
+      "fabric flag"
+    ],
+    "signature_animation": "cluck and stomp",
+    "arena_feature": "wobbling flagstones and changing bridges",
+    "attacks": [
+      "Furniture Cannon",
+      "Chicken-Leg Stomp",
+      "Drawbridge Chomp"
+    ],
+    "weakness": "Climb his lowered leg and pull the red flag from the tallest tower.",
+    "hit_windows": 3,
+    "reward_ability": "Castle Stomp",
+    "defeat_form": "a cozy small playhouse",
+    "boss_file": "bosses/06-crumblecastle-the-walking-fortress.md"
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "warning": {
+      "image": "images/warning.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "attack": {
+      "image": "images/attack.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "puzzle": {
+      "image": "images/puzzle.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "exposed": {
+      "image": "images/exposed.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "rest": {
+      "image": "images/rest.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    },
+    "clone": {
+      "image": "images/clone.png",
+      "frameWidth": 250,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 77,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        125,
+        130
+      ]
+    }
+  }
+}

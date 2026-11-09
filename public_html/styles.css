@@ -347,6 +347,25 @@ body.illustrated-look .campaign-field canvas, body.illustrated-look .adventure-p
 .start-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:18px}.start-card{overflow:hidden;text-align:left;border:1px solid #ffffff;border-radius:20px;background:#fffefa;box-shadow:0 5px 18px #314e3712;padding:0;color:#263831;transition:transform .16s,box-shadow .16s}.start-card:hover,.start-card:focus-visible{transform:translateY(-4px);box-shadow:0 10px 24px #314e3725;outline:3px solid #a18cdb;outline-offset:3px}.start-picture{height:130px;position:relative;overflow:hidden;background:#d9eedb}.start-picture canvas{width:100%;height:100%;object-fit:cover}.start-tag{position:absolute;bottom:10px;right:12px;border-radius:12px;background:#ffffffe8;box-shadow:0 2px 8px #0001;font-size:23px;padding:3px 10px;color:#7053c7}.start-card-copy{padding:17px 19px}.start-card h2{font-size:20px;margin:0 0 7px;letter-spacing:-.4px}.start-card p{font-size:13px;line-height:1.5;color:#66766d;margin:0 0 13px}.start-progress{display:block;font-size:11px;color:#7053c7;font-weight:700}.start-card-world{grid-row:span 2;position:relative;min-height:450px;background:#177c9b}.start-card-world>img{position:absolute;width:100%;height:100%;object-fit:cover;object-position:56% 50%;inset:0}.start-card-world:after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 25%,#153d3d44 44%,#173c37f5 85%);pointer-events:none}.start-card-world .start-card-copy{position:absolute;bottom:0;left:0;right:0;z-index:1;padding:28px;color:white}.start-card-world h2{font-size:32px}.start-card-world p{color:#eff5dd;font-size:14px}.start-card-world .start-progress{color:#ffe3a1}.start-badge{display:inline-block;font-size:9px;letter-spacing:1.8px;font-weight:bold;color:#fff0b2;margin-bottom:12px}.start-go{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ffffff55;margin-top:22px;padding-top:16px;font-size:13px;font-weight:bold}.start-go b{font-size:24px}.start-crazy{background:#fff9f1}.start-small{background:#f5f0fd}.start-footer{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:25px}.start-footer p{font-size:11px;color:#66766d;margin-left:auto}
 @media(max-width:850px){.start-grid{grid-template-columns:1fr 1fr}.start-card-world{grid-column:span 2;grid-row:auto;min-height:280px}.start-card-world>img{object-position:center 56%}.start-card-world .start-card-copy{max-width:420px}.start-header{gap:16px}.start-logo{height:90px}.start-footer p{width:100%;margin:0}.start-screen{padding:20px}}
 @media(max-width:480px){.start-header{flex-wrap:wrap}.start-logo{width:150px;height:75px}.start-header>div{order:3}.start-header>.icon-button{order:2}.start-grid{gap:12px}.start-picture{height:100px}.start-card-copy{padding:13px}.start-card h2{font-size:17px}.start-card p{font-size:12px}.start-card-world h2{font-size:30px}.start-card-world .start-card-copy{padding:22px}}
+/* Four equally sized adventures, with the same image and content layout. */
+.start-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch}
+.start-grid>.start-card{display:flex;flex-direction:column;min-width:0}
+.start-picture{width:100%;height:auto;aspect-ratio:12/7;flex-shrink:0}
+.start-picture>img,.start-picture>canvas{display:block;width:100%;height:100%;object-fit:cover}
+.start-card-copy{display:flex;flex-direction:column;flex:1;width:100%;box-sizing:border-box;padding:20px}
+.start-badge{color:#7053c7;font-size:9px;letter-spacing:1.2px;min-height:14px;margin-bottom:10px}
+.start-card h2{font-size:21px;line-height:1.2;min-height:2.4em}
+.start-card p{min-height:4.5em}
+.start-progress{margin-top:auto;min-height:16px}
+.start-go{color:#7053c7;border-top:1px solid #7053c726;margin-top:16px;padding-top:12px;gap:8px}
+.start-crazy{background:#fffefa}
+.start-grid-extra{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}
+.start-grid-extra>.start-card{flex-direction:row;align-items:stretch}
+.start-grid-extra .start-picture{width:36%;aspect-ratio:auto;min-height:150px}
+.start-grid-extra h2,.start-grid-extra p{min-height:0}
+@media(max-width:1000px){.start-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.start-card h2{min-height:0}.start-card p{min-height:3em}}
+@media(max-width:600px){.start-grid-extra>.start-card{flex-direction:column}.start-grid-extra .start-picture{width:100%;aspect-ratio:12/7;min-height:0}.start-card-copy{padding:15px}.start-card h2{font-size:18px;min-height:2.4em}.start-card p{min-height:4.5em}.start-badge{font-size:8px;letter-spacing:.7px}.start-go{font-size:12px}}
+@media(max-width:360px){.start-grid{grid-template-columns:1fr}.start-card h2,.start-card p{min-height:0}}
 @media(prefers-reduced-motion:reduce){.start-card{transition:none}.start-card:hover,.start-card:focus-visible{transform:none}}
 
 .small-games-dialog{width:min(900px,96vw);max-width:900px;background:#fffaf0}.small-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}.small-choice{display:flex;flex-direction:column;align-items:center;gap:14px;background:#f0f4e8;border:2px solid #fff;border-radius:20px;padding:28px 16px;color:#344439;text-align:center;box-shadow:0 4px 0 #d7e2ce}.small-choice:nth-child(2){background:#f1e8f8}.small-choice:nth-child(3){background:#fff0db}.small-choice>span{font-size:65px}.small-choice strong{font-size:21px}.small-choice small{font-size:13px;line-height:1.6;color:#66766d}.small-choice:focus-visible,.small-choice:hover{outline:3px solid #a18cdb;outline-offset:3px}.small-top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:18px 0 12px}.small-games-dialog canvas{display:block;width:100%;height:auto;border-radius:18px;border:2px solid #d9e5cb;touch-action:none}.small-games-dialog [data-small-hint]{font-size:13px;line-height:1.7;color:#66766d}.small-games-dialog [data-small-result]{font-weight:bold;font-size:20px;color:#7053c7}
@@ -438,3 +457,7 @@ body.illustrated-look .campaign-field canvas, body.illustrated-look .adventure-p
   .small-games-dialog .button, .small-games-dialog .icon-button { padding: 6px 12px; min-height: 32px; }
   .small-games-dialog [data-small-hint], .small-controller-hint { font-size: 11px; }
 }
+
+.starting-character-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.starting-character-list .character-option { cursor: pointer; font-size: 16px; }
+.starting-character-list .character-option img { object-fit: contain; }

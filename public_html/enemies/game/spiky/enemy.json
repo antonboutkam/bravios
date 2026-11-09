@@ -1,0 +1,85 @@
+{
+  "id": "spiky",
+  "name": "Dikke stekelschildpad",
+  "kind": "spiky",
+  "tileIds": [
+    27
+  ],
+  "variant": "normal",
+  "size": [
+    38,
+    32
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 26,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "hurt",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0.15
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {
+    "chargeSeconds": 5,
+    "jumpSpeed": 550,
+    "tongueSeconds": 3,
+    "tongueReach": 88,
+    "reviveSeconds": 5,
+    "fuseSeconds": 3,
+    "triggerRange": 110,
+    "angrySpeed": 190,
+    "lookSeconds": 0.8,
+    "restSeconds": 5,
+    "riseSpeed": 90
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 172,
+      "frameHeight": 160,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 32,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        80
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 172,
+      "frameHeight": 160,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 32,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        80
+      ]
+    }
+  }
+}

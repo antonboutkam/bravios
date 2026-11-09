@@ -1,6 +1,8 @@
+import { DEFAULT_CHARACTER, nextCharacter, CHARACTER_PROFILES } from './characters/roster.mjs';
 import { TILE, createGame, stepGame, clone } from './engine.mjs?v=44';
 
-export function createCoopGame(level, hostCharacter = 'boaz') {
+export function createCoopGame(level, hostCharacter = DEFAULT_CHARACTER) {
+  if (!Object.hasOwn(CHARACTER_PROFILES, hostCharacter)) hostCharacter = DEFAULT_CHARACTER;
   const game = createGame(level);
   game.spawnPlayer = { ...game.player };
   game.players = [game.player, { ...game.player }];
@@ -13,7 +15,7 @@ export function createCoopGame(level, hostCharacter = 'boaz') {
   }
   if (clear) game.players[1].x = candidate.x;
   game.players.forEach((player, index) => {
-    player.character = index ? (hostCharacter === 'boaz' ? 'ravi' : 'boaz') : hostCharacter;
+    player.character = index ? nextCharacter(hostCharacter) : hostCharacter;
     player.respawn = 0; player.lastJump = false; player.lastMount = false;
     player.spawn = { x: player.x, y: player.y };
     player.safeSpot = { ...player.spawn }; player.trail = []; player.fartTrail = [];

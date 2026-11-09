@@ -1,4 +1,4 @@
-// Character identities and palettes from assets/wonderland/bosses/data/bosses.json.
+// Character identities and palettes from public_html/tests/fixtures/wonderland/bosses.json.
 export const WONDER_FOES = [
   {
     "id": "blubberus",

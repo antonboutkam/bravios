@@ -1,3 +1,4 @@
+import { drawEnemySprite } from './enemies/sprites.mjs';
 import { hero, CHARACTER_NAMES } from './characters/shared/hero.mjs';
 export { hero, CHARACTER_NAMES, spriteCutout, loadCharacters } from './characters/shared/hero.mjs';
 import { createFirebars, drawFirebar, FIREBAR_TILE, FIREBAR_REACH } from './firebars.mjs?v=1';
@@ -980,35 +981,15 @@ export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hove
       const facing = visualFacing(game, enemy);
       const designTime = enemy.frozen || reducedMotion ? 0 : time;
       drawEnemyWings(ctx, enemy.design, enemy.x - 3, enemy.y - 6, enemy.w + 6, enemy.h + 6, designTime);
+      if (enemy.kind === 'frog' && enemy.tongueLength > 0) {
+        const tongue = frogTongue(enemy); rect(ctx, '#ba7b87', tongue.x, tongue.y, tongue.w, tongue.h); rect(ctx, '#efb4b6', tongue.x, tongue.y + 1, tongue.w, tongue.h - 2);
+      }
       if (enemy.kind === 'wonder') drawWonderFoe(ctx,enemy,designTime,reducedMotion);
-      else if (isSeaEnemy(enemy)) drawSeaCreature(ctx,enemy,designTime,theme==='underwater-night');
-      else if (enemy.kind === 'beetle' || enemy.kind === 'spikedbeetle') drawHelmetBeetle(ctx, enemy.x, enemy.y, { spike: enemy.kind === 'spikedbeetle', folded: enemy.phase === 'folded', facing, time: enemy.frozen || enemy.phase === 'folded' ? 0 : designTime });
-      else if (enemy.kind === 'centipede') drawCentipede(ctx, enemy.x, enemy.y, enemy.w, enemy.phase, facing, designTime);
-      else if (enemy.kind === 'cloud') drawTile(ctx, 82, enemy.x - 3, enemy.y - 3);
-      else if (enemy.kind === 'crusher') drawCrusher(ctx, enemy.x, enemy.y, enemy.w, enemy.phase);
-      else if (enemy.kind === 'robot') {
-        const charge = enemy.phase === 'charge' ? Math.min(1, enemy.phaseTime / 5) : 0;
-        drawRobot(ctx, enemy.x - 3, enemy.y - 6, charge, facing, designTime, enemy.variant === 'angry');
-        if (enemy.phase === 'charge' && !enemy.bubbled) {
-          rect(ctx, '#536374', enemy.x, enemy.y - 12, 26, 4); rect(ctx, '#f6d186', enemy.x, enemy.y - 12, Math.round(26 * charge), 4);
-        }
-      } else if (enemy.kind === 'frog') {
-        if (enemy.tongueLength > 0) {
-          const tongue = frogTongue(enemy); rect(ctx, '#ba7b87', tongue.x, tongue.y, tongue.w, tongue.h); rect(ctx, '#efb4b6', tongue.x, tongue.y + 1, tongue.w, tongue.h - 2);
-        }
-        drawFrog(ctx, enemy.x - 3, enemy.y - 6, facing, enemy.phase === 'crawl', designTime, enemy.variant === 'red');
-      } else if (enemy.boss && enemy.kind === 'spiky') {
-        drawCastleBoss(ctx, enemy, facing, enemy.frozen ? 0 : designTime);
-      } else if (['turtle', 'skeleton', 'spiky', 'hammer'].includes(enemy.kind)) {
-        ctx.save(); ctx.translate(enemy.x - 3, enemy.y - (enemy.phase === 'fallen' ? 20 : enemy.phase === 'shell' ? 14 : 6));
-        if (enemy.kind === 'spiky') ctx.scale(enemy.boss ? 1.8 : 1.35, enemy.boss ? 1.7 : 1.2);
-        drawTurtle(ctx, 0, 0, enemy.kind, enemy.phase, facing, enemy.vx ? designTime : 0); ctx.restore();
-        if (enemy.kind === 'spiky') { rect(ctx, '#665266', enemy.x, enemy.y - 12, enemy.w, 3); rect(ctx, '#dc9a83', enemy.x, enemy.y - 12, enemy.w * enemy.hp / (enemy.maxHp || 3), 3); }
-      } else if (enemy.kind === 'plane') { ctx.save(); ctx.translate(enemy.x + (facing < 0 ? 32 : 0), enemy.y); ctx.scale(facing, 1); drawTile(ctx, 77, 0, 0); ctx.restore(); }
-      else if (enemy.kind === 'dragon') drawDragon(ctx, enemy.x - 3, enemy.y - 6, facing, designTime);
-      else if (enemy.kind === 'plant') { ctx.save(); ctx.translate(enemy.x, enemy.y); ctx.scale(1, 1.5); drawPlant(ctx, 0, 0, enemy.frozen || reducedMotion ? 0 : enemy.phaseTime); ctx.restore(); }
-      else if (enemy.kind === 'bomb') drawBomb(ctx, enemy.x - 3, enemy.y - 6, enemy.fuse, designTime);
-      else drawMonsterArt(ctx, 'walker', enemy.x - 3, enemy.y - 6, { time: designTime, facing, moving: !!enemy.vx });
+      else if (!drawEnemySprite(ctx,enemy,designTime,{facing,night:theme==='underwater-night'})) drawEnemyBody(ctx,enemy,designTime,facing,reducedMotion,theme);
+      if (enemy.kind === 'robot' && enemy.phase === 'charge' && !enemy.bubbled) {
+        const charge=Math.min(1,enemy.phaseTime/5);rect(ctx,'#536374',enemy.x,enemy.y-12,26,4);rect(ctx,'#f6d186',enemy.x,enemy.y-12,Math.round(26*charge),4);
+      }
+      if (enemy.kind === 'spiky') { rect(ctx, '#665266', enemy.x, enemy.y - 12, enemy.w, 3); rect(ctx, '#dc9a83', enemy.x, enemy.y - 12, enemy.w * enemy.hp / (enemy.maxHp || 3), 3); }
       drawEnemyFront(ctx, enemy.design, enemy.x - 3, enemy.y - 6, enemy.w + 6, enemy.h + 6, designTime, ['shell', 'fallen'].includes(enemy.phase));
       if (enemy.frozen > 0) {
         rect(ctx, '#a8eafa88', enemy.x - 3, enemy.y - 6, 32, 34);
@@ -1160,3 +1141,28 @@ function drawChainBall(ctx, ball) {
 }
 
 export function releasePlatformSprites(){for(const sprite of spriteCache.values()){sprite.width=1;sprite.height=1;}spriteCache.clear();}
+
+export function drawEnemyBody(ctx, enemy, designTime=0, facing=enemy.facing||1, reducedMotion=false, theme='grass') {
+      if (enemy.kind === 'wonder') drawWonderFoe(ctx,enemy,designTime,reducedMotion);
+      else if (isSeaEnemy(enemy)) drawSeaCreature(ctx,enemy,designTime,theme==='underwater-night');
+      else if (enemy.kind === 'beetle' || enemy.kind === 'spikedbeetle') drawHelmetBeetle(ctx, enemy.x, enemy.y, { spike: enemy.kind === 'spikedbeetle', folded: enemy.phase === 'folded', facing, time: enemy.frozen || enemy.phase === 'folded' ? 0 : designTime });
+      else if (enemy.kind === 'centipede') drawCentipede(ctx, enemy.x, enemy.y, enemy.w, enemy.phase, facing, designTime);
+      else if (enemy.kind === 'cloud') drawTile(ctx, 82, enemy.x - 3, enemy.y - 3);
+      else if (enemy.kind === 'crusher') drawCrusher(ctx, enemy.x, enemy.y, enemy.w, enemy.phase);
+      else if (enemy.kind === 'robot') {
+        const charge = enemy.phase === 'charge' ? Math.min(1, enemy.phaseTime / 5) : 0;
+        drawRobot(ctx, enemy.x - 3, enemy.y - 6, charge, facing, designTime, enemy.variant === 'angry');
+      } else if (enemy.kind === 'frog') {
+        drawFrog(ctx, enemy.x - 3, enemy.y - 6, facing, enemy.phase === 'crawl', designTime, enemy.variant === 'red');
+      } else if (enemy.boss && enemy.kind === 'spiky') {
+        drawCastleBoss(ctx, enemy, facing, enemy.frozen ? 0 : designTime);
+      } else if (['turtle', 'skeleton', 'spiky', 'hammer'].includes(enemy.kind)) {
+        ctx.save(); ctx.translate(enemy.x - 3, enemy.y - (enemy.phase === 'fallen' ? 20 : enemy.phase === 'shell' ? 14 : 6));
+        if (enemy.kind === 'spiky') ctx.scale(enemy.boss ? 1.8 : 1.35, enemy.boss ? 1.7 : 1.2);
+        drawTurtle(ctx, 0, 0, enemy.kind, enemy.phase, facing, enemy.vx ? designTime : 0); ctx.restore();
+      } else if (enemy.kind === 'plane') { ctx.save(); ctx.translate(enemy.x + (facing < 0 ? 32 : 0), enemy.y); ctx.scale(facing, 1); drawTile(ctx, 77, 0, 0); ctx.restore(); }
+      else if (enemy.kind === 'dragon') drawDragon(ctx, enemy.x - 3, enemy.y - 6, facing, designTime);
+      else if (enemy.kind === 'plant') { ctx.save(); ctx.translate(enemy.x, enemy.y); ctx.scale(1, 1.5); drawPlant(ctx, 0, 0, enemy.frozen || reducedMotion ? 0 : enemy.phaseTime); ctx.restore(); }
+      else if (enemy.kind === 'bomb') drawBomb(ctx, enemy.x - 3, enemy.y - 6, enemy.fuse, designTime);
+      else drawMonsterArt(ctx, 'walker', enemy.x - 3, enemy.y - 6, { time: designTime, facing, moving: !!enemy.vx });
+}

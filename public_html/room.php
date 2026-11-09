@@ -2,6 +2,19 @@
 declare(strict_types=1);
 
 // A two-player relay: the host browser runs the game, PHP exchanges inputs and snapshots.
+function roomCharacterIds(?string $root = null): array {
+    $characters = [];
+    foreach (glob(($root ?? __DIR__ . '/characters') . '/*/character.json') ?: [] as $filename) {
+        $config = json_decode((string)file_get_contents($filename), true);
+        $id = basename(dirname($filename));
+        if (is_array($config) && preg_match('/^[a-z][a-z0-9-]{0,39}$/D', $id)
+            && !in_array($id, ['custom', 'shared', '__proto__', 'constructor', 'prototype'], true)
+            && ($config['id'] ?? null) === $id) $characters[] = $id;
+    }
+    sort($characters, SORT_STRING);
+    return $characters;
+}
+
 function roomFail(int $status, string $message): never {
     throw new RuntimeException($message, $status);
 }
@@ -122,7 +135,7 @@ function roomSnapshot(mixed $snapshot, int $width, int $height = 16): array {
         || !is_array($snapshot['players'] ?? null) || count($snapshot['players']) !== 2
         || !is_array($snapshot['tiles'] ?? null) || count($snapshot['tiles']) !== $height) roomFail(400, 'Ongeldige spelstand.');
     foreach ($snapshot['players'] as &$p) {
-        if (!is_array($p) || !is_numeric($p['x'] ?? null) || !is_numeric($p['y'] ?? null) || !in_array($p['character'] ?? '', ['boaz', 'ravi'], true)) roomFail(400, 'Ongeldige speler.');
+        if (!is_array($p) || !is_numeric($p['x'] ?? null) || !is_numeric($p['y'] ?? null) || !in_array($p['character'] ?? '', roomCharacterIds(), true)) roomFail(400, 'Ongeldige speler.');
         if (array_key_exists('appearance', $p)) $p['appearance'] = roomAppearance($p['appearance']);
     }
     unset($p);
@@ -137,8 +150,8 @@ function roomHandle(array $body, string $directory, ?float $clock = null): array
     if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) roomFail(503, 'Kamers kunnen nu niet worden bewaard.');
     if ($action === 'create') {
         $level = roomLevel($body['level'] ?? null);
-        $character = $body['character'] ?? 'boaz';
-        if (!in_array($character, ['boaz', 'ravi'], true)) roomFail(400, 'Kies Boaz of Ravi.');
+        $character = $body['character'] ?? (roomCharacterIds()[0] ?? '');
+        if (!in_array($character, roomCharacterIds(), true)) roomFail(400, 'Kies een beschikbaar karakter.');
         // Expired rooms are temporary data, never level-library files.
         foreach (glob($directory . '/*.json') ?: [] as $old) if ((filemtime($old) ?: 0) < $now - 7200) @unlink($old);
         for ($attempt = 0; $attempt < 10; $attempt++) {

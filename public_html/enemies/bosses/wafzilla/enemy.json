@@ -1,0 +1,197 @@
+{
+  "id": "wafzilla",
+  "name": "Wafzilla the Terrible",
+  "kind": "wonder",
+  "wonderType": 1,
+  "tileIds": [],
+  "size": [
+    58,
+    82
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 75,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": false,
+    "bubbleable": false,
+    "hitCooldown": 0.7
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "boss": {
+    "restSeconds": 1.4,
+    "warningSeconds": 1.5,
+    "attackSeconds": 1.2,
+    "exposedSeconds": 5
+  },
+  "metadata": {
+    "id": "wafzilla",
+    "number": 2,
+    "name": "Wafzilla the Terrible",
+    "realm": "The Candy Castle",
+    "primary_color": "#DF9F39",
+    "secondary_color": "#FFF0D9",
+    "accent_color": "#E8425A",
+    "silhouette": "tall rectangular waffle with syrup cannons and butter feet",
+    "materials": [
+      "crisp waffle",
+      "whipped cream",
+      "sticky syrup"
+    ],
+    "signature_animation": "slip and skate",
+    "arena_feature": "swinging spoon bridges and pancake platforms",
+    "attacks": [
+      "Syrup Splash",
+      "Flying Pancake",
+      "Breakfast Rush"
+    ],
+    "weakness": "Knock butter beneath his feet to make him slip, then hit the waffle emblem.",
+    "hit_windows": 3,
+    "reward_ability": "Syrup Swing",
+    "defeat_form": "a stack of smiling tiny waffles",
+    "boss_file": "bosses/02-wafzilla-the-terrible.md"
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "warning": {
+      "image": "images/warning.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "attack": {
+      "image": "images/attack.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "puzzle": {
+      "image": "images/puzzle.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "exposed": {
+      "image": "images/exposed.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "rest": {
+      "image": "images/rest.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    },
+    "clone": {
+      "image": "images/clone.png",
+      "frameWidth": 212,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 58,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        106,
+        130
+      ]
+    }
+  }
+}

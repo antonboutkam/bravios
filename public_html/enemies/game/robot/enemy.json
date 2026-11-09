@@ -1,0 +1,265 @@
+{
+  "id": "robot",
+  "name": "Robot",
+  "kind": "robot",
+  "tileIds": [
+    17
+  ],
+  "variant": "normal",
+  "size": [
+    26,
+    26
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 150,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {
+    "chargeSeconds": 5,
+    "jumpSpeed": 550,
+    "tongueSeconds": 3,
+    "tongueReach": 88,
+    "reviveSeconds": 5,
+    "fuseSeconds": 3,
+    "triggerRange": 110,
+    "angrySpeed": 190,
+    "lookSeconds": 0.8,
+    "restSeconds": 5,
+    "riseSpeed": 90
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-0": {
+      "image": "images/charge-0.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-1": {
+      "image": "images/charge-1.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-2": {
+      "image": "images/charge-2.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-3": {
+      "image": "images/charge-3.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-4": {
+      "image": "images/charge-4.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-5": {
+      "image": "images/charge-5.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-6": {
+      "image": "images/charge-6.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-7": {
+      "image": "images/charge-7.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-8": {
+      "image": "images/charge-8.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-9": {
+      "image": "images/charge-9.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "charge-10": {
+      "image": "images/charge-10.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "jump": {
+      "image": "images/jump.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    }
+  }
+}

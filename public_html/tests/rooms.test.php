@@ -10,6 +10,19 @@ $level['tiles'][13][2] = 10; $level['tiles'][13][36] = 11;
 foreach ([19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69] as $i => $id) $level['tiles'][8 + intdiv($i, 30)][5 + $i % 30] = $id;
 $level['tiles'][14] = $level['tiles'][15] = array_fill(0, 40, 1);
 try {
+    $characterDirectory = $directory . '-characters';
+    mkdir($characterDirectory . '/luna', 0700, true);
+    try {
+        file_put_contents($characterDirectory . '/luna/character.json', json_encode(['id' => 'luna']));
+        checkRoom(roomCharacterIds($characterDirectory) === ['luna'], 'nieuw karakter wordt zonder vaste whitelist gevonden');
+        file_put_contents($characterDirectory . '/luna/character.json', json_encode(['id' => 'other']));
+        checkRoom(roomCharacterIds($characterDirectory) === [], 'karakter-ID moet overeenkomen met de mapnaam');
+        file_put_contents($characterDirectory . '/luna/character.json', '{');
+        checkRoom(roomCharacterIds($characterDirectory) === [], 'ongeldige karakter-JSON wordt geweigerd');
+    } finally {
+        unlink($characterDirectory . '/luna/character.json');
+        rmdir($characterDirectory . '/luna'); rmdir($characterDirectory);
+    }
     foreach (['underwater','underwater-night'] as $theme) foreach (range(85,96) as $id) {
         $sea = $level; $sea['theme'] = $theme; $sea['tiles'][5][15] = $id;
         checkRoom(roomLevel($sea) === $sea, 'zeedier en waterthema blijven in gedeeld level');

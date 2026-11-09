@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { LOOK_REGIONS, LOOK_SHEETS, LOOK_ATLASES, atlasRegions, alphaBounds, sheetCutout } from '../look.mjs';
+import { CHARACTER_PROFILES } from '../characters/roster.mjs';
 import { creatureFrame, dinoPlacement } from '../art.mjs';
 import { blankLevel } from '../engine.mjs';
 import { createCoopGame, packCoopGame, unpackCoopGame } from '../coop.mjs';
@@ -82,4 +83,20 @@ test('de zadelpositie spiegelt met de dino, volgt gast-snapshots en verandert ge
   assert.equal(guest.players[1].mounted, guest.dinos[0]);
   assert.deepEqual(dinoPlacement(guest.players[1].mounted), right);
   assert.deepEqual(packCoopGame(game), before);
+});
+
+
+test('vaste helden gebruiken volledige transparante PNGs per houding, ook op de dino', async () => {
+  const poses = ['idle', 'side', 'run', 'jump', 'victory', 'land', 'ride'];
+  for (const profile of Object.values(CHARACTER_PROFILES)) {
+    assert.deepEqual(Object.keys(profile.views.side.poses).sort(), [...poses].sort());
+    for (const pose of poses) {
+      const path = profile.views.side.poses[pose];
+      assert.equal(LOOK_SHEETS[`${profile.id}:${pose}`], path);
+      const png = await readFile(new URL(`../${path}`, import.meta.url));
+      assert.equal(png.subarray(1, 4).toString(), 'PNG');
+      assert.equal(png[25], 6, `${profile.id}:${pose} must preserve alpha`);
+      assert.ok(png.readUInt32BE(16) > 0 && png.readUInt32BE(20) > 0);
+    }
+  }
 });

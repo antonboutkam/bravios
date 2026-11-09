@@ -4,4 +4,4 @@ Elk spel heeft een eigen map met `game.mjs` (sessiefactory en bediening), `model
 
 Registreer een nieuw spel in `catalog.mjs`. De schil in `shell.mjs` regelt fullscreen, de menukeuze en invoer. `platformer/encounters.mjs` onderbreekt en hervat de bestaande platformengine; die engine en de bouwer staan nog op hun oorspronkelijke paden.
 
-Zie [het sessiecontract en de uitbreidingsstappen](../../docs/spelpakketten.md).
+Zie [het sessiecontract en de uitbreidingsstappen](../../docs/other/architecture/spelpakketten.md).

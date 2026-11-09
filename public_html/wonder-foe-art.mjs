@@ -1,3 +1,4 @@
+import { drawEnemySprite } from './enemies/sprites.mjs';
 import { WONDER_FOES, wonderBossPads } from './wonder-foes.mjs?v=1';
 
 const foeEllipse=(c,color,x,y,rx,ry=rx)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
@@ -11,6 +12,8 @@ export function drawWonderFoe(ctx,enemy,time=0,reducedMotion=false,{ghost=false}
   const t=reducedMotion?0:time,large=enemy.boss,exposed=enemy.phase==='exposed';
   let primary=info.primary_color,secondary=info.secondary_color,accent=info.accent_color.startsWith('#')?info.accent_color:'#F7C746';
   if(!large){const palette=FOE_MINION_PALETTES[enemy.palette_id||0];secondary=palette[0];accent=palette[2];if(enemy.palette_id)primary=palette[enemy.wonderType%2];}
+  const sprite=drawEnemySprite(ctx,enemy,t,{ghost});
+  if(!sprite) {
   ctx.save();ctx.translate(enemy.x,enemy.y);ctx.scale(enemy.w/100,enemy.h/100);ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
   if(ghost)ctx.globalAlpha=.24;
   if(enemy.hitCooldown>0)ctx.globalAlpha=.65;
@@ -89,7 +92,8 @@ export function drawWonderFoe(ctx,enemy,time=0,reducedMotion=false,{ghost=false}
   }
   if(exposed){ctx.strokeStyle='#fff6a5';ctx.lineWidth=3;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(50,49,57,60,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   ctx.restore();
-  if(large&&!ghost&&!enemy.defeated){
+  }
+  if(large&&!ghost&&!enemy.defeated&&!globalThis.braviosExportEnemies){
     ctx.save();ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff6df';ctx.strokeStyle='#211744';ctx.lineWidth=4;
     ctx.strokeText(info.name.split(' the ')[0],enemy.x+enemy.w/2,enemy.y-22);ctx.fillText(info.name.split(' the ')[0],enemy.x+enemy.w/2,enemy.y-22);
     ctx.fillStyle='#251d49';ctx.fillRect(enemy.x,enemy.y-14,enemy.w,5);ctx.fillStyle=exposed?'#fff0a3':info.primary_color;ctx.fillRect(enemy.x,enemy.y-14,enemy.w*enemy.hp/enemy.maxHp,5);

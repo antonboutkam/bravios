@@ -1,6 +1,7 @@
+import { enemyTileKinds } from './enemies/runtime.mjs';
 import { SEA_KINDS } from './sea-life.mjs?v=4';
 // Per-placement choices: original tiles remain compatible with older levels.
-export const ENEMY_KINDS = { ...SEA_KINDS, 6: 'walker', 17: 'robot', 18: 'frog', 20: 'frog', 21: 'robot', 22: 'turtle', 23: 'dragon', 24: 'plant', 25: 'skeleton', 27: 'spiky', 28: 'hammer', 29: 'bomb', 61: 'crusher', 77: 'plane', 82: 'cloud', 83: 'centipede', 97: 'beetle', 98: 'spikedbeetle' };
+export const ENEMY_KINDS = enemyTileKinds();
 export const EDITABLE_OBJECT_IDS = [14, 15, 19, 30, 70, 71, 72, 73, 84];
 export const canEditDesign = id => Object.hasOwn(ENEMY_KINDS, id) || EDITABLE_OBJECT_IDS.includes(id);
 export const ENEMY_OPTIONS = {

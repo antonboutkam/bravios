@@ -1,7 +1,7 @@
 import { characterView } from '../roster.mjs';
 import { ResourcePool } from '../../runtime/resource-scope.mjs';
 export const characterViewPool=new ResourcePool();
-// New view renderers acquire only their own sheets. The final lease closes the bitmap.
+// New view renderers acquire only their selected pose image. The final lease closes the bitmap.
 export async function acquireCharacterView(identity,view,scope,pool=characterViewPool){
   const variant=characterView(identity,view);
   if(!variant.asset)return variant;

@@ -62,7 +62,7 @@ test('tussenspel bewaart ouder en identiteit en hervat exact één keer bij succ
 test('karakterbestanden bestaan en voor bovenaanzicht wordt geen zijaanzicht verzonnen',async()=>{
   for(const profile of Object.values(CHARACTER_PROFILES)){
     await access(new URL('../'+profile.portrait,import.meta.url));
-    for(const view of ['side','front']){const variant=characterView({character:profile.id},view);await access(new URL('../'+variant.asset,import.meta.url));assert.equal(variant.frames[variant.frame].length,4);}
+    for(const view of ['side','front']){const variant=characterView({character:profile.id},view);await access(new URL('../'+variant.asset,import.meta.url));assert.equal(variant.asset,variant.poses[variant.frame]);for(const path of Object.values(variant.poses))await access(new URL('../'+path,import.meta.url));}
     assert.throws(()=>characterView({character:profile.id},'top-down'),/ontbreekt/);
   }
   for(const file of Object.values(CHARACTER_SHEETS))await access(new URL('../'+file,import.meta.url));

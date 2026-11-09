@@ -2,7 +2,7 @@ import { WONDERLAND_FIELDS, wonderlandUnlocked, wonderlandNodes, wonderlandEdges
 
 export function setupWonderlandMap({state,save,launch}) {
   const dialog=document.querySelector('#wonderland-map'),terrain=dialog.querySelector('.wonderland-terrain'),svg=terrain.querySelector('svg'),info=dialog.querySelector('[data-wonder-info]'),status=dialog.querySelector('[data-wonder-status]'),enter=dialog.querySelector('[data-wonder-enter]');
-  terrain.style.backgroundImage=`url("${globalThis.braviosAssets?.['wonderland/world-inspiration.png']||'wonderland/world-inspiration.png'}")`;
+  terrain.style.backgroundImage=`url("${globalThis.braviosAssets?.['worlds/wonderland/world-inspiration.png']||'worlds/wonderland/world-inspiration.png'}")`;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   let selected=0,walking=false,journey=0,swingTimer;
   const hero=document.createElement('span');hero.className='wonderland-traveller';hero.textContent='✦';hero.setAttribute('aria-hidden','true');terrain.append(hero);

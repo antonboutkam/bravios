@@ -1,0 +1,197 @@
+{
+  "id": "tick-tock",
+  "name": "Tick-Tock the Time Eater",
+  "kind": "wonder",
+  "wonderType": 3,
+  "tileIds": [],
+  "size": [
+    55,
+    82
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 75,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 3,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": false,
+    "bubbleable": false,
+    "hitCooldown": 0.7
+  },
+  "shooting": {
+    "enabled": true,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "boss": {
+    "restSeconds": 1.4,
+    "warningSeconds": 1.5,
+    "attackSeconds": 1.2,
+    "exposedSeconds": 5
+  },
+  "metadata": {
+    "id": "tick_tock",
+    "number": 4,
+    "name": "Tick-Tock the Time Eater",
+    "realm": "The Backwards Clockwork",
+    "primary_color": "#B48A41",
+    "secondary_color": "#41C3C0",
+    "accent_color": "#FF6D5A",
+    "silhouette": "tall alarm clock with twelve clock-hand arms and spring legs",
+    "materials": [
+      "antique brass",
+      "glass",
+      "painted gears"
+    ],
+    "signature_animation": "tick, stretch and spring",
+    "arena_feature": "swinging pendulum tiles on a giant clock face",
+    "attacks": [
+      "Minute-Hand Sweep",
+      "Tick-Tock Freeze",
+      "Backwards Hour"
+    ],
+    "weakness": "Press the red alarm button when both clock hands point to twelve.",
+    "hit_windows": 3,
+    "reward_ability": "Time Pause",
+    "defeat_form": "a polite little pocket watch",
+    "boss_file": "bosses/04-tick-tock-the-time-eater.md"
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "warning": {
+      "image": "images/warning.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "attack": {
+      "image": "images/attack.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "puzzle": {
+      "image": "images/puzzle.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "exposed": {
+      "image": "images/exposed.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "rest": {
+      "image": "images/rest.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    },
+    "clone": {
+      "image": "images/clone.png",
+      "frameWidth": 206,
+      "frameHeight": 260,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 55,
+      "bodyHeight": 82,
+      "bounds": [
+        -24,
+        -24,
+        103,
+        130
+      ]
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { CHARACTER_PROFILES } from './characters/roster.mjs';
 import { ADVENTURE_FIELDS, ADVENTURE_SHOPS, ADVENTURE_GOODS, adventureUnlocked, buyAdventureGood } from './adventurers.mjs?v=4';
 import { characterPortrait } from './character-maker.mjs?v=3';
 import { lookPortrait } from './look.mjs?v=8';
@@ -13,7 +14,7 @@ export function setupAdventureMap({ state, save, launch, character: getCharacter
   const shop = dialog.querySelector('[data-adventure-shop]');
   const hero = document.createElement('img'); hero.className = 'adventure-hero'; hero.alt = 'Jouw avonturier';
   terrain.append(hero);
-  terrain.style.backgroundImage = `url("${adventureAssetURL('assets/look/adventure-map.png')}")`;
+  terrain.style.backgroundImage = `url("${adventureAssetURL('worlds/adventure/adventure-map.png')}")`;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let selected = 0, walking = false, walkTimer, walkFrame, browsingShop = false, shopIndex = 0;
   const nodes = [...ADVENTURE_FIELDS, ...ADVENTURE_SHOPS];
@@ -146,5 +147,5 @@ export function setupAdventureMap({ state, save, launch, character: getCharacter
       }
       return true;
     },
-    open() { selected=state().position;walking=false;browsingShop=false;hero.src=characterPortrait(appearance())||lookPortrait(getCharacter())||adventureAssetURL(`assets/${getCharacter()}.png`);hero.style.transition='none';placeHero(selected);dialog.showModal();requestAnimationFrame(()=>{hero.style.transition='';});refresh();terrain.focus(); } };
+    open() { selected=state().position;walking=false;browsingShop=false;hero.src=characterPortrait(appearance())||lookPortrait(getCharacter())||adventureAssetURL(CHARACTER_PROFILES[getCharacter()].portrait);hero.style.transition='none';placeHero(selected);dialog.showModal();requestAnimationFrame(()=>{hero.style.transition='';});refresh();terrain.focus(); } };
 }

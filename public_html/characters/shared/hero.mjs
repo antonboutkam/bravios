@@ -1,5 +1,5 @@
 import { CHARACTER_PROFILES } from '../roster.mjs';
-import { drawCustomHero, drawWalkingSprite } from '../custom/maker.mjs';
+import { drawCustomHero } from '../custom/maker.mjs';
 import { hasLook, lookSprite, drawLook } from '../../look.mjs?v=8';
 export const CHARACTER_NAMES = Object.fromEntries(Object.entries(CHARACTER_PROFILES).map(([id,profile])=>[id,profile.name]));
 const CHARACTER_IMAGES = Object.fromEntries(Object.entries(CHARACTER_PROFILES).map(([id,profile])=>[id,profile.portrait]));
@@ -58,12 +58,7 @@ const HERO = [
 export function hero(ctx, x, y, width = 32, facing = 1, shield = false, frame = 0, character = 'boaz', pose = {}) {
   if (drawCustomHero(ctx, pose.appearance, x, y, width, facing, pose)) return;
   if (hasLook()) {
-    const walking = lookSprite(`${character}:${pose.front ? 'idle' : 'side'}`);
-    if (walking) {
-      const height = width * 1.18, spriteWidth = height * walking.bounds.width / walking.bounds.height;
-      if (drawWalkingSprite(ctx, walking.surface, walking.bounds, x + width / 2, y + width, spriteWidth, height, facing, pose)) return;
-    }
-    const state = pose.won ? 'victory' : pose.landing > .04 ? 'land' : pose.airborne ? 'jump' : pose.running ? 'run' : 'idle';
+    const state = pose.won ? 'victory' : pose.landing > .04 ? 'land' : pose.airborne ? 'jump' : pose.running ? 'run' : pose.front ? 'idle' : 'side';
     const sprite = lookSprite(`${character}:${state}`);
     if (sprite) {
       const height = width * 1.18, spriteWidth = height * sprite.bounds.width / sprite.bounds.height;

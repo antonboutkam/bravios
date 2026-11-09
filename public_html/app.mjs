@@ -5,7 +5,7 @@ import { wonderlandStatus } from './wonder-magic.mjs?v=14';
 import { setupSmallGames } from './games/shell.mjs';
 import { drawMiniPreview } from './games/preview.mjs';
 import { createPlatformEncounters } from './games/platformer/encounters.mjs';
-import { participantRoster } from './characters/roster.mjs';
+import { participantRoster, CHARACTER_PROFILES, DEFAULT_CHARACTER, nextCharacter } from './characters/roster.mjs';
 import { normalizeWorlds, saveWorldNodeLevel } from './worlds.mjs?v=1';
 import { setupWorldEditor } from './world-editor.mjs?v=1';
 import { ADVENTURE_FIELDS, adventureState, adventureUnlocked, completeAdventure, adventureLevel, prepareAdventureGame } from './adventurers.mjs?v=5';
@@ -18,7 +18,7 @@ import { beltNearCell, validateBelts } from './mechanisms.mjs?v=2';
 import { TILE, ROWS, ITEMS, PIPE_TYPES, THEMES, PALETTE_GROUPS, rocketCountdown, nearbyShell, pipeUnderPlayer, challengeResult, clone, randomLevel, blankLevel, exampleLevel, validateLevel, positions, resizeLevel, resizeUnderground, createGame, stepGame, seedTerrainLevel } from './engine.mjs?v=44';
 import { CAMPAIGN_FIELDS, CRAZY_FIELDS, TOGETHER_FIELDS, campaignLevel, crazyLevel, togetherLevel } from './levels.mjs?v=15';
 import { drawTile, drawWorld, preview, CHARACTER_NAMES, assetURL, loadCrazyBackgrounds, hero, releasePlatformSprites } from './art.mjs?v=61';
-import { loadLook, lookPortrait } from './look.mjs?v=8';
+import { loadLook } from './look.mjs?v=8';
 import { normalizeLibrary, savedLevelDetail } from './storage.mjs?v=20';
 import { createCoopGame, stepCoopGame, packCoopGame, unpackCoopGame, remoteControls } from './coop.mjs?v=swing-9';
 import { roomRequest, RoomConnection } from './network.mjs';
@@ -95,7 +95,7 @@ document.addEventListener('visibilitychange', () => { frameRateMeter.reset(); re
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 let cameraPosition = 0, keyCameraOrigin = null, viewedRoom = null;
 let storageProblem = false;
-let character = 'boaz', customCharacters = [], selectedCustomCharacter = null;
+let character = DEFAULT_CHARACTER, customCharacters = [], selectedCustomCharacter = null;
 const selectedAppearance = () => customCharacters.find(entry => entry.id === selectedCustomCharacter)?.appearance || null;
 const characterPortraits = {};
 let room = null, networkLevel = null, remotePacket = {}, remoteTaps = {}, guestPresent = false, roomBusy = false;
@@ -198,7 +198,7 @@ function updateUI() {
   const displayCharacter = room ? game.player.character : character;
   const appearance = room ? game.player.appearance : selectedAppearance();
   const displayName = appearance?.name || CHARACTER_NAMES[displayCharacter];
-  $('#character-avatar').src = characterPortrait(appearance) || characterPortraits[displayCharacter] || assetURL(`assets/${displayCharacter}.png`);
+  $('#character-avatar').src = characterPortrait(appearance) || characterPortraits[displayCharacter] || assetURL(CHARACTER_PROFILES[displayCharacter].portrait);
   $('#character-button').setAttribute('aria-label', `Speler: ${displayName}. Wissel van speler`);
   $('#character-button').title = `Speel als ${displayName} · klik om te wisselen`;
   $('#character-button').disabled = !!game;
@@ -312,8 +312,25 @@ function selectCharacter(next) {
   if (game || !Object.hasOwn(CHARACTER_NAMES, next)) return;
   selectedCustomCharacter = null; character = next; makePalette(); updateUI(); persist(); toast(`Je speelt nu als ${CHARACTER_NAMES[character]}!`);
 }
-for (const button of $$('[data-character]')) button.addEventListener('click', () => selectCharacter(button.dataset.character));
-$('#character-button').addEventListener('click', () => selectCharacter(character === 'boaz' ? 'ravi' : 'boaz'));
+const characterOptions = $('.character-options');
+characterOptions.replaceChildren();
+for (const profile of Object.values(CHARACTER_PROFILES)) {
+  const button = document.createElement('button');
+  button.type = 'button'; button.className = 'character-option'; button.dataset.character = profile.id;
+  button.setAttribute('aria-pressed', String(profile.id === character));
+  const image = document.createElement('img'); image.src = assetURL(profile.portrait); image.alt = ''; image.width = 48; image.height = 48;
+  const label = document.createElement('span'); label.textContent = profile.name;
+  button.append(image, label); button.addEventListener('click', () => selectCharacter(profile.id));
+  characterOptions.append(button);
+}
+$('#character-button').addEventListener('click', () => selectCharacter(nextCharacter(character)));
+const classicCharacterOptions = $('.saved-characters .menu-actions');
+classicCharacterOptions.replaceChildren();
+for (const profile of Object.values(CHARACTER_PROFILES)) {
+  const button = document.createElement('button'); button.type = 'button'; button.className = 'button';
+  button.dataset.classicCharacter = profile.id; button.textContent = `Speel als ${profile.name}`;
+  classicCharacterOptions.append(button);
+}
 const characterMaker = setupCharacterMaker({
   getState: () => ({ characters: customCharacters, selected: selectedCustomCharacter }),
   save(id, appearance) {
@@ -333,6 +350,47 @@ $('#character-maker-button').addEventListener('click', async () => {
   if (game || room) return;
   try { await characterMaker.open(); closeMenu(); }
   catch (error) { toast(error.message); }
+});
+
+let pendingCharacterLaunch = null;
+function chooseStartingCharacter(launch) {
+  if (room || roomBusy) return;
+  closeMenu();
+  const list = $('#starting-character-list');
+  list.replaceChildren();
+  const choices = [
+    ...Object.entries(CHARACTER_NAMES).map(([id, name]) => ({ id, name })),
+    ...customCharacters.map(entry => ({ id: entry.id, name: entry.appearance.name, appearance: entry.appearance }))
+  ];
+  for (const choice of choices) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'character-option';
+    const selected = choice.appearance ? selectedCustomCharacter === choice.id : !selectedCustomCharacter && character === choice.id;
+    button.setAttribute('aria-pressed', String(selected));
+    const image = document.createElement('img'); image.width = 56; image.height = 56; image.alt = '';
+    image.src = choice.appearance ? characterPortrait(choice.appearance) : characterPortraits[choice.id] || assetURL(CHARACTER_PROFILES[choice.id].portrait);
+    const name = document.createElement('span'); name.textContent = choice.name;
+    button.append(image, name);
+    button.addEventListener('click', () => {
+      if (choice.appearance) { selectedCustomCharacter = choice.id; makePalette(); updateUI(); persist(); }
+      else selectCharacter(choice.id);
+      const next = pendingCharacterLaunch; pendingCharacterLaunch = null;
+      $('#starting-character-dialog').close(); next?.();
+    });
+    list.append(button);
+  }
+  pendingCharacterLaunch = launch;
+  $('#starting-character-dialog').showModal();
+  (list.querySelector('[aria-pressed="true"]') || list.firstElementChild)?.focus();
+}
+$('#starting-character-dialog').addEventListener('close', () => { pendingCharacterLaunch = null; });
+$('#starting-character-dialog').addEventListener('keydown', event => {
+  const direction = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -1, ArrowDown: 1 }[event.key];
+  if (!direction) return;
+  const buttons = [...$('#starting-character-list').children];
+  const index = buttons.indexOf(document.activeElement);
+  if (index < 0) return;
+  event.preventDefault(); buttons[(index + direction + buttons.length) % buttons.length].focus();
 });
 
 function selectItem(id) {
@@ -859,17 +917,21 @@ for(const button of homeButtons())button.addEventListener('click',()=>{
   $('#start-screen').close();
   const kind=button.dataset.home;
   if(!['settings','builder'].includes(kind))stopGame();
+  const launch = () => {
   if(kind==='wonderland')wonderlandMap.open();
   else if(kind==='adventure')adventureMap.open();
   else if(kind==='worlds')openWorldMap('edit');
-  else if(kind==='regular')startCampaign(campaignCompleted?0:campaignProgress);
-  else if(kind==='crazy')startCampaign(crazyCompleted?0:crazyProgress,'crazy');
+  else if(kind==='regular')startCampaign(campaignCompleted?0:campaignProgress,'regular',false);
+  else if(kind==='crazy')startCampaign(crazyCompleted?0:crazyProgress,'crazy',false);
   else if(kind==='minis')smallGames.open();
   else if(kind==='builder'){stopGame();canvas.focus();}
   else {
     $('#settings-dialog').showModal();
     if(kind==='together') { const section=$('[data-section="together"]').closest('details');section.open=true;section.parentElement.closest('details').open=true; }
   }
+  };
+  if(['wonderland','adventure','regular','crazy','minis','worlds','together'].includes(kind))chooseStartingCharacter(launch);
+  else launch();
 });
 const wonderlandMap = setupWonderlandMap({state:()=>wonderland,save:persist,launch:startWonderland});
 function returnWonderlandMap() { stopGame(); wonderlandMap.open(); }
@@ -878,7 +940,7 @@ function startWonderland(index) {
   wonderlandIndex=index; wonderland.position=index; campaignIndex=null;
   playLevel=seedTerrainLevel(wonderlandLevel(index)); persist(); startGame();
 }
-$('#wonderland-start').addEventListener('click',()=>{if(game||room)return;closeMenu();wonderlandMap.open();});
+$('#wonderland-start').addEventListener('click',()=>{if(game||room)return;chooseStartingCharacter(()=>wonderlandMap.open());});
 const adventureMap = setupAdventureMap({ state: () => adventure, save: persist, launch: startAdventure, character: () => character, appearance: selectedAppearance });
 function returnAdventureMap() {
   const exhausted = adventureGameOver; stopGame();
@@ -896,9 +958,10 @@ function startAdventure(index) {
   } else playLevel = seedTerrainLevel(adventureLevel(index));
   persist(); startGame();
 }
-$('#adventure-start').addEventListener('click', () => { if (game || room) return; closeMenu(); adventureMap.open(); });
-function startCampaign(index, kind = 'regular') {
+$('#adventure-start').addEventListener('click', () => { if (game || room) return; chooseStartingCharacter(()=>adventureMap.open()); });
+function startCampaign(index, kind = 'regular', choose = true) {
   if (game || room) return;
+  if (choose) { chooseStartingCharacter(() => startCampaign(index, kind, false)); return; }
   closeMenu(); campaignKind = kind; campaignIndex = index; playLevel = seedTerrainLevel(currentCampaignLevel(index)); startGame();
 }
 function makePlayMenu() {
@@ -940,7 +1003,7 @@ $('#next-level').addEventListener('click', () => {
 for (const button of $$('[data-campaign]')) button.addEventListener('click', () => startCampaign(Number(button.dataset.campaign)));
 for (const button of $$('[data-together]')) button.addEventListener('click', () => {
   if (game || room) return;
-  closeMenu(); playLevel = seedTerrainLevel(togetherLevel(button.dataset.together)); startGame();
+  chooseStartingCharacter(() => { playLevel = seedTerrainLevel(togetherLevel(button.dataset.together)); startGame(); });
 });
 for (const button of $$('[data-together-room]')) button.addEventListener('click', () => enterRoom('create', '', seedTerrainLevel(togetherLevel(button.dataset.togetherRoom))));
 function togglePause() {
@@ -950,7 +1013,7 @@ function togglePause() {
   else { game.state = 'playing'; resetInput(); $('#game-overlay').hidden = true; canvas.focus({ preventScroll: true }); }
 }
 function pauseForDialog() { if (game?.state === 'playing') togglePause(); }
-$('#play-button').addEventListener('click', () => worldPlaying ? openWorldMap('play') : game ? stopGame() : startGame());
+$('#play-button').addEventListener('click', () => worldPlaying ? openWorldMap('play') : game ? stopGame() : chooseStartingCharacter(startGame));
 $('#restart-button').addEventListener('click', startGame);
 $('#pause-button').addEventListener('click', togglePause);
 $('#retry-button').addEventListener('click', () => adventureGameOver ? returnAdventureMap() : game?.state === 'paused' ? togglePause() : startGame());
@@ -1061,8 +1124,9 @@ window.addEventListener('blur', () => { resetInput(); pauseForDialog(); endStrok
 document.addEventListener('visibilitychange', () => { if (document.hidden) { resetInput(); pauseForDialog(); persist(); } });
 window.addEventListener('pagehide', () => { persist(); room?.close(); });
 function pollController() {
+  const characterOpen = $('#starting-character-dialog').open;
   const wonderOpen = wonderlandMap.isOpen(), mapOpen = adventureMap.isOpen(), homeOpen = $('#start-screen').open, miniOpen = smallGames.isOpen();
-  const enabled = !document.hidden && document.hasFocus() && (wonderOpen || mapOpen || homeOpen || miniOpen || !$('#world-shell').inert && !$('dialog[open]') && !document.activeElement?.matches('input,select,textarea'));
+  const enabled = !document.hidden && document.hasFocus() && (characterOpen || wonderOpen || mapOpen || homeOpen || miniOpen || !$('#world-shell').inert && !$('dialog[open]') && !document.activeElement?.matches('input,select,textarea'));
   const sample = controller.poll(navigator, enabled);
   const secondMiniSample = secondMiniController.poll(navigator, enabled && miniOpen, controller.index);
   const status = $('#controller-status');
@@ -1071,6 +1135,18 @@ function pollController() {
     : sample.status === 'unavailable' ? 'Controller niet beschikbaar. Open Bravios via HTTPS of localhost en probeer opnieuw.'
     : 'Verbind je controller en druk op een knop om hem te activeren.';
   if (status.textContent !== label) status.textContent = label;
+  if (characterOpen) {
+    controllerInput = emptyGamepadControls(); updateInput();
+    const buttons = [...$('#starting-character-list').children];
+    for (const action of sample.pressed) {
+      const direction = { left: -1, right: 1, up: -1, pipe: 1 }[action];
+      const index = Math.max(0, buttons.indexOf(document.activeElement));
+      if (direction) buttons[(index + direction + buttons.length) % buttons.length]?.focus();
+      else if (action === 'jump' || action === 'pause') buttons[index]?.click();
+      else if (action === 'fire') $('#starting-character-dialog').close();
+    }
+    return;
+  }
   if (homeOpen || miniOpen) {
     controllerInput=emptyGamepadControls();updateInput();
     if(miniOpen)smallGames.handleController(sample, secondMiniSample);
@@ -1158,7 +1234,7 @@ async function startIllustratedGame() {
   try {
     await Promise.all([loadLook(), loadCrazyBackgrounds(), loadCharacterArt()]);
     renderResolution = 2;
-    for (const name of ['boaz', 'ravi']) characterPortraits[name] = lookPortrait(name);
+    for (const name of Object.keys(CHARACTER_PROFILES)) characterPortraits[name] = assetURL(CHARACTER_PROFILES[name].portrait);
     for (const button of $$('[data-character]')) button.querySelector('img').src = characterPortraits[button.dataset.character];
     document.body.classList.add('illustrated-look');
     makePalette(); updateUI();

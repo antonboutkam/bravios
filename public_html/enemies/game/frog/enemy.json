@@ -1,0 +1,115 @@
+{
+  "id": "frog",
+  "name": "Kikker",
+  "kind": "frog",
+  "tileIds": [
+    18
+  ],
+  "variant": "normal",
+  "size": [
+    26,
+    26
+  ],
+  "movement": {
+    "type": "walk",
+    "speed": 22,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {
+    "chargeSeconds": 5,
+    "jumpSpeed": 550,
+    "tongueSeconds": 3,
+    "tongueReach": 88,
+    "reviveSeconds": 5,
+    "fuseSeconds": 3,
+    "triggerRange": 110,
+    "angrySpeed": 190,
+    "lookSeconds": 0.8,
+    "restSeconds": 5,
+    "riseSpeed": 90
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "tongue": {
+      "image": "images/tongue.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    },
+    "crawl": {
+      "image": "images/crawl.png",
+      "frameWidth": 148,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 26,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        74,
+        74
+      ]
+    }
+  }
+}

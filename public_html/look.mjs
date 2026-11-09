@@ -1,17 +1,16 @@
 import { CHARACTER_PROFILES } from './characters/roster.mjs';
 import { loadTerrain } from './terrain.mjs?v=3';
-// Source sheets remain intact. Only the rendering layer knows these crop coordinates.
+// Character poses are individual transparent images; scenery and creatures use atlases.
 export const LOOK_SHEETS = {
-  boaz: CHARACTER_PROFILES.boaz.views.side.asset, ravi: CHARACTER_PROFILES.ravi.views.side.asset,
+  ...Object.fromEntries(Object.entries(CHARACTER_PROFILES).flatMap(([id, profile]) =>
+    Object.entries(profile.views.side.poses).map(([pose, path]) => [`${id}:${pose}`, path]))),
   terrain: 'assets/look/terrain-sheet.png', rewards: 'assets/look/rewards-sheet.png',
   objects: 'assets/look/objects-sheet.png', scenery: 'assets/look/scenery-sheet.png',
-  cat: 'assets/look/cat-sprites.png', dino: 'assets/look/dino-sprites.png',
-  riders: 'assets/look/rider-sprites.png'
+  cat: 'assets/look/cat-sprites.png', dino: 'assets/look/dino-sprites.png'
 };
 export const LOOK_ATLASES = {
   cat: { columns: 4, rows: 2, frames: ['cat:idle', 'cat:run0', 'cat:run1', 'cat:run2', 'cat:run3', 'cat:jump', 'cat:fall', 'cat:land'] },
-  dino: { columns: 2, rows: 2, frames: ['dino:idle', 'dino:walk0', 'dino:walk1', 'dino:jump'] },
-  riders: { columns: 2, rows: 1, frames: ['boaz:ride', 'ravi:ride'] }
+  dino: { columns: 2, rows: 2, frames: ['dino:idle', 'dino:walk0', 'dino:walk1', 'dino:jump'] }
 };
 export function atlasRegions(sheet, width, height) {
   const { columns, rows, frames } = LOOK_ATLASES[sheet];
@@ -43,9 +42,6 @@ export const LOOK_REGIONS = {
   flowers: ['scenery', 719, 204, 291, 170], rocks: ['scenery', 626, 441, 328, 198],
   sign: ['scenery', 25, 73, 289, 300], house: ['scenery', 326, 656, 635, 403]
 };
-for(const [character,profile] of Object.entries(CHARACTER_PROFILES)) {
-  for(const [frame,bounds] of Object.entries(profile.views.side.frames))LOOK_REGIONS[`${character}:${frame}`]=[character,...bounds];
-}
 const lookSprites = new Map();
 let lookReady = false;
 export const hasLook = () => lookReady;
@@ -102,6 +98,12 @@ export async function loadLook() {
   })));
   const prepared = new Map();
   const regions = { ...LOOK_REGIONS };
+  for (const [id, profile] of Object.entries(CHARACTER_PROFILES)) {
+    for (const pose of Object.keys(profile.views.side.poses)) {
+      const name = `${id}:${pose}`, image = sheets[name];
+      regions[name] = [name, 0, 0, image.naturalWidth, image.naturalHeight, 'alpha'];
+    }
+  }
   for (const sheet of Object.keys(LOOK_ATLASES)) Object.assign(regions, atlasRegions(sheet, sheets[sheet].naturalWidth, sheets[sheet].naturalHeight));
   for (const [name, [sheet, x, y, width, height, mode]] of Object.entries(regions)) {
     const image = sheets[sheet];

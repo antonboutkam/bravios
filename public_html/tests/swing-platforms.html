@@ -28,7 +28,7 @@ document.querySelector('#pause').onclick=()=>{if(!['playing','paused'].includes(
 const keys={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'jump',ArrowUp:'jump',ArrowDown:'pipe'};
 window.addEventListener('keydown',e=>{if(keys[e.code]&&!e.target.closest('button,a')){e.preventDefault();held[keys[e.code]]=true;}});
 window.addEventListener('keyup',e=>{if(keys[e.code])held[keys[e.code]]=false;});window.addEventListener('blur',()=>held={});
-globalThis.braviosAssets = Object.fromEntries(['characters/boaz/portrait.png','characters/ravi/portrait.png'].map(path => [path, new URL('../'+path, location.href).href]));
+// Character image URLs are resolved relative to their runtime modules.
 await Promise.all([loadCharacters(),loadLook(),loadTerrain()]);reset();
 function frame(t){accumulator+=Math.min((t-last)/1000||0,.05);last=t;while(accumulator>=1/120){stepGame(game,held);accumulator-=1/120;}drawWorld(ctx,level,{game,grid:false,time:game.time});status.textContent=`${game.state==='dead'?'Gevallen! Kies Opnieuw.':game.state==='paused'?'Pauze':game.player.vineId?'Vast! ← → slingeren · spatie loslaten en opnieuw drukken om af te springen':'Spring naar een liaan of land op een donut.'} · Donuts: ${game.donuts.map(d=>d.phase==='armed'?Math.ceil(d.remaining)+'s':d.phase==='idle'?'klaar':'gevallen').join(' · ')}`;requestAnimationFrame(frame);}
 // Exposes only this isolated test world, never the player's saved collection.

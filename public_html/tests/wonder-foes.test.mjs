@@ -26,7 +26,7 @@ function shoot(g,b,kind='fire'){
 }
 
 test('alle acht identiteiten, kleuren en trefaantallen komen uit het aangeleverde pakket',()=>{
- const source=JSON.parse(readFileSync(new URL('../../assets/wonderland/bosses/data/bosses.json',import.meta.url))).bosses;
+ const source=JSON.parse(readFileSync(new URL('./fixtures/wonderland/bosses.json',import.meta.url))).bosses;
  assert.deepEqual(WONDER_FOES,source);
  assert.equal(new Set(WONDER_FOES.map(b=>b.primary_color)).size,8);
 });

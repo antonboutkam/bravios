@@ -1,0 +1,145 @@
+{
+  "id": "geyser",
+  "name": "Onderwatergeiser",
+  "kind": "geyser",
+  "tileIds": [
+    92
+  ],
+  "variant": "normal",
+  "size": [
+    32,
+    24
+  ],
+  "movement": {
+    "type": "swim",
+    "speed": 0,
+    "turnAtEdges": true,
+    "amplitude": 18,
+    "frequency": 2.4
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": false,
+    "lethalContact": false,
+    "stompable": false,
+    "stompResponse": "hurt",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "fire",
+    "interval": 2,
+    "speed": 0,
+    "verticalSpeed": 70,
+    "life": 6,
+    "aim": "down"
+  },
+  "settings": {
+    "chargeSeconds": 5,
+    "jumpSpeed": 550,
+    "tongueSeconds": 3,
+    "tongueReach": 88,
+    "reviveSeconds": 5,
+    "fuseSeconds": 3,
+    "triggerRange": 110,
+    "angrySpeed": 190,
+    "lookSeconds": 0.8,
+    "restSeconds": 5,
+    "riseSpeed": 90
+  },
+  "animations": {
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    },
+    "walk": {
+      "image": "images/walk.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    },
+    "active": {
+      "image": "images/active.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    },
+    "idle-night": {
+      "image": "images/idle-night.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    },
+    "walk-night": {
+      "image": "images/walk-night.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    },
+    "active-night": {
+      "image": "images/active-night.png",
+      "frameWidth": 160,
+      "frameHeight": 144,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 32,
+      "bodyHeight": 24,
+      "bounds": [
+        -24,
+        -24,
+        80,
+        72
+      ]
+    }
+  }
+}

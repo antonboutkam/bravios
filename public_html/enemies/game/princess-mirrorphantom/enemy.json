@@ -1,0 +1,119 @@
+{
+  "id": "princess-mirrorphantom",
+  "name": "Princess Mirrorphantom",
+  "kind": "wonder",
+  "wonderType": 6,
+  "tileIds": [],
+  "size": [
+    38,
+    26
+  ],
+  "movement": {
+    "type": "fly",
+    "speed": 36,
+    "turnAtEdges": true,
+    "amplitude": 8,
+    "frequency": 1.8
+  },
+  "combat": {
+    "health": 1,
+    "contactDamage": true,
+    "lethalContact": false,
+    "stompable": true,
+    "stompResponse": "damage",
+    "fireResponse": "damage",
+    "freezeable": true,
+    "bubbleable": true,
+    "hitCooldown": 0.15
+  },
+  "shooting": {
+    "enabled": false,
+    "projectile": "wonder",
+    "interval": 1.5,
+    "speed": 0,
+    "verticalSpeed": 0,
+    "life": 2.5,
+    "aim": "player"
+  },
+  "settings": {
+    "jumpInterval": 1.8,
+    "jumpSpeed": 210
+  },
+  "animations": {
+    "palette-0": {
+      "image": "images/palette-0.png",
+      "frameWidth": 172,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        74
+      ]
+    },
+    "palette-1": {
+      "image": "images/palette-1.png",
+      "frameWidth": 172,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        74
+      ]
+    },
+    "palette-2": {
+      "image": "images/palette-2.png",
+      "frameWidth": 172,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        74
+      ]
+    },
+    "defeated": {
+      "image": "images/defeated.png",
+      "frameWidth": 172,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        74
+      ]
+    },
+    "idle": {
+      "image": "images/idle.png",
+      "frameWidth": 172,
+      "frameHeight": 148,
+      "frames": 8,
+      "fps": 10,
+      "bodyWidth": 38,
+      "bodyHeight": 26,
+      "bounds": [
+        -24,
+        -24,
+        86,
+        74
+      ]
+    }
+  }
+}
