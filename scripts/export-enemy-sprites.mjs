@@ -5,13 +5,14 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { prepareEnemies } from './prepare-enemies.mjs';
 const root=fileURLToPath(new URL('../public_html/',import.meta.url));
-const server=createServer(async(req,res)=>{try{const filename=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(!filename.startsWith(root)){res.writeHead(403);res.end();return;}res.setHeader('Content-Type',filename.endsWith('.mjs')?'text/javascript':filename.endsWith('.json')?'application/json':'text/html');res.end(await readFile(filename));}catch{res.writeHead(404);res.end();}});
+const server=createServer(async(req,res)=>{try{if(req.url==='/__export'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Enemy export</title>');return;}const filename=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(!filename.startsWith(root)){res.writeHead(403);res.end();return;}res.setHeader('Content-Type',filename.endsWith('.mjs')?'text/javascript':filename.endsWith('.json')?'application/json':'text/html');res.end(await readFile(filename));}catch{res.writeHead(404);res.end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser;
 try {
  browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
- const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/tests/monsters.html`);
+ const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/__export`);
  const {ENEMY_CATALOG}=await import('../public_html/enemies/catalog.mjs');
  for(const config of ENEMY_CATALOG){
   const animations=await page.evaluate(async c=>{
@@ -36,12 +37,12 @@ try {
    for(const state of states){
     const night=state.endsWith('-night'),phase=state.replace('-night','');
     let [w,h]=c.size;if(phase==='shell')h=18;if(phase==='folded')h=14;if(phase==='fallen'&&c.kind==='skeleton')h=12;
-    const bounds=[-24,-24,w+48,h+48],frameWidth=Math.ceil(bounds[2]*2),frameHeight=Math.ceil(bounds[3]*2),frames=8,fps=10;
+    const bounds=c.kind==='geyser'?[-24,-176,w+48,h+200]:c.kind==='moray'?[-120,-24,w+240,h+48]:[-24,-24,w+48,h+48],frameWidth=Math.ceil(bounds[2]*2),frameHeight=Math.ceil(bounds[3]*2),frames=8,fps=10;
     const canvas=document.createElement('canvas');canvas.width=frameWidth*frames;canvas.height=frameHeight;const ctx=canvas.getContext('2d');
     for(let frame=0;frame<frames;frame++){
      const time=frame/fps;
-     const e={kind:c.kind,tileId:c.tileIds[0],catalogId:c.key,variant:c.variant,wonderType:c.wonderType,boss:c.group==='bosses',palette_id:phase.startsWith('palette-')?+phase.slice(-1):0,body_variant:0,phase,phaseTime:phase.startsWith('charge-')?Number(phase.slice(7))/10*5:phase==='bite'?1.5:time,facing:1,x:0,y:0,w,h,vx:1,vy:0,alive:true,hp:c.combat.health,maxHp:c.combat.health,hitCooldown:0,fuse:phase==='lit'?1:0,frozen:0,active:phase==='active',extension:phase==='active'?80:.8,age:time,stroke:time,glowing:true,fry:[],defeated:phase==='defeated',exitTime:1.8,escape:false};
-     ctx.save();ctx.translate(frame*frameWidth,0);ctx.scale(2,2);ctx.translate(-bounds[0],-bounds[1]);drawEnemyBody(ctx,e,time,1,false,night?'underwater-night':'grass');ctx.restore();
+     const e={kind:c.kind,tileId:c.tileIds[0],catalogId:c.key,variant:c.variant,wonderType:c.wonderType,boss:c.group==='bosses',palette_id:phase.startsWith('palette-')?+phase.slice(-1):0,body_variant:0,phase,phaseTime:phase.startsWith('charge-')?Number(phase.slice(7))/10*5:phase==='bite'?1.5:time,facing:1,x:0,y:0,w,h,vx:1,vy:0,alive:true,hp:c.combat.health,maxHp:c.combat.health,hitCooldown:0,fuse:phase==='lit'?1:0,frozen:0,active:phase==='active',extension:c.kind==='moray'?frame/(frames-1)*96:c.kind==='seaweed'?.1+frame/(frames-1)*.9:phase==='active'?80:.8,age:time,stroke:time,glowing:true,fry:[],defeated:phase==='defeated',exitTime:1.8,escape:false};
+     ctx.save();ctx.translate(frame*frameWidth,0);ctx.scale(2,2);ctx.translate(-bounds[0],-bounds[1]);drawEnemyBody(ctx,e,phase==='bite'?1.5+time:time,1,false,night?'underwater-night':'grass');ctx.restore();
     }
     result[state]={image:`images/${state}.png`,frameWidth,frameHeight,frames,fps,bodyWidth:w,bodyHeight:h,bounds,data:canvas.toDataURL('image/png').split(',')[1]};
    }
@@ -52,4 +53,5 @@ try {
   await writeFile(file,JSON.stringify(json,null,2)+'\n');
   console.log(`${config.key}: ${Object.keys(animations).length} animaties`);
  }
+ await prepareEnemies();
 } finally {await browser?.close();server.close();}

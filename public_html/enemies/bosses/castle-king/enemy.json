@@ -19,7 +19,7 @@
     "contactDamage": true,
     "lethalContact": false,
     "stompable": false,
-    "stompResponse": "hurt",
+    "stompResponse": "damage",
     "fireResponse": "damage",
     "freezeable": true,
     "bubbleable": true,

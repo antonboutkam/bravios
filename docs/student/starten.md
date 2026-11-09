@@ -4,11 +4,18 @@
 
 ## Start de webserver
 
-Open een terminal in de projectroot en voer uit:
+Op Windows: dubbelklik op `start-server.bat` in de projectroot. Het bestand kiest automatisch PHP, Python of Node.js. PHP heeft voorrang, omdat daarmee ook samenspel werkt.
 
-```sh
-npm start
-```
+Je kunt ook zelf een omgeving kiezen. Open een terminal in de projectroot en voer **één** commando uit:
+
+| Geïnstalleerde omgeving | Commando |
+| --- | --- |
+| Python 3 | `python server/server.py` |
+| Python 3 op macOS/Linux | `python3 server/server.py` |
+| PHP 8.1 of nieuwer | `php server/server.php` |
+| Node.js 18 of nieuwer | `node server/server.js` of `npm start` |
+
+Er zijn geen extra pakketten nodig. Python en Node.js ondersteunen solo spelen en bouwen; samenspel vereist PHP.
 
 Laat de terminal open. Open **http://localhost:8080** in je browser. `localhost` betekent je eigen computer. De webserver levert de bestanden aan je browser. Het startcommando blijft daarom actief totdat je het stopt met **Ctrl+C** in de terminal.
 
@@ -32,7 +39,7 @@ HTML beschrijft de pagina, CSS bepaalt de vormgeving en JavaScript regelt het ge
 
 | Probleem | Wat kun je doen? |
 | --- | --- |
-| `node` of `npm` wordt niet herkend | Volg de [installatiestappen](installatie/README.md) en open je editor opnieuw. |
+| Je startcommando wordt niet herkend | Volg de [installatiestappen](installatie/README.md) en open je editor opnieuw. |
 | `package.json` ontbreekt | Open de terminal in de projectroot. |
 | Poort 8080 is bezet (`EADDRINUSE`) | Stop een eerdere server met Ctrl+C. Start daarna opnieuw. |
 | De pagina opent niet | Controleer of de terminal nog draait en gebruik `http://localhost:8080`. |

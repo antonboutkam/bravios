@@ -86,3 +86,7 @@ export function drawSeaEffects(ctx,game,time){
   if(p.inkTime>0){ctx.save();ctx.globalAlpha=Math.min(1,p.inkTime/3);for(let i=0;i<7;i++){const a=i*Math.PI*2/7;seaOval(ctx,'#11182b',p.inkX+Math.cos(a)*22,p.inkY+Math.sin(a)*18,40,32);}ctx.restore();}
  }
 }
+
+export function drawWhaleFish(ctx,enemy,night=false) {
+  for(const fish of enemy.fry||[])littleFish(ctx,fish.x,fish.y,night);
+}

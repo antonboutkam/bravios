@@ -1,3 +1,5 @@
+import { ENEMY_CATALOG } from './enemies/catalog.mjs';
+import { enemyProfile, enemySetting, stompResponse } from './enemies/runtime.mjs';
 import { createFirebars, firebarHits } from './firebars.mjs?v=1';
 import { createSwingPlatforms, stepSwingPlatforms, bounceDonut, moveOnVine, clearVine } from './swing-platforms.mjs?v=1';
 import { stepWonderFoe, meetWonderFoe, hitWonderFoe, wonderFoeContact, stepWonderExits } from './wonder-foes.mjs?v=1';
@@ -106,6 +108,12 @@ export const ITEMS = [
   { id: 41, name: 'Rainbowfart', category: 'fun', description: '20 seconden een regenboog aan de hemel en een lang spoor dat vijanden verslaat!' },
   { id: 40, name: 'Vraagblok · kattenbelletje', category: 'build', description: 'Spring er van onderen tegenaan om één keer de kattenbelletje te krijgen.' }
 ];
+// Catalog entries also supply names and new enemy tiles to the editor.
+for(const profile of ENEMY_CATALOG)for(const id of profile.tileIds){
+  const item=ITEMS.find(item=>item.id===id);
+  if(item){item.name=profile.name;if(profile.description)item.description=profile.description;}
+  else ITEMS.push({id,name:profile.name,category:'fun',description:profile.description||'Vijand uit de vijandencatalogus.'});
+}
 for (const [id, pipe] of Object.entries(PIPE_TYPES)) {
   if (Number(id) < 49) continue;
   const direction = { down: 'onder', left: 'links', right: 'rechts' }[pipe.opening];
@@ -121,7 +129,7 @@ export const PALETTE_GROUPS = [
   { id: 'questions', name: 'Vraagblokken', items: [3, 35, 36, 37, 38, 39, 40, 76] },
   { id: 'pipes', name: 'Buizen', items: Object.keys(PIPE_TYPES).map(Number) },
   { id: 'stars', name: 'Sterren', items: [14, 30] },
-  { id: 'enemies', name: 'Vijanden', items: [6, 17, 18, 20, 21, 22, 23, 24, 25, 27, 28, 29, 61, 77, 82, 83, 97, 98] },
+  { id: 'enemies', name: 'Vijanden', items: ENEMY_CATALOG.filter(c=>c.group==='game'&&!Object.values(SEA_KINDS).includes(c.kind)).flatMap(c=>c.tileIds) },
   { id: 'rewards', name: 'Beloningen', items: [4, 9, 15, 19, 31, 16, 74, 41, 42, 43, 44] }
 ];
 const enemyKinds = ENEMY_KINDS;
@@ -258,12 +266,12 @@ export function createGame(level, { random = Math.random } = {}) {
   const tiles = clone(level.tiles);
   const player = { vineId: null, vineGrip: 0, vineCooldown: 0, inkTime: 0, inkX: 0, inkY: 0, blowTime: 0, x: start.x * TILE + 5, y: start.y * TILE + 4, w: 22, h: 28, vx: 0, vy: 0, grounded: false, fallDistance: 0, parachute: false, coyote: 0, buffer: 0, facing: 1, shield: false, shellHelmet: false, invincible: 0, star: 0, rainbow: 0, rainbowShoes: false, rainbowFart: 0, fartTrail: [], fartLength: 320, trail: [], trailTime: 0, cat: false, instinct: 0, instinctCooldown: 0, instinctX: 0, pipeCooldown: 0, pipeHeld: false, swimCooldown: 0, coins: 0, safeSpot: { x: start.x * TILE + 5, y: start.y * TILE + 4 }, helperGift: null, rocketStage: null, rocketFuse: 0, rocketTime: 0, rocketDuration: 0, rocketStartX: 0, rocketStartY: 0, rocketDirection: 1, rocketLastCount: 6, fire: false, ice: false, bubblegun: false, fireCooldown: 0, mounted: null, mountCooldown: 0 };
   const enemies = Object.keys(enemyKinds).map(Number).flatMap(id => positions(level, id).map(({ x, y }) => {
-    const kind = enemyKinds[id], width = kind === 'centipede' ? (level.enemyDesigns?.find(e => e.x === x && e.y === y)?.design.length ?? 4) * 24 : kind === 'crusher' ? 32 : kind === 'spiky' ? 38 : kind === 'plant' ? 32 : 26;
-    const height = kind === 'centipede' ? 22 : kind === 'crusher' ? 32 : kind === 'spiky' ? 32 : kind === 'plant' ? 48 : 26;
-    return { design: clone(level.enemyDesigns?.find(e => e.x === x && e.y === y && e.tileId === id)?.design || null), kind, tileId: id, variant: id === 20 ? 'red' : id === 21 ? 'angry' : 'normal', x: kind === 'centipede' ? Math.min(x * TILE, level.width * TILE - width) : x * TILE + (32 - width) / 2, y: (y + 1) * TILE - height, w: width, h: height,
-      vx: ['walker', 'turtle', 'skeleton', 'hammer', 'bomb', 'spiky', 'beetle', 'spikedbeetle'].includes(kind) ? (kind === 'spiky' ? -26 : kind === 'walker' ? -48 : -40) : kind === 'dragon' ? -60 : 0,
+    const kind = enemyKinds[id], profile = enemyProfile({kind,tileId:id}), width = kind === 'centipede' ? (level.enemyDesigns?.find(e => e.x === x && e.y === y)?.design.length ?? 4) * 24 : profile.size[0];
+    const height = profile.size[1];
+    return { catalogId: profile.key, design: clone(level.enemyDesigns?.find(e => e.x === x && e.y === y && e.tileId === id)?.design || null), kind, tileId: id, variant: id === 20 ? 'red' : id === 21 ? 'angry' : 'normal', x: kind === 'centipede' ? Math.min(x * TILE, level.width * TILE - width) : x * TILE + (32 - width) / 2, y: (y + 1) * TILE - height, w: width, h: height,
+      vx: ['walker', 'turtle', 'skeleton', 'hammer', 'bomb', 'spiky', 'beetle', 'spikedbeetle'].includes(kind) ? -profile.movement.speed : kind === 'dragon' ? -profile.movement.speed : 0,
       vy: 0, facing: -1, phase: kind === 'crusher' ? 'waiting' : kind === 'frog' ? 'tongue' : 'charge', phaseTime: 0, tongueLength: 0, frozen: 0,
-      baseY: (y + 1) * TILE - height, hp: kind === 'spiky' ? 3 : 1, hitCooldown: 0, fuse: 0, safe: 0, grounded: false, alive: true };
+      baseY: (y + 1) * TILE - height, hp: profile.combat.health, maxHp: profile.combat.health, hitCooldown: 0, fuse: 0, safe: 0, grounded: false, alive: true };
   }));
   enemies.forEach(initSeaEnemy);
   const helpers = positions(level, 45).map(({ x, y }, index) => ({
@@ -736,21 +744,20 @@ export function frogTongue(enemy) {
 }
 function hitEnemy(game, enemy, kind = 'fire') {
   if (enemy.kind === 'wonder') { hitWonderFoe(game,enemy,kind); return; }
-  if (enemy.bubbled || enemy.kind === 'crusher') return;
-  if (enemy.kind === 'bomb') { enemy.fuse = enemy.fuse > 0 ? Math.min(enemy.fuse, .5) : .5; return; }
+  const combat=enemyProfile(enemy)?.combat;
+  if (enemy.bubbled || enemy.kind==='crusher' || kind==='fire' && combat?.fireResponse === 'ignore') return;
+  if (combat?.fireResponse === 'ignite') { enemy.fuse = enemy.fuse > 0 ? Math.min(enemy.fuse, .5) : .5; return; }
   if (enemy.kind === 'skeleton') {
-    if (kind === 'fire') return;
     collapseSkeleton(enemy); return;
   }
-  if (enemy.kind === 'spiky') {
-    if (enemy.hitCooldown > 0) return;
-    enemy.hp--; enemy.hitCooldown = .15;
-    if (enemy.hp > 0) { game.events.push('hurt'); return; }
-  }
+  if (combat?.fireResponse === 'collapse') { collapseSkeleton(enemy); return; }
+  if (enemy.hitCooldown > 0) return;
+  enemy.hp=(enemy.hp ?? combat?.health ?? 1)-1; enemy.hitCooldown=combat?.hitCooldown ?? 0;
+  if(enemy.hp>0){game.events.push('hurt');return;}
   enemy.alive = false; game.events.push('stomp');
 }
 function collapseSkeleton(enemy) {
-  if (enemy.phase !== 'fallen') { enemy.y += 14; enemy.h = 12; }
+  if (enemy.phase !== 'fallen') { const height=Math.min(enemy.h,12);enemy.y+=enemy.h-height;enemy.h=height; }
   enemy.phase = 'fallen'; enemy.phaseTime = 0; enemy.vx = 0;
 }
 export function nearbyShell(game) {
@@ -764,16 +771,17 @@ export function nearbyShell(game) {
 function stompEnemy(game, enemy) {
   const p = game.player;
   if (enemy.frozen > 0) { p.vy = -430; p.jumpCut = false; game.events.push('stomp'); return; }
-  if (enemy.kind === 'plant' || enemy.kind === 'spiky' || enemy.kind === 'spikedbeetle') { hurt(game); return; }
-  if (enemy.kind === 'beetle') {
-    if (enemy.phase !== 'folded') { enemy.y += 12; enemy.h = 14; enemy.phase = 'folded'; enemy.phaseTime = 0; enemy.vx = 0; enemy.vy = 0; }
-  } else if (enemy.kind === 'skeleton') collapseSkeleton(enemy);
-  else if (enemy.kind === 'bomb') { enemy.fuse = enemy.fuse > 0 ? Math.min(enemy.fuse, .8) : .8; enemy.vx = 0; }
-  else if (enemy.kind === 'turtle') {
-    if (enemy.phase !== 'shell') { enemy.y += 8; enemy.h = 18; enemy.phase = 'shell'; enemy.vx = 0; }
+  const response=stompResponse(enemy);
+  if (response === 'hurt') { if(enemyProfile(enemy)?.combat.contactDamage)hurt(game); return; }
+  if (response === 'fold') {
+    if (enemy.phase !== 'folded') { const height=Math.min(enemy.h,14);enemy.y+=enemy.h-height;enemy.h=height;enemy.phase = 'folded'; enemy.phaseTime = 0; enemy.vx = 0; enemy.vy = 0; }
+  } else if (response === 'collapse') collapseSkeleton(enemy);
+  else if (response === 'ignite') { enemy.fuse = enemy.fuse > 0 ? Math.min(enemy.fuse, .8) : .8; enemy.vx = 0; }
+  else if (response === 'shell') {
+    if (enemy.phase !== 'shell') { const height=Math.min(enemy.h,18);enemy.y+=enemy.h-height;enemy.h=height;enemy.phase = 'shell'; enemy.vx = 0; }
     else enemy.vx = enemy.vx ? 0 : p.facing * 240;
     enemy.safe = .2;
-  } else enemy.alive = false;
+  } else if(response === 'damage') { enemy.hp=(enemy.hp ?? 1)-1; if(enemy.hp<=0)enemy.alive=false; }
   p.vy = -430; p.jumpCut = false; game.events.push('stomp');
 }
 function updateHazards(game, dt) {
@@ -781,23 +789,24 @@ function updateHazards(game, dt) {
   for (const hazard of game.hazards) {
     hazard.life -= dt;
     if (hazard.kind === 'chainhead') {
-      hazard.life = 1; hazard.hopTime -= dt;
+      hazard.life = 1; hazard.hopTime -= dt; stepEnemyShooting(game,hazard,dt);
       const target = (game.players || [game.player]).filter(p => !p.respawn).sort((a,b) => Math.abs(a.x-hazard.x)-Math.abs(b.x-hazard.x))[0];
-      if (target && hazard.hopTime <= 0 && (hazard.grounded || Math.abs(Math.hypot(hazard.x + 14 - hazard.anchorX, hazard.y + 14 - hazard.anchorY) - 112) < 1)) {
-        hazard.vx = Math.sign(target.x + target.w / 2 - hazard.x - 14) * 160; hazard.vy = -300; hazard.hopTime = .8;
+      if (target && hazard.hopTime <= 0 && (hazard.grounded || Math.abs(Math.hypot(hazard.x + 14 - hazard.anchorX, hazard.y + 14 - hazard.anchorY) - enemySetting(hazard,'chainLength',112)) < 1)) {
+        hazard.vx = Math.sign(target.x + target.w / 2 - hazard.x - 14) * (enemyProfile(hazard)?.movement.speed ?? 160); hazard.vy = -enemySetting(hazard,'jumpSpeed',300); hazard.hopTime = enemySetting(hazard,'jumpInterval',.8);
       }
       hazard.vy = Math.min(700, hazard.vy + 900 * dt); move(game, hazard, dt);
       const dx = hazard.x + 14 - hazard.anchorX, dy = hazard.y + 14 - hazard.anchorY, distance = Math.hypot(dx,dy);
-      if (distance > 112) { hazard.x = hazard.anchorX + dx / distance * 112 - 14; hazard.y = hazard.anchorY + dy / distance * 112 - 14; hazard.vx = 0; hazard.vy = 0; }
+      const chainLength=enemySetting(hazard,'chainLength',112);
+      if (distance > chainLength) { hazard.x = hazard.anchorX + dx / distance * chainLength - 14; hazard.y = hazard.anchorY + dy / distance * chainLength - 14; hazard.vx = 0; hazard.vy = 0; }
     }
     if (hazard.kind === 'ant' || hazard.kind === 'spikeegg') {
       if (hazard.life <= 1e-8) { hazard.life = 0; continue; }
       hazard.vy = Math.min(900, hazard.vy + 900 * dt);
       const collision = move(game, hazard, dt);
-      if (hazard.kind === 'ant') { hazard.blinking = hazard.life <= 2 + 1e-8; if (collision.wall) hazard.vx *= -1; }
+      if (hazard.kind === 'ant') { hazard.blinking = hazard.life <= enemySetting(hazard,'blinkSeconds',2) + 1e-8; if (collision.wall) hazard.vx *= -1; }
       else if (collision.landed) {
         hazard.life = 0;
-        for (const direction of [-1, 1]) newborn.push({ kind: 'ant', x: hazard.x, y: hazard.y + hazard.h - 8, w: 14, h: 8, vx: direction * 65, vy: 0, life: 5, blinking: false });
+        for (const direction of [-1, 1]) newborn.push({ kind: 'ant', x: hazard.x, y: hazard.y + hazard.h - 8, w: 14, h: 8, vx: direction * (enemyProfile({kind:'ant'})?.movement.speed ?? 65), vy: 0, life: enemySetting({kind:'ant'},'lifeSeconds',5), blinking: false });
       }
       if (hazard.y > game.tiles.length * TILE + 32) hazard.life = 0;
     }
@@ -834,24 +843,38 @@ function updateCrusher(game, enemy, dt) {
     }
   } else if (enemy.phase === 'rest') {
     enemy.phaseTime += dt;
-    if (enemy.phaseTime >= 5 - 1e-8) { enemy.phase = 'rising'; enemy.phaseTime = 0; }
+    if (enemy.phaseTime >= enemySetting(enemy,'restSeconds',5) - 1e-8) { enemy.phase = 'rising'; enemy.phaseTime = 0; }
   } else if (enemy.phase === 'rising') {
-    enemy.y = Math.max(enemy.baseY, enemy.y - 90 * dt); enemy.vy = -90;
+    enemy.y = Math.max(enemy.baseY, enemy.y - enemySetting(enemy,'riseSpeed',90) * dt); enemy.vy = -enemySetting(enemy,'riseSpeed',90);
     if (enemy.y <= enemy.baseY) { enemy.phase = 'waiting'; enemy.vy = 0; }
   }
 }
+function stepEnemyShooting(game,enemy,dt) {
+  const s=enemyProfile(enemy)?.shooting;
+  if(!s?.enabled||enemy.kind==='wonder')return;
+  enemy.shotTime=(enemy.shotTime||0)+dt;
+  if(enemy.shotTime<s.interval-1e-8)return;
+  enemy.shotTime=Math.max(0,enemy.shotTime-s.interval);
+  const target=(game.players||[game.player]).filter(p=>!p.respawn).sort((a,b)=>Math.abs(a.x-enemy.x)-Math.abs(b.x-enemy.x))[0];
+  if(s.aim==='player'&&!target)return;
+  const direction=s.aim==='down'?0:target.x>=enemy.x?1:-1;
+  game.hazards.push({kind:s.projectile,x:enemy.x+(s.projectile==='spikeegg'?6:9),y:s.aim==='down'?enemy.y+enemy.h:enemy.y-8,w:s.projectile==='spikeegg'?14:s.projectile==='fire'?12:10,h:s.projectile==='spikeegg'?18:s.projectile==='fire'?12:10,vx:direction*s.speed,vy:s.verticalSpeed,life:s.life});
+  if(s.projectile==='hammer')game.events.push('hammer');
+}
 function updateEnemy(game, enemy, dt) {
   if (enemy.kind === 'wonder') { stepWonderFoe(game,enemy,dt,move); return; }
-  const flight = enemy.design?.fly && !enemy.frozen && !enemy.bubbled && !['shell', 'fallen'].includes(enemy.phase);
+  const profile=enemyProfile(enemy);
+  const flight = (enemy.design?.fly || profile?.movement.type==='fly'&&!['dragon','cloud','plane'].includes(enemy.kind)) && !enemy.frozen && !enemy.bubbled && !['shell', 'fallen'].includes(enemy.phase);
   const x = enemy.x, y = enemy.y;
+  if(!enemy.frozen&&!enemy.bubbled)stepEnemyShooting(game,enemy,dt);
   updateEnemyBase(game, enemy, dt);
   if (!flight || !enemy.alive || ['shell', 'fallen'].includes(enemy.phase)) return;
   // Keep attacks, fuses and type-specific timers; replace only locomotion.
   enemy.x = x; enemy.y = y;
   enemy.flyTime = (enemy.flyTime || 0) + dt;
   enemy.flyDirection ||= enemy.facing || -1;
-  enemy.vx = enemy.flyDirection * 60;
-  const targetY = Math.max(8, enemy.baseY - 48) + Math.sin(enemy.flyTime * 2.4) * 18;
+  enemy.vx = enemy.flyDirection * (enemy.design?.fly ? 60 : profile?.movement.speed ?? 60);
+  const targetY = Math.max(8, enemy.baseY - 48) + Math.sin(enemy.flyTime * (profile?.movement.frequency ?? 2.4)) * (profile?.movement.amplitude ?? 18);
   enemy.vy = Math.max(-100, Math.min(100, (targetY - enemy.y) / dt));
   const hit = move(game, enemy, dt);
   if (hit.wall) enemy.flyDirection *= -1;
@@ -873,9 +896,9 @@ function updateEnemyBase(game, enemy, dt) {
   enemy.hitCooldown = Math.max(0, (enemy.hitCooldown || 0) - dt); enemy.safe = Math.max(0, (enemy.safe || 0) - dt);
   if (enemy.kind === 'beetle' && enemy.phase === 'folded') {
     enemy.phaseTime += dt;
-    if (enemy.phaseTime >= 3 - 1e-8 && canOccupy(game, { ...enemy, y: enemy.y - 12, h: 26 })) {
-      enemy.y -= 12; enemy.h = 26; enemy.phase = 'walk'; enemy.phaseTime = 0;
-      enemy.vx = enemy.facing * 44; enemy.vy = -220; game.events.push('robotjump');
+    if (enemy.phaseTime >= enemySetting(enemy,'reviveSeconds',3) - 1e-8 && canOccupy(game, { ...enemy, y: enemy.y + enemy.h - (enemyProfile(enemy)?.size[1] ?? 26), h: enemyProfile(enemy)?.size[1] ?? 26 })) {
+      const height=enemyProfile(enemy)?.size[1] ?? 26;enemy.y+=enemy.h-height;enemy.h=height; enemy.phase = 'walk'; enemy.phaseTime = 0;
+      enemy.vx = enemy.facing * (enemyProfile(enemy)?.movement.speed ?? 44); enemy.vy = -220; game.events.push('robotjump');
     }
     enemy.vy = Math.min(900, enemy.vy + (game.theme === 'moon' ? 300 : 1800) * dt); move(game, enemy, dt);
     if (enemy.y > game.tiles.length * TILE + 64) enemy.alive = false;
@@ -883,8 +906,8 @@ function updateEnemyBase(game, enemy, dt) {
   }
   if (enemy.kind === 'skeleton' && enemy.phase === 'fallen') {
     enemy.phaseTime += dt;
-    if (enemy.phaseTime >= 5 - 1e-8 && canOccupy(game, { ...enemy, y: enemy.y - 14, h: 26 })) {
-      enemy.y -= 14; enemy.h = 26; enemy.phase = 'walk'; enemy.vx = enemy.facing * 40; enemy.phaseTime = 0;
+    if (enemy.phaseTime >= enemySetting(enemy,'reviveSeconds',5) - 1e-8 && canOccupy(game, { ...enemy, y: enemy.y + enemy.h - (enemyProfile(enemy)?.size[1] ?? 26), h: enemyProfile(enemy)?.size[1] ?? 26 })) {
+      const height=enemyProfile(enemy)?.size[1] ?? 26;enemy.y+=enemy.h-height;enemy.h=height; enemy.phase = 'walk'; enemy.vx = enemy.facing * (enemyProfile(enemy)?.movement.speed ?? 40); enemy.phaseTime = 0;
     }
     enemy.vy = Math.min(900, enemy.vy + (game.theme === 'moon' ? 300 : 1800) * dt); move(game, enemy, dt);
     if (enemy.y > game.tiles.length * TILE + 64) enemy.alive = false;
@@ -893,43 +916,31 @@ function updateEnemyBase(game, enemy, dt) {
   if (enemy.kind === 'plant') { enemy.phaseTime += dt; enemy.biteHead = Math.floor(enemy.phaseTime / 1.5) % 2; return; }
   if (enemy.kind === 'centipede') {
     enemy.previousX = enemy.x; enemy.previousY = enemy.y;
-    if (enemy.phase === 'look') { enemy.phaseTime += dt; if (enemy.phaseTime >= .8) enemy.phase = 'angry'; }
-    enemy.vx = enemy.phase === 'look' ? 0 : enemy.facing * (enemy.phase === 'angry' ? 190 : 32);
+    if (enemy.phase === 'look') { enemy.phaseTime += dt; if (enemy.phaseTime >= enemySetting(enemy,'lookSeconds',.8)) enemy.phase = 'angry'; }
+    enemy.vx = enemy.phase === 'look' ? 0 : enemy.facing * (enemy.phase === 'angry' ? enemySetting(enemy,'angrySpeed',190) : (enemyProfile(enemy)?.movement.speed ?? 32));
     enemy.vy = Math.min(900, enemy.vy + 1800 * dt);
     if (move(game, enemy, dt).wall) enemy.facing *= -1;
     if (enemy.y > game.tiles.length * TILE + 64) enemy.alive = false;
     return;
   }
-  if (enemy.kind === 'cloud') {
+  if (enemy.kind === 'cloud' && enemyProfile(enemy)?.movement.type==='fly') {
     enemy.phaseTime += dt; enemy.floatTime = (enemy.floatTime || 0) + dt;
-    enemy.x += enemy.facing * 34 * dt; enemy.y = enemy.baseY + Math.sin(enemy.floatTime * 2) * 7;
+    enemy.x += enemy.facing * enemyProfile(enemy).movement.speed * dt; enemy.y = enemy.baseY + Math.sin(enemy.floatTime * enemyProfile(enemy).movement.frequency) * enemyProfile(enemy).movement.amplitude;
     if (enemy.x < 0 || enemy.x + enemy.w > game.width * TILE) { enemy.x = Math.max(0, Math.min(game.width * TILE - enemy.w, enemy.x)); enemy.facing *= -1; }
-    if (enemy.phaseTime >= 2) { enemy.phaseTime -= 2; game.hazards.push({ kind: 'spikeegg', x: enemy.x + 6, y: enemy.y + enemy.h, w: 14, h: 18, vx: 0, vy: 70, life: 12 }); }
     return;
   }
-  if (enemy.kind === 'plane') {
-    enemy.phaseTime += dt; enemy.x += enemy.facing * 100 * dt;
+  if (enemy.kind === 'plane' && enemyProfile(enemy)?.movement.type==='fly') {
+    enemy.phaseTime += dt; enemy.x += enemy.facing * enemyProfile(enemy).movement.speed * dt;
     if (enemy.x < 0 || enemy.x + enemy.w > game.width * TILE) { enemy.x = Math.max(0, Math.min(game.width * TILE - enemy.w, enemy.x)); enemy.facing *= -1; }
-    if (enemy.phaseTime >= 1.6) { enemy.phaseTime = 0; game.hazards.push({ kind: 'fire', x: enemy.x + 9, y: enemy.y + enemy.h, w: 12, h: 12, vx: 0, vy: 70, life: 6 }); }
     return;
   }
-  if (enemy.kind === 'dragon') {
+  if (enemy.kind === 'dragon' && enemyProfile(enemy)?.movement.type==='fly') {
     enemy.phaseTime += dt;
-    enemy.vy = (enemy.baseY + Math.sin(enemy.phaseTime * 2.4) * 18 - enemy.y) / dt;
+    enemy.vy = (enemy.baseY + Math.sin(enemy.phaseTime * enemyProfile(enemy).movement.frequency) * enemyProfile(enemy).movement.amplitude - enemy.y) / dt;
     move(game, enemy, dt); enemy.facing = Math.sign(enemy.vx) || enemy.facing; return;
   }
-  if (enemy.kind === 'hammer') {
-    enemy.phaseTime += dt;
-    if (enemy.phaseTime >= 2 - 1e-8) {
-      enemy.phaseTime = 0;
-      const targets = (game.players || [game.player]).filter(p => !p.respawn);
-      const target = targets.sort((a, b) => Math.abs(a.x - enemy.x) - Math.abs(b.x - enemy.x))[0];
-      if (target) { const direction = target.x >= enemy.x ? 1 : -1;
-        game.hazards.push({ kind: 'hammer', x: enemy.x + 9, y: enemy.y - 8, w: 10, h: 10, vx: direction * 160, vy: -380, life: 3 }); game.events.push('hammer'); }
-    }
-  }
   if (enemy.kind === 'bomb') {
-    if (enemy.fuse <= 0 && (game.players || [game.player]).some(p => !p.respawn && Math.abs(p.x - enemy.x) < 110 && Math.abs(p.y - enemy.y) < 64)) enemy.fuse = 3;
+    if (enemy.fuse <= 0 && (game.players || [game.player]).some(p => !p.respawn && Math.abs(p.x - enemy.x) < enemySetting(enemy,'triggerRange',110) && Math.abs(p.y - enemy.y) < 64)) enemy.fuse = enemySetting(enemy,'fuseSeconds',3);
     if (enemy.fuse > 0) {
       enemy.fuse -= dt;
       if (enemy.fuse <= 1e-8) {
@@ -942,22 +953,25 @@ function updateEnemyBase(game, enemy, dt) {
   if (enemy.kind === 'robot') {
     if (enemy.phase === 'charge') {
       enemy.phaseTime += dt; enemy.vx = 0;
-      if (enemy.phaseTime >= 5 - 1e-8 && enemy.grounded) {
+      if (enemy.phaseTime >= enemySetting(enemy,'chargeSeconds',5) - 1e-8 && enemy.grounded) {
         enemy.facing = game.random() < .5 ? -1 : 1;
-        enemy.vx = enemy.facing * 150; enemy.vy = -550;
+        enemy.vx = enemy.facing * (enemyProfile(enemy)?.movement.speed ?? 150); enemy.vy = -enemySetting(enemy,'jumpSpeed',550);
         enemy.grounded = false; enemy.phase = 'jump'; enemy.phaseTime = 0; game.events.push('robotjump');
       }
     }
   } else if (enemy.kind === 'frog') {
     enemy.phaseTime += dt;
-    if (enemy.phaseTime >= 3 - 1e-8) {
-      enemy.phaseTime = Math.max(0, enemy.phaseTime - 3);
+    if (enemy.phaseTime >= enemySetting(enemy,'tongueSeconds',3) - 1e-8) {
+      enemy.phaseTime = Math.max(0, enemy.phaseTime - enemySetting(enemy,'tongueSeconds',3));
       enemy.phase = enemy.phase === 'tongue' ? 'crawl' : 'tongue';
       if (enemy.phase === 'tongue') game.events.push('tongue');
     }
-    enemy.vx = enemy.phase === 'crawl' ? enemy.facing * 22 : 0;
+    enemy.vx = enemy.phase === 'crawl' ? enemy.facing * (enemyProfile(enemy)?.movement.speed ?? 22) : 0;
   }
-  if (enemy.grounded && enemy.vx && !(enemy.kind === 'turtle' && enemy.phase === 'shell')) {
+  const locomotion=enemyProfile(enemy)?.movement;
+  if(locomotion?.type==='stationary'){enemy.vx=0;enemy.vy=0;return;}
+  else if(locomotion && enemy.vx && !['robot','frog'].includes(enemy.kind)&&!['shell','fallen','folded'].includes(enemy.phase))enemy.vx=enemy.facing*(locomotion?.speed ?? Math.abs(enemy.vx));
+  if (enemyProfile(enemy)?.movement.turnAtEdges && enemy.grounded && enemy.vx && !(enemy.kind === 'turtle' && enemy.phase === 'shell')) {
     const ahead = Math.floor((enemy.x + (enemy.vx > 0 ? enemy.w + 4 : -4)) / TILE);
     const floor = Math.floor((enemy.y + enemy.h + 2) / TILE);
     if (!solidAt(game, ahead, floor)) { enemy.vx *= -1; enemy.facing = Math.sign(enemy.vx); }
@@ -975,7 +989,7 @@ function updateEnemyBase(game, enemy, dt) {
   if (enemy.vx) enemy.facing = Math.sign(enemy.vx);
   if (enemy.kind === 'robot' && enemy.phase === 'jump' && collision.landed) { enemy.phase = 'charge'; enemy.phaseTime = 0; enemy.vx = 0; }
   if (enemy.kind === 'frog') {
-    const reach = enemy.phase === 'tongue' && enemy.grounded ? 88 * Math.min(1, enemy.phaseTime / .25, (3 - enemy.phaseTime) / .25) : 0;
+    const reach = enemy.phase === 'tongue' && enemy.grounded ? enemySetting(enemy,'tongueReach',88) * Math.min(1, enemy.phaseTime / .25, (enemySetting(enemy,'tongueSeconds',3) - enemy.phaseTime) / .25) : 0;
     enemy.tongueLength = 0;
     for (let length = 4; length <= reach; length += 4) {
       const x = enemy.facing > 0 ? enemy.x + enemy.w + length : enemy.x - length;
@@ -993,13 +1007,13 @@ function updateFireballs(game, dt) {
     if (collision.wall || collision.ceiling || ball.life <= 0 || ball.y > game.tiles.length * TILE + 32) { ball.alive = false; continue; }
     if (collision.landed) { if (ball.kind === 'bubble') { ball.alive = false; continue; } ball.vy = -270; }
     for (const enemy of game.enemies) if (enemy.alive && !enemy.bubbled && overlap(ball, enemy)) {
-      if (enemy.kind === 'wonder' && enemy.boss) { hitWonderFoe(game,enemy,ball.kind); }
-      else if (ball.kind === 'bubble') {
+      if (enemy.kind === 'wonder' && enemy.boss && !['ice','bubble'].includes(ball.kind)) { hitWonderFoe(game,enemy,ball.kind); }
+      else if (ball.kind === 'bubble' && enemyProfile(enemy)?.combat.bubbleable) {
         Object.assign(enemy, { bubbled: true, bubbleTime: 0, bubbleExitY: (game.bubbleViewTop ?? Math.max(0, game.player.y - 300)) - 48, vx: 0, vy: -100, grounded: false, frozen: 0, fuse: 0, tongueLength: 0 });
         game.events.push('bubblecatch');
       }
-      else if (ball.kind === 'ice') { enemy.frozen = FREEZE_SECONDS; enemy.tongueLength = 0; game.events.push('freeze'); }
-      else hitEnemy(game, enemy);
+      else if (ball.kind === 'ice' && enemyProfile(enemy)?.combat.freezeable) { enemy.frozen = FREEZE_SECONDS; enemy.tongueLength = 0; game.events.push('freeze'); }
+      else if(ball.kind==='fire')hitEnemy(game, enemy);
       ball.alive = false; break;
     }
   }
@@ -1171,11 +1185,12 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
     if (isSeaEnemy(enemy)) {
       if (seaBodies(enemy).some(body => overlap(p,body)) && !enemy.safe) {
         if (p.star>0 || p.rainbow>0 || rainbowFartHits(p,enemy)) { if(enemy.kind!=='whale')enemy.alive=false; }
-        else hurt(game);
+        else if(enemyProfile(enemy)?.combat.stompable && p.vy>0 && previousBottom<=enemy.y+10)stompEnemy(game,enemy);
+        else if(enemyProfile(enemy)?.combat.contactDamage)hurt(game,enemyProfile(enemy)?.combat.lethalContact);
       }
       continue;
     }
-    if (enemy.kind === 'centipede' && p.vy >= 0 && previousBottom <= enemy.y + 8 && p.y + p.h >= enemy.y && p.x + p.w > enemy.x && p.x < enemy.x + enemy.w) {
+    if (stompResponse(enemy) === 'ride' && p.vy >= 0 && previousBottom <= enemy.y + 8 && p.y + p.h >= enemy.y && p.x + p.w > enemy.x && p.x < enemy.x + enemy.w) {
       p.y = enemy.y - p.h; p.vy = 0; p.grounded = true; p.parachute = false; p.fallDistance = 0;
       if (!['look', 'angry'].includes(enemy.phase)) { enemy.phase = 'look'; enemy.phaseTime = 0; }
       continue;
@@ -1183,7 +1198,10 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
     if (rainbowFartHits(p, enemy)) { enemy.alive = false; game.events.push('stomp'); continue; }
     if (enemy.kind === 'crusher') {
       const swept = { ...enemy, y: Math.min(enemy.previousY ?? enemy.y, enemy.y), h: enemy.h + Math.abs(enemy.y - (enemy.previousY ?? enemy.y)) };
-      if (overlap(p, swept)) hurt(game, true);
+      if (overlap(p, swept)) {
+        if(enemyProfile(enemy)?.combat.stompable && p.vy>0 && previousBottom<=enemy.y+10)stompEnemy(game,enemy);
+        else if(enemyProfile(enemy)?.combat.contactDamage!==false)hurt(game,enemyProfile(enemy)?.combat.lethalContact);
+      }
       continue;
     }
     if (enemy.kind === 'beetle' && enemy.phase === 'folded' && p.star <= 0 && p.rainbow <= 0) continue;
@@ -1191,15 +1209,15 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
       if (p.star > 0 || p.rainbow > 0) { enemy.alive = false; game.events.push('stomp'); }
       else if (p.vy > 0 && previousBottom <= enemy.y + 10) stompEnemy(game, enemy);
       else if (enemy.kind === 'turtle' && enemy.phase === 'shell' && !enemy.vx && !enemy.frozen) { enemy.vx = (p.x < enemy.x ? 1 : -1) * 240; enemy.safe = .2; }
-      else if (!enemy.frozen && !(enemy.kind === 'skeleton' && enemy.phase === 'fallen') && !enemy.safe) hurt(game);
+      else if (!enemy.frozen && !(enemy.kind === 'skeleton' && enemy.phase === 'fallen') && !enemy.safe && enemyProfile(enemy)?.combat.contactDamage!==false) hurt(game,enemyProfile(enemy)?.combat.lethalContact);
     }
-    if (enemy.alive && !enemy.frozen && enemy.kind === 'frog' && enemy.tongueLength > 0 && overlap(p, frogTongue(enemy))) hurt(game);
+    if (enemy.alive && !enemy.frozen && enemy.kind === 'frog' && enemyProfile(enemy)?.combat.contactDamage && enemy.tongueLength > 0 && overlap(p, frogTongue(enemy))) hurt(game);
   }
   for (const bar of game.firebars || []) if (firebarHits(bar, game.time, p)) hurt(game);
   for (const ball of chainBalls(game)) if (overlap(p, ball)) hurt(game);
   for (const hazard of game.hazards) if (game.state === 'playing' && overlap(p, hazard)) {
     if(hazard.kind==='wonder'&&hazard.effect==='slow')p.wonderSlow=.6;
-    else hurt(game, hazard.kind === 'ant');
+    else { const combat=enemyProfile(hazard)?.combat; if(combat?.contactDamage!==false)hurt(game,combat?.lethalContact ?? hazard.kind==='ant'); }
   }
   if (input.fire && waterRide && p.mounted.kind === 'seahorse' && p.fireCooldown <= 0 && game.state === 'playing') blowSeaEnemies(game,p);
   if (input.fire && (p.fire || p.ice || p.bubblegun) && p.fireCooldown <= 0 && game.fireballs.length < (game.players ? 10 : 5) && game.state === 'playing') {

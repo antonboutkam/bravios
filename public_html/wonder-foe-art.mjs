@@ -83,7 +83,7 @@ export function drawWonderFoe(ctx,enemy,time=0,reducedMotion=false,{ghost=false}
     }
   }
   ctx.shadowBlur=0;
-  if(!large){
+  if(!large&&!globalThis.braviosExportEnemies){
     // Patterns, facial marks and accessories distinguish repeated palette/shape combinations.
     ctx.strokeStyle=accent;ctx.lineWidth=3;
     if(enemy.face_pattern){foePath(ctx,accent,[[25,74],[34,81],[43,74]],true);}
@@ -92,6 +92,17 @@ export function drawWonderFoe(ctx,enemy,time=0,reducedMotion=false,{ghost=false}
   }
   if(exposed){ctx.strokeStyle='#fff6a5';ctx.lineWidth=3;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(50,49,57,60,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   ctx.restore();
+  }
+  if(sprite&&!large&&!enemy.defeated){
+    ctx.save();ctx.translate(enemy.x,enemy.y);ctx.scale(enemy.w/100,enemy.h/100);
+  if(!large){
+    // Patterns, facial marks and accessories distinguish repeated palette/shape combinations.
+    ctx.strokeStyle=accent;ctx.lineWidth=3;
+    if(enemy.face_pattern){foePath(ctx,accent,[[25,74],[34,81],[43,74]],true);}
+    else{for(let i=0;i<3;i++)foeEllipse(ctx,accent,25+i*9,81,2.5);}
+    if(enemy.accessory%2)foeBox(ctx,secondary,27,6,43,7);else if(enemy.accessory)foeEllipse(ctx,accent,79,28,6);
+  }
+    ctx.restore();
   }
   if(large&&!ghost&&!enemy.defeated&&!globalThis.braviosExportEnemies){
     ctx.save();ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff6df';ctx.strokeStyle='#211744';ctx.lineWidth=4;

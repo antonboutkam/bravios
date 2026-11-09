@@ -1,3 +1,4 @@
+import { enemyProfile } from './enemies/runtime.mjs';
 import { drawEnemySprite } from './enemies/sprites.mjs';
 import { hero, CHARACTER_NAMES } from './characters/shared/hero.mjs';
 export { hero, CHARACTER_NAMES, spriteCutout, loadCharacters } from './characters/shared/hero.mjs';
@@ -8,7 +9,7 @@ import { createSwingPlatforms, vinePoint } from './swing-platforms.mjs?v=1';
 import { drawWonderFoe, drawWonderArena, drawWonderHazard } from './wonder-foe-art.mjs?v=1';
 import { drawWonderMagic, drawWonderBackdrop } from './wonder-magic.mjs?v=14';
 import { isWaterTheme, isSeaEnemy, isSeaMount, SEA_KINDS, SEA_MOUNTS } from './sea-life.mjs?v=4';
-import { drawSeaCreature, drawSeaIcon, drawSeaEffects } from './sea-art.mjs?v=36';
+import { drawSeaCreature, drawSeaIcon, drawSeaEffects, drawWhaleFish } from './sea-art.mjs?v=36';
 import { drawEnemyWings, drawEnemyFront } from './enemy-design-art.mjs?v=36';
 import { characterSurface } from './character-maker.mjs?v=3';
 import { createMechanisms } from './mechanisms.mjs?v=2';
@@ -319,6 +320,10 @@ function drawCastleBoss(ctx, enemy, facing, time) {
     ctx.fillStyle = '#fff0cf'; ctx.beginPath(); ctx.moveTo(x, 23); ctx.lineTo(x + 3, 30); ctx.lineTo(x + 6, 23); ctx.fill();
   }
   ctx.restore();
+  if(!globalThis.braviosExportEnemies)drawCastleBossStatus(ctx,enemy);
+}
+function drawCastleBossStatus(ctx,enemy){
+  const final=enemy.maxHp===9;
   rect(ctx, '#151019', enemy.x - 9, enemy.y - 23, enemy.w + 18, 8);
   rect(ctx, '#ec795d', enemy.x - 7, enemy.y - 21, (enemy.w + 14) * Math.max(0, enemy.hp) / enemy.maxHp, 4);
   ctx.save(); ctx.fillStyle = '#ffe5b3'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
@@ -496,6 +501,13 @@ export function drawTile(ctx, id, x, y, size = TILE, theme = 'grass', { top = tr
     drawTile(ctx, id, x, y, size, theme, { top, icon, time, character, mask, variant, revealContents, doorOpen });
     drawEnemyFront(ctx, enemyDesign, x, y, size, size, time);
     return;
+  }
+  const profile=enemyProfile({tileId:id});
+  if(profile){
+    const [w,h]=profile.size,scale=icon?size/Math.max(w,h):size/32;
+    const preview={catalogId:profile.key,kind:profile.kind,x:0,y:0,w,h,phase:'idle',phaseTime:0,variant:profile.variant,facing:1,extension:.8};
+    ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+    const painted=drawEnemySprite(ctx,preview,time,{night:theme==='underwater-night'});ctx.restore();if(painted)return;
   }
   if (SEA_KINDS[id] || SEA_MOUNTS[id]) { drawSeaIcon(ctx,id,x,y,size,time,theme==='underwater-night',icon); return; }
   if (id === 82 || id === 84) {
@@ -985,11 +997,16 @@ export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hove
         const tongue = frogTongue(enemy); rect(ctx, '#ba7b87', tongue.x, tongue.y, tongue.w, tongue.h); rect(ctx, '#efb4b6', tongue.x, tongue.y + 1, tongue.w, tongue.h - 2);
       }
       if (enemy.kind === 'wonder') drawWonderFoe(ctx,enemy,designTime,reducedMotion);
-      else if (!drawEnemySprite(ctx,enemy,designTime,{facing,night:theme==='underwater-night'})) drawEnemyBody(ctx,enemy,designTime,facing,reducedMotion,theme);
+      else {
+        const painted=drawEnemySprite(ctx,enemy,designTime,{facing,night:theme==='underwater-night'});
+        if(!painted)drawEnemyBody(ctx,enemy,designTime,facing,reducedMotion,theme);
+        else if(enemy.kind==='whale')drawWhaleFish(ctx,enemy,theme==='underwater-night');
+        if(painted && enemy.boss && enemy.kind==='spiky')drawCastleBossStatus(ctx,enemy);
+      }
       if (enemy.kind === 'robot' && enemy.phase === 'charge' && !enemy.bubbled) {
         const charge=Math.min(1,enemy.phaseTime/5);rect(ctx,'#536374',enemy.x,enemy.y-12,26,4);rect(ctx,'#f6d186',enemy.x,enemy.y-12,Math.round(26*charge),4);
       }
-      if (enemy.kind === 'spiky') { rect(ctx, '#665266', enemy.x, enemy.y - 12, enemy.w, 3); rect(ctx, '#dc9a83', enemy.x, enemy.y - 12, enemy.w * enemy.hp / (enemy.maxHp || 3), 3); }
+      if (enemy.kind === 'spiky'&&!enemy.boss) { rect(ctx, '#665266', enemy.x, enemy.y - 12, enemy.w, 3); rect(ctx, '#dc9a83', enemy.x, enemy.y - 12, enemy.w * enemy.hp / (enemy.maxHp || 3), 3); }
       drawEnemyFront(ctx, enemy.design, enemy.x - 3, enemy.y - 6, enemy.w + 6, enemy.h + 6, designTime, ['shell', 'fallen'].includes(enemy.phase));
       if (enemy.frozen > 0) {
         rect(ctx, '#a8eafa88', enemy.x - 3, enemy.y - 6, 32, 34);
@@ -1008,11 +1025,11 @@ export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hove
         ctx.strokeStyle = '#c6c0aa'; ctx.lineWidth = 3;
         const dx = hazard.x + 14 - hazard.anchorX, dy = hazard.y + 14 - hazard.anchorY, links = Math.max(1,Math.ceil(Math.hypot(dx,dy)/9));
         for (let i=0;i<links;i++) { ctx.beginPath(); ctx.ellipse(hazard.anchorX+dx*i/links,hazard.anchorY+dy*i/links,5,3,Math.atan2(dy,dx),0,Math.PI*2); ctx.stroke(); }
-        drawDesignedChainHead(ctx,hazard.x,hazard.y,28,hazard.design,time);
+        if(hazard.design||!drawEnemySprite(ctx,hazard,time))drawDesignedChainHead(ctx,hazard.x,hazard.y,28,hazard.design,time);
       }
       else if (hazard.kind === 'ant') {
         ctx.save(); ctx.globalAlpha = hazard.blinking && Math.floor((5-hazard.life)*8)%2 ? .2 : 1;
-        for (let i=0;i<3;i++) { const cx=hazard.x+3+i*4; ctx.strokeStyle='#a12430'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(cx-2,hazard.y+8); ctx.lineTo(cx,hazard.y+4); ctx.lineTo(cx+2,hazard.y+8); ctx.stroke(); oval(ctx,'#e93435',cx,hazard.y+3,3,3); }
+        if(!drawEnemySprite(ctx,hazard,time))drawEnemyBody(ctx,hazard,time);
         ctx.restore();
       }
       else if (hazard.kind === 'spikeegg') {
@@ -1143,7 +1160,11 @@ function drawChainBall(ctx, ball) {
 export function releasePlatformSprites(){for(const sprite of spriteCache.values()){sprite.width=1;sprite.height=1;}spriteCache.clear();}
 
 export function drawEnemyBody(ctx, enemy, designTime=0, facing=enemy.facing||1, reducedMotion=false, theme='grass') {
-      if (enemy.kind === 'wonder') drawWonderFoe(ctx,enemy,designTime,reducedMotion);
+      if(enemy.kind==='chainhead')drawDesignedChainHead(ctx,enemy.x,enemy.y,28,null,designTime);
+      else if(enemy.kind==='ant'){
+        for(let i=0;i<3;i++){const cx=enemy.x+3+i*4;ctx.strokeStyle='#a12430';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx-2,enemy.y+8);ctx.lineTo(cx,enemy.y+4);ctx.lineTo(cx+2,enemy.y+8);ctx.stroke();oval(ctx,'#e93435',cx,enemy.y+3,3,3);}
+      }
+      else if (enemy.kind === 'wonder') drawWonderFoe(ctx,enemy,designTime,reducedMotion);
       else if (isSeaEnemy(enemy)) drawSeaCreature(ctx,enemy,designTime,theme==='underwater-night');
       else if (enemy.kind === 'beetle' || enemy.kind === 'spikedbeetle') drawHelmetBeetle(ctx, enemy.x, enemy.y, { spike: enemy.kind === 'spikedbeetle', folded: enemy.phase === 'folded', facing, time: enemy.frozen || enemy.phase === 'folded' ? 0 : designTime });
       else if (enemy.kind === 'centipede') drawCentipede(ctx, enemy.x, enemy.y, enemy.w, enemy.phase, facing, designTime);

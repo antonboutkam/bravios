@@ -1,6 +1,5 @@
 import { loadEnemyCatalog } from './enemies/load-catalog.mjs';
 import { replaceEnemyCatalog } from './enemies/runtime.mjs';
-import { preloadEnemySprites } from './enemies/sprites.mjs';
 import { CHARACTER_CATALOG } from './characters/catalog.mjs';
 import { loadCharacterCatalog } from './characters/load-catalog.mjs';
 async function start() {
@@ -15,7 +14,6 @@ async function start() {
     };
     const [profiles, enemies] = await Promise.all([loadCharacterCatalog(readJSON),loadEnemyCatalog(readJSON)]);
     replaceEnemyCatalog(enemies);
-    await preloadEnemySprites(enemies);
     CHARACTER_CATALOG.splice(0, CHARACTER_CATALOG.length, ...profiles);
     await import('./app.mjs');
   } catch (error) {

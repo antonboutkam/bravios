@@ -1,3 +1,4 @@
+import { applyEnemyProfile, enemyProfileByKey } from './enemies/runtime.mjs';
 import { blankLevel, TILE } from './engine.mjs?v=44';
 
 // Each predecessor is an alternative: both branches rejoin at the next castle.
@@ -101,8 +102,10 @@ export function prepareAdventureGame(game, field, state) {
   if (state.power) game.player[state.power] = true;
   if (ADVENTURE_FIELDS[field].kind === 'castle') {
     const boss = game.enemies.find(e => e.tileId === 27);
-    boss.boss = true; boss.hp = field === 11 ? 9 : 5;
+    boss.boss = true;
+    const profile=enemyProfileByKey(field===11?'bosses/lava-king':'bosses/castle-king');
+    applyEnemyProfile(boss,profile);
     boss.arenaLeft = (game.width - 30) * TILE; boss.arenaRight = (game.width - 7) * TILE;
-    boss.maxHp = boss.hp; boss.w = 52; boss.h = 48; boss.y = (game.tiles.length-2)*TILE-boss.h;
+    boss.maxHp = boss.hp; boss.w = profile.size[0]; boss.h = profile.size[1]; boss.y = (game.tiles.length-2)*TILE-boss.h;
   }
 }

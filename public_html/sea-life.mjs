@@ -1,3 +1,4 @@
+import { enemyProfile, enemySetting } from './enemies/runtime.mjs';
 // Shared simulation geometry: rendering and contact use the same bodies.
 export const isWaterTheme = theme => theme === 'underwater' || theme === 'underwater-night';
 export const SEA_KINDS = {85:'whale',86:'jellyfish',87:'bonefish',88:'squid',91:'seaweed',92:'geyser',93:'flatfish',94:'moray',95:'seastar',96:'crab'};
@@ -21,7 +22,7 @@ export const isSeaMount = e => !!e && Object.values(SEA_MOUNTS).includes(e.kind)
 export function initSeaEnemy(e) {
  if (!isSeaEnemy(e)) return e;
  const sizes = {whale:[96,48],seaweed:[28,80],geyser:[32,24],moray:[32,32],flatfish:[32,12],crab:[32,20]};
- const [w,h] = sizes[e.kind] || [28,28];
+ const [w,h] = enemyProfile(e)?.size || sizes[e.kind] || [28,28];
  e.y += e.h-h; e.w=w; e.h=h; e.homeX=e.x; e.homeY=e.y; e.age=0; e.phase='idle'; e.facing=1;
  e.active=false; e.extension=0; e.fry=[]; e.inkCooldown=0; e.stroke=0; e.runLeft=0;
  return e;
@@ -39,15 +40,16 @@ export function seaBodies(e) {
 export function updateSeaEnemy(game,e,dt,move) {
  const players=(game.players||[game.player]).filter(p=>!p.respawn);
  const target=players.reduce((a,p)=>!a||seaDistance(e,p)<seaDistance(e,a)?p:a,null);
+ const settings=enemyProfile(e)?.settings||{},movement=enemyProfile(e)?.movement;
  e.age+=dt;
  if (e.pushTime>0) { e.pushTime=Math.max(0,e.pushTime-dt); e.vx=e.pushVx; e.vy=-70; move(game,e,dt); return; }
  const dx=target ? target.x+target.w/2-e.x-e.w/2 : 0, dy=target ? target.y+target.h/2-e.y-e.h/2 : 0;
  const distance=target?Math.hypot(dx,dy):Infinity;
  if (e.kind==='whale') {
-  const cycle=e.age%15; e.active=e.age>=15 && cycle<5; e.phase=e.active?'open':'closed';
+  const cycle=e.age%(settings.mouthInterval ?? 15); e.active=e.age>=(settings.mouthInterval ?? 15) && cycle<(settings.mouthDuration ?? 5); e.phase=e.active?'open':'closed';
   // Four fish leave through the mouth, never further than 88px from it.
   e.fry = e.active ? Array.from({length:4},(_,i)=>{
-   const travel=Math.min(1,cycle*1.4, (5-cycle)*1.4), near=distance<190;
+   const travel=Math.min(1,cycle*1.4, ((settings.mouthDuration ?? 5)-cycle)*1.4), near=distance<190;
    const angle=near?Math.atan2(dy,dx)+ (i-1.5)*.3 : Math.sin(e.age*1.2+i)*1.1;
    const radius=(38+i*13)*travel;
    return {x:e.x+e.w-14+Math.cos(angle)*radius,y:e.y+e.h/2+Math.sin(angle)*radius-6,w:16,h:12};
@@ -56,38 +58,39 @@ export function updateSeaEnemy(game,e,dt,move) {
   e.stroke+=dt;
   if (e.stroke>=4-1e-8) {e.stroke=Math.max(0,e.stroke-4);e.runLeft--;}
   if (e.runLeft<=0) { e.facing=e.choseDirection ? -e.facing : game.random()<.5?-1:1; e.choseDirection=true; e.runLeft=1+Math.floor(game.random()*5); }
-  e.vx=e.facing*12; e.vy=e.stroke<2?-16:16;
+  e.vx=e.facing*(movement?.speed ?? 12); e.vy=e.stroke<2?-16:16;
   const hit=move(game,e,dt); if(hit.wall)e.facing*=-1;
  } else if (e.kind==='bonefish') {
   const watched=players.some(p=>Math.abs(p.y-e.y)<240 && Math.sign(e.x+e.w/2-p.x-p.w/2)===(game.reversed ? -p.facing : p.facing));
   e.phase=watched?'fallen':'hunting'; e.glowing=!watched;
-  if(watched){e.vx=0;e.vy=Math.min(130,e.vy+230*dt);} else {const n=Math.max(1,distance);e.vx=dx/n*24;e.vy=dy/n*24;e.facing=dx<0?-1:1;}
+  if(watched){e.vx=0;e.vy=Math.min(130,e.vy+230*dt);} else {const n=Math.max(1,distance);e.vx=dx/n*(movement?.speed ?? 24);e.vy=dy/n*(movement?.speed ?? 24);e.facing=dx<0?-1:1;}
   move(game,e,dt);
  } else if(e.kind==='squid') {
-  e.inkCooldown=Math.max(0,e.inkCooldown-dt); e.vx=Math.sin(e.age*.7)*8;e.vy=Math.cos(e.age)*10;move(game,e,dt);
-  if(distance<110&&e.inkCooldown===0){
-   for(const p of players)if(seaDistance(e,p)<110) {p.inkTime=10; p.inkX=p.x+p.w/2;p.inkY=p.y+p.h/2;}
-   e.inkCooldown=14;game.events.push('ink');
+  e.inkCooldown=Math.max(0,e.inkCooldown-dt); e.vx=Math.sin(e.age*.7)*(movement?.speed ?? 8);e.vy=Math.cos(e.age)*10;move(game,e,dt);
+  if(distance<(settings.inkRange ?? 110)&&e.inkCooldown===0){
+   for(const p of players)if(seaDistance(e,p)<(settings.inkRange ?? 110)) {p.inkTime=settings.inkSeconds ?? 10; p.inkX=p.x+p.w/2;p.inkY=p.y+p.h/2;}
+   e.inkCooldown=settings.inkCooldown ?? 14;game.events.push('ink');
   }
  } else if(e.kind==='seaweed') {
   e.extension=.1+.9*(.5+.5*Math.sin(e.age*Math.PI/4));
  } else if(e.kind==='geyser') {
-  e.active=e.age%6>=3; e.phase=e.active?'spouting':'idle';
+  e.active=e.age%(settings.geyserInterval ?? 6)>=(settings.geyserInterval ?? 6)/2; e.phase=e.active?'spouting':'idle';
  } else if(e.kind==='flatfish') {
-  if(!e.active && distance<100){e.active=true;e.phaseTime=0;e.vy=-180;}
+  if(!e.active && distance<(settings.triggerRange ?? 100)){e.active=true;e.phaseTime=0;e.vy=-180;}
   if(e.active){e.phaseTime+=dt;e.vx=0;e.vy+=220*dt;move(game,e,dt);if(e.y>=e.homeY&&e.phaseTime>.5){e.y=e.homeY;e.active=false;e.vy=0;}}
  } else if(e.kind==='moray') {
-  const cycle=e.age%25;
-  e.active=distance<145||e.age>=25&&cycle<3;
+  const cycle=e.age%(settings.morayInterval ?? 25);
+  e.active=distance<(settings.triggerRange ?? 145)||e.age>=(settings.morayInterval ?? 25)&&cycle<3;
   if(e.extension<4&&target)e.facing=dx<0?-1:1;
   e.extension=Math.max(0,Math.min(96,e.extension+(e.active?110:-85)*dt));
  } else if(e.kind==='seastar') {
-  e.vx=e.facing*23;e.vy=Math.cos(e.age*1.2)*18;
+  e.vx=e.facing*(movement?.speed ?? 23);e.vy=Math.cos(e.age*1.2)*18;
   const hit=move(game,e,dt);if(hit.wall||Math.abs(e.x-e.homeX)>110)e.facing*=-1;
  } else if(e.kind==='crab') {
-  e.vx=e.facing*28;e.vy=Math.min(170,e.vy+400*dt);
+  e.vx=e.facing*(movement?.speed ?? 28);e.vy=Math.min(170,e.vy+400*dt);
   const hit=move(game,e,dt);if(hit.wall)e.facing*=-1;
  }
+ if(movement?.type==='stationary'){e.x=e.homeX;e.y=e.homeY;e.vx=0;e.vy=0;}
  e.x=Math.max(0,Math.min(game.width*32-e.w,e.x));e.y=Math.max(0,Math.min(game.tiles.length*32-e.h,e.y));
 }
 // Derived per-world index; never serialized into levels or co-op snapshots.

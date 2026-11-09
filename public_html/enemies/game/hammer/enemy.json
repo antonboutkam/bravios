@@ -37,19 +37,7 @@
     "life": 3,
     "aim": "player"
   },
-  "settings": {
-    "chargeSeconds": 5,
-    "jumpSpeed": 550,
-    "tongueSeconds": 3,
-    "tongueReach": 88,
-    "reviveSeconds": 5,
-    "fuseSeconds": 3,
-    "triggerRange": 110,
-    "angrySpeed": 190,
-    "lookSeconds": 0.8,
-    "restSeconds": 5,
-    "riseSpeed": 90
-  },
+  "settings": {},
   "animations": {
     "idle": {
       "image": "images/idle.png",

@@ -2,7 +2,21 @@
 
 [Documentation overview](../../README.md) · [Student installation guide in Dutch](../../student/installatie/README.md)
 
-Run all commands from the project root. Node.js 18 or newer is required by `package.json`. Use a supported LTS version for a new environment. No npm dependencies or database are needed.
+Run commands from the project root. For serving the game, Python 3, PHP 8.1+ or Node.js 18+ is sufficient. Development commands require Node.js. No extra packages or database are needed.
+
+## Standalone servers
+
+On Windows, double-click `start-server.bat` to detect PHP 8.1+, Python 3 or Node.js 18+ (in that order). Alternatively, choose one command:
+
+```sh
+python3 server/server.py
+php server/server.php
+node server/server.js
+```
+
+Use `python` or `py -3` on Windows if appropriate. Each starter resolves `public_html` relative to its own location and uses port 8080, or the `PORT` environment variable. The servers listen on all interfaces, including the local network. Only PHP executes `room.php` for network play. Python returns an explanatory error for PHP requests. The PHP starter also sets the MIME type for `.mjs` files.
+
+Python and PHP serve the existing game files without Node.js. After changing character or enemy configuration, use Node.js to run `npm run characters:prepare` and `npm run enemies:prepare` if the generated offline catalogs need updating. The JavaScript starter runs these checks automatically.
 
 ## Development server
 

@@ -6,10 +6,10 @@
 
 - Een computer met een browser, bijvoorbeeld Chrome, Edge of Firefox.
 - Een code-editor, bijvoorbeeld Visual Studio Code.
-- Node.js met npm. Het project vereist Node.js 18 of nieuwer; gebruik voor een nieuwe installatie een ondersteunde LTS-versie.
+- Eén serveromgeving: Python 3, PHP 8.1 of nieuwer, of Node.js 18 of nieuwer.
 - De volledige projectmap van Bravios, via je docent of de repository.
 
-PHP is alleen nodig voor online samenspel en de volledige testsuite. Voor je eerste start is Node.js voldoende. Je hebt geen database of account in het spel nodig.
+PHP is nodig voor online samenspel. Voor solo spelen is één van de drie omgevingen voldoende. Ontwikkelcommando’s zoals de offlinebuild vereisen Node.js; de volledige testsuite vereist ook PHP. Je hebt geen database of account in het spel nodig.
 
 ## Stap 1: zet de projectmap klaar
 
@@ -17,18 +17,15 @@ Ontvang je een zipbestand? Pak het eerst helemaal uit. Werk niet rechtstreeks in
 
 Open in je editor de map waarin `package.json`, `README.md`, `docs` en `public_html` staan. Dit is de **projectroot**: de hoofdmap van het project.
 
-## Stap 2: controleer Node.js en npm
+## Stap 2: controleer je serveromgeving
 
-Open een terminal in je editor. In Visual Studio Code kan dit via **Terminal → New Terminal**. Een terminal is een venster waarin je commando’s typt. Voer deze commando’s afzonderlijk uit:
+Heb je al Python, PHP of Node.js? Dan hoef je geen tweede omgeving te installeren. Op Windows kiest `start-server.bat` automatisch een beschikbare omgeving.
 
-```sh
-node --version
-npm --version
-```
+Open een terminal in je editor, bijvoorbeeld via **Terminal → New Terminal** in Visual Studio Code. Controleer de omgeving die je wilt gebruiken met `python --version` (macOS/Linux: `python3 --version`), `php --version` of `node --version`.
 
-Beide commando’s moeten een versienummer geven. Het eerste nummer na de `v` bij Node.js moet minimaal 18 zijn. Wordt het commando niet herkend? Installeer Node.js met npm via de softwarevoorziening van je school of de officiële Node.js-installatie. Sluit daarna je editor en open hem opnieuw. Vraag je docent om hulp als je geen installatierechten hebt.
+Wordt geen commando herkend? Installeer één van deze omgevingen via de softwarevoorziening van je school. Sluit daarna je editor en open hem opnieuw. Vraag je docent om hulp als je geen installatierechten hebt.
 
-Dit project gebruikt geen externe npm-pakketten. Je hoeft daarom geen `npm install` uit te voeren.
+Er zijn geen externe pakketten nodig. Je hoeft geen `npm install` of `pip install` uit te voeren.
 
 ## Stap 3: controleer je werkmap
 
