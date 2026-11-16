@@ -909,7 +909,8 @@ function openHome() {
   $('#start-screen').showModal();homeButtons()[homeIndex].focus();
 }
 function moveHome(direction) {
-  const delta = {left:-1,right:1,up:-2,down:2}[direction];
+  const columns = getComputedStyle($('#start-screen .start-grid')).gridTemplateColumns.split(/\s+/).length;
+  const delta = {left:-1,right:1,up:-columns,down:columns}[direction];
   homeIndex=(homeIndex+delta+homeButtons().length)%homeButtons().length;homeButtons()[homeIndex].focus();
 }
 $('#home-button').addEventListener('click',openHome);
