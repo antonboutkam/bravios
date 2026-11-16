@@ -19588,7 +19588,7 @@ export const STRUCTURE_CATALOG = [
     "settings": {},
     "visuals": {
       "grass": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19601,7 +19601,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "grass-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19614,7 +19614,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "grass-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19627,7 +19627,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "sunset": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19640,7 +19640,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "sunset-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19653,7 +19653,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "sunset-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19666,7 +19666,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "night": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19679,7 +19679,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "night-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19692,7 +19692,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "night-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19705,7 +19705,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "castle": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19718,7 +19718,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "castle-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19731,7 +19731,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "castle-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19744,7 +19744,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "winter": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19757,7 +19757,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "winter-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19770,7 +19770,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "winter-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19783,7 +19783,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "moon": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19796,7 +19796,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "moon-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19809,7 +19809,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "moon-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19822,7 +19822,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19835,7 +19835,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19848,7 +19848,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19861,7 +19861,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater-night": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19874,7 +19874,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater-night-inside": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19887,7 +19887,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "underwater-night-editor": {
-        "image": "gameplay/interactables/start/images/grass-editor.png",
+        "image": "gameplay/interactables/start/images/start-marker-editor.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,
@@ -19900,7 +19900,7 @@ export const STRUCTURE_CATALOG = [
         ]
       },
       "default": {
-        "image": "gameplay/interactables/start/images/grass.png",
+        "image": "gameplay/interactables/start/images/start-marker.png",
         "frameWidth": 120,
         "frameHeight": 144,
         "frames": 1,

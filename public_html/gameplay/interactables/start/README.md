@@ -55,7 +55,7 @@ Het standaardbeeld gebruikt deze beschrijving:
 
 ```json
 {
-  "image": "images/grass.png",
+  "image": "images/start-marker.png",
   "frameWidth": 120,
   "frameHeight": 144,
   "frames": 1,
@@ -71,10 +71,12 @@ Het standaardbeeld gebruikt deze beschrijving:
 
 Dit is één beschrijving binnen `visuals`, geen volledig vervangend `structure.json`. Het hele vel is `frames × frameWidth` pixels breed en `frameHeight` hoog. `bounds` beschrijft de tekenruimte ten opzichte van een speltegel van 32 × 32 pixels. Laat `visuals.default` bestaan. Andere toestanden mogen hetzelfde bestand gebruiken.
 
+Dit startonderdeel is een turquoise startvlag met een afspeelpijl. Het bevat geen personage. De bouwer, veldvoorbeelden en de achtergrond onder de personagekeuze gebruiken dezelfde neutrale vlag. De speler verschijnt pas wanneer het veld gestart is. `engine/start-marker.mjs` tekent de vlag; de PNG’s zijn exports daarvan. Oude startafbeeldingen zijn vervangen door nieuwe bestandsnamen, zodat eerdere browserkopieën niet terugkomen.
+
 De huidige unieke beeldbestanden zijn:
 
-- [images/grass-editor.png](images/grass-editor.png)
-- [images/grass.png](images/grass.png)
+- [images/start-marker-editor.png](images/start-marker-editor.png)
+- [images/start-marker.png](images/start-marker.png)
 
 Vervang eerst één PNG met behoud van afmetingen. Werk alle verwijzingen mee bij wanneer een gedeeld bestand van formaat verandert.
 

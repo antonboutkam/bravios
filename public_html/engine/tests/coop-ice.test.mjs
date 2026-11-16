@@ -28,13 +28,13 @@ test('ijsbal bevriest een vijand vier seconden en stopt bij muren', () => {
   game.player.fireCooldown = 0; game.tiles[13][4] = 1; stepGame(game, { fire: true });
   advance(game, .3, {}); assert.equal(game.fireballs.length, 0);
 });
-test('bevroren kikker doet geen pijn met lijf of tong; ijsbescherming vangt één aanraking op', () => {
+test('bevroren kikker doet geen pijn; een ontdooide kikker kost leven en laat het ijswapen intact', () => {
   const level = blankLevel(40); level.tiles[13][8] = 20;
   const game = createGame(level); advance(game, .5, {});
   const frog = game.enemies[0]; frog.frozen = 4;
   game.player.x = frog.x; stepGame(game, {}); assert.equal(game.state, 'playing'); assert.equal(frog.tongueLength, 0);
   game.player.ice = true; frog.frozen = 0; stepGame(game, {});
-  assert.equal(game.state, 'playing'); assert.equal(game.player.ice, false); assert.ok(game.player.invincible > 0);
+  assert.equal(game.state, 'playing'); assert.equal(game.player.ice, true); assert.equal(game.player.health, game.player.maxHealth - 1); assert.ok(game.player.invincible > 0);
 });
 test('rode kikker en boze robot houden dezelfde timers als hun gewone varianten', () => {
   const level = blankLevel(40); [17, 21, 18, 20].forEach((id, i) => level.tiles[13][15 + i * 3] = id);
@@ -50,7 +50,7 @@ test('twee spelers hebben eigen bediening; wereld en vijandtimers lopen één ke
   const game = createCoopGame(level, primary); advance(game, .2);
   const [p, q] = game.players, x = p.x, y = q.x;
   advance(game, 1, [{ right: true }, { left: true }]);
-  assert.ok(p.x > x + 190); assert.ok(q.x < y); assert.equal(p.character, primary); assert.equal(q.character, ids[0]);
+  assert.ok(p.x > x + (primary === 'pinball' ? 50 : 190)); assert.ok(q.x < y); assert.equal(p.character, primary); assert.equal(q.character, ids[0]);
   assert.ok(Math.abs(game.time - 1.2) < 1e-8); assert.ok(Math.abs(game.enemies[0].phaseTime - 1.2) < 1e-8);
 });
 test('tweede speler begint naast de eerste, tenzij daar terrein of gevaar staat', () => {

@@ -29,7 +29,7 @@ test('vuur doet schade volgens de bestaande schildregels; op afstand wachten is 
  for(const shield of [false,true]){
   const g=createGame(makeLevel()),f=firebarFlames(g.firebars[0],1/120)[3];
   Object.assign(g.player,{x:f.x-10,y:f.y-12,shield});stepGame(g,{});
-  assert.equal(g.state,shield?'playing':'dead');assert.equal(g.player.shield,false);
+  assert.equal(g.state,'playing');assert.equal(g.player.health,g.player.maxHealth-(shield?0:1));assert.equal(g.player.shield,false);
   if(shield)assert.ok(g.player.invincible>0);
  }
  const safe=createGame(makeLevel());for(let i=0;i<720;i++)stepGame(safe,{});assert.equal(safe.state,'playing');
@@ -38,7 +38,7 @@ test('vuur doet schade volgens de bestaande schildregels; op afstand wachten is 
 test('samenspel draait de molen eenmaal per stap en raakt beide spelers op dezelfde plaats',()=>{
  const g=createCoopGame(makeLevel()),f=firebarFlames(g.firebars[0],1/120)[3];
  for(const p of g.players)Object.assign(p,{x:f.x-10,y:f.y-12});
- stepCoopGame(g,[{},{}]);assert.equal(g.time,1/120);assert.ok(g.players.every(p=>p.respawn>0));
+ stepCoopGame(g,[{},{}]);assert.equal(g.time,1/120);assert.ok(g.players.every(p=>p.health===p.maxHealth-1&&p.respawn===0));
 });
 test('grotreizen wisselen de vuurmolens van de huidige wereld en herstellen ze bij terugkomst',()=>{
  const l=makeLevel();l.tiles[13][20]=62;const g=createGame(l),bars=clone(g.firebars);

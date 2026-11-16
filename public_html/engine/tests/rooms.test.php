@@ -108,6 +108,33 @@ try {
     $host = roomHandle(['action' => 'create', 'level' => $level, 'character' => 'ravi'], $directory, 100);
     checkRoom(strlen($host['code']) === 6 && strlen($host['token']) === 48, 'kamer krijgt code en eigen toegangssleutel');
     $snapshot = ['state' => 'waiting', 'width' => 40, 'tiles' => $level['tiles'], 'players' => [['x' => 70, 'y' => 420, 'character' => 'ravi'], ['x' => 70, 'y' => 420, 'character' => 'boaz']], 'enemies' => [], 'dinos' => [], 'fireballs' => [], 'hazards' => []];
+    checkRoom(roomInput(['run' => true])['run'] === true && roomInput(['run' => 'true'])['run'] === false, 'rennen wordt als afzonderlijke ingedrukte knop gedeeld');
+    $runningSnapshot = $snapshot; $runningSnapshot['players'][0]['sprinting'] = true; $runningSnapshot['players'][0]['moveDistance'] = 123.5;
+    checkRoom(roomSnapshot($runningSnapshot, 40, count($level['tiles'])) === $runningSnapshot, 'sprintstand en koprolafstand blijven in de gedeelde spelstand');
+    foreach (['sprinting' => 'true', 'moveDistance' => -1] as $field => $value) {
+        $badRun = $runningSnapshot; $badRun['players'][0][$field] = $value;
+        checkRoom(failsRoom(fn() => roomSnapshot($badRun, 40, count($level['tiles'])), 400), 'ongeldige sprintanimatie wordt geweigerd');
+    }
+    $vitalsSnapshot = $snapshot;
+    $pinballSnapshot = $snapshot;
+    $pinballSnapshot['players'][0]['character'] = 'pinball';
+    $pinballSnapshot['players'][0]['pinballAngle'] = -1.5;
+    $pinballSnapshot['pinballTilt'] = M_PI * 8 / 180;
+    checkRoom(roomSnapshot($pinballSnapshot, 40, count($level['tiles'])) === $pinballSnapshot, 'Pinball, balrotatie en wereldkanteling blijven bewaard');
+    foreach ([INF, -INF, NAN, 1, []] as $badTilt) {
+        $badPinball = $pinballSnapshot; $badPinball['pinballTilt'] = $badTilt;
+        checkRoom(failsRoom(fn() => roomSnapshot($badPinball, 40, count($level['tiles'])), 400), 'ongeldige Pinball-kanteling wordt geweigerd');
+    }
+    foreach ([INF, NAN, 7, []] as $badAngle) {
+        $badPinball = $pinballSnapshot; $badPinball['players'][0]['pinballAngle'] = $badAngle;
+        checkRoom(failsRoom(fn() => roomSnapshot($badPinball, 40, count($level['tiles'])), 400), 'ongeldige balrotatie wordt geweigerd');
+    }
+    $vitalsSnapshot['players'][0] += ['health' => 3, 'maxHealth' => 4, 'power' => 2.5, 'maxPower' => 6];
+    checkRoom(roomSnapshot($vitalsSnapshot, 40, count($level['tiles'])) === $vitalsSnapshot, 'levenspunten en gedeeltelijk herladen schietkracht blijven bewaard');
+    foreach ([['health' => 5], ['health' => -1], ['health' => 2.5], ['power' => '2'], ['power' => INF], ['power' => 7], ['maxPower' => 7], ['maxHealth' => 0]] as $invalidVitals) {
+        $badVitals = $vitalsSnapshot; $badVitals['players'][0] = [...$badVitals['players'][0], ...$invalidVitals];
+        checkRoom(failsRoom(fn() => roomSnapshot($badVitals, 40, count($level['tiles'])), 400), 'ongeldige levens- of schietbalk wordt geweigerd');
+    }
     $customSnapshot = $snapshot; $customSnapshot['players'][0]['appearance'] = $appearance;
     checkRoom(roomSnapshot($customSnapshot, 40, 32)['players'][0]['appearance'] === $cleanAppearance, 'eigen karakter blijft behouden in gedeelde spelstand');
     $caveSnapshot = $snapshot;
@@ -142,7 +169,7 @@ try {
     $state = roomHandle([...$host, 'action' => 'sync'], $directory, 101.2);
     checkRoom($state['guestPresent'] && $state['input']['right'] && $state['input']['taps']['jump'] === 1 && $state['input']['pipe'] && $state['input']['taps']['pipe'] === 1, 'toetsen van tweede speler bereiken de host');
     $state = roomHandle([...$host, 'action' => 'sync'], $directory, 101.8);
-    checkRoom(!$state['input']['right'] && $state['input']['taps']['jump'] === 1, 'oude toetsen stoppen na verbindingsverlies zonder sprongen te herhalen');
+    checkRoom(!$state['input']['right'] && !$state['input']['run'] && $state['input']['taps']['jump'] === 1, 'oude toetsen stoppen na verbindingsverlies zonder sprongen te herhalen');
     $snapshot['state'] = 'playing'; $snapshot['players'][1]['x'] = 130;
     roomHandle([...$host, 'action' => 'sync', 'snapshot' => $snapshot], $directory, 102);
     $state = roomHandle([...$guest, 'action' => 'sync'], $directory, 102.1);

@@ -1,0 +1,23 @@
+// Bundled locally: the game and its standalone HTML never need a CDN.
+export { Engine } from '@babylonjs/core/Engines/engine.js';
+export { NullEngine } from '@babylonjs/core/Engines/nullEngine.js';
+export { Scene } from '@babylonjs/core/scene.js';
+export { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
+export { Color3, Color4 } from '@babylonjs/core/Maths/math.color.js';
+export { Plane } from '@babylonjs/core/Maths/math.plane.js';
+export { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera.js';
+export { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight.js';
+export { DirectionalLight } from '@babylonjs/core/Lights/directionalLight.js';
+export { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
+export { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+export { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+export { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader.js';
+export { HavokPlugin } from '@babylonjs/core/Physics/v2/Plugins/havokPlugin.js';
+export { PhysicsAggregate } from '@babylonjs/core/Physics/v2/physicsAggregate.js';
+export { PhysicsShapeType } from '@babylonjs/core/Physics/v2/IPhysicsEnginePlugin.js';
+export { PhysicsCharacterController, CharacterSupportedState } from '@babylonjs/core/Physics/v2/characterController.js';
+export { default as HavokPhysics } from '@babylonjs/havok';
+import '@babylonjs/core/Physics/joinedPhysicsEngineComponent.js';
+import '@babylonjs/core/Culling/ray.js';
+import '@babylonjs/loaders/glTF/2.0/glTFLoader.js';
+import '@babylonjs/loaders/glTF/glTFFileLoader.js';

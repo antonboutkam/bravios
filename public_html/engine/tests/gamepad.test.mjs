@@ -16,7 +16,7 @@ test('stick dead zone, d-pad and every action use the standard layout', () => {
   device.axes = [-.6, .8]; let sample = poll(); assert.ok(sample.controls.left && sample.controls.pipe); assert.equal(sample.controls.right, false);
   device.axes = [.7, 0]; assert.ok(poll().controls.right);
   device.axes = [0, 0];
-  for (const [button, action] of [[0, 'jump'], [1, 'fire'], [2, 'fire'], [3, 'mount'], [9, 'pause'], [13, 'pipe'], [14, 'left'], [15, 'right']]) {
+  for (const [button, action] of [[0, 'jump'], [1, 'run'], [2, 'fire'], [3, 'mount'], [9, 'pause'], [13, 'pipe'], [14, 'left'], [15, 'right']]) {
     device.buttons[button].pressed = true;
     sample = poll(); assert.ok(sample.pressed.includes(action));
     assert.equal(poll().pressed.includes(action), false, 'held buttons do not repeat taps');

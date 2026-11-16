@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { LOOK_REGIONS, LOOK_SHEETS, LOOK_ATLASES, atlasRegions, alphaBounds, sheetCutout } from '../look.mjs';
 import { CHARACTER_PROFILES } from '../characters/roster.mjs';
-import { REQUIRED_POSES, RUN_POSES, characterPose } from '../characters/shared/poses.mjs';
+import { REQUIRED_POSES, RUN_POSES, WALK_POSES, characterPose } from '../characters/shared/poses.mjs';
 import { creatureFrame, dinoPlacement } from '../art.mjs';
 import { blankLevel } from '../engine.mjs';
 import { createCoopGame, packCoopGame, unpackCoopGame } from '../coop.mjs';
@@ -88,10 +88,9 @@ test('de zadelpositie spiegelt met de dino, volgt gast-snapshots en verandert ge
 
 
 test('vaste helden gebruiken volledige transparante PNGs per houding, ook op de dino', async () => {
-  const poses = [...REQUIRED_POSES, ...RUN_POSES];
   for (const profile of Object.values(CHARACTER_PROFILES)) {
-    assert.deepEqual(Object.keys(profile.views.side.poses).sort(), [...poses].sort());
-    for (const pose of poses) {
+    for (const pose of [...REQUIRED_POSES, 'walk', ...(profile.id === 'pinball' ? [] : WALK_POSES)]) assert.ok(profile.views.side.poses[pose]);
+    for (const pose of Object.keys(profile.views.side.poses)) {
       const path = profile.views.side.poses[pose];
       assert.equal(LOOK_SHEETS[`${profile.id}:${pose}`], path);
       const png = await readFile(new URL(`../../${path}`, import.meta.url));
@@ -102,15 +101,20 @@ test('vaste helden gebruiken volledige transparante PNGs per houding, ook op de 
   }
 });
 
-test('alle vaste helden wisselen vier losse stapfasen in volgorde en herhalen de cyclus', () => {
+test('helden wandelen met vier stapfasen; Pinball gebruikt een bal zonder loopbenen', () => {
   for (const profile of Object.values(CHARACTER_PROFILES)) {
     const poses = profile.views.side.poses;
-    const states = [.001, .091, .181, .271, .361].map(time => characterPose(poses, { running: true, time }));
-    assert.deepEqual(states, ['run-1', 'run-2', 'run-3', 'run-4', 'run-1']);
+    const states = [.001, .091, .181, .271, .361].map(time => characterPose(poses, { walking: true, time }));
+    if (profile.id === 'pinball') {
+      assert.deepEqual(states, Array(5).fill('walk'));
+      assert.equal(new Set(Object.values(poses)).size, 1, 'de bal gebruikt dezelfde zilveren afbeelding in iedere pose');
+      continue;
+    }
+    assert.deepEqual(states, ['walk-1', 'walk-2', 'walk-3', 'walk-4', 'walk-1']);
     assert.equal(new Set(states.map(state => LOOK_SHEETS[`${profile.id}:${state}`])).size, 4);
-    assert.equal(characterPose(poses, { running: true }), 'run-1');
-    for (const time of [0, .09, .2, 100]) assert.equal(characterPose(poses, { running: true, reducedMotion: true, time }), 'run-1');
-    assert.equal(characterPose(poses, { time: .2 }), 'side');
+    assert.equal(characterPose(poses, { walking: true }), 'walk-1');
+    for (const time of [0, .09, .2, 100]) assert.equal(characterPose(poses, { walking: true, reducedMotion: true, time }), 'walk-1');
+    assert.equal(characterPose(poses, { time: .2 }), poses['idle-1'] ? 'idle' : 'side');
     assert.equal(characterPose(poses, { front: true, time: .2 }), 'idle');
     assert.equal(characterPose(poses, { running: true, airborne: true, time: .2 }), 'jump');
     assert.equal(characterPose(poses, { running: true, landing: .1, time: .2 }), 'land');

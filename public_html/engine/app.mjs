@@ -1,3 +1,5 @@
+import { updateVitalsHUD, updateHUDCounters, setHUDText, setHUDHidden, setHUDAttribute } from './vitals-hud.mjs?v=docked-hud-1';
+import { setupImageErrors } from './image-errors.mjs';
 import {structureProfile,structureIs,structureTiles,structureFootprint} from './structures/runtime.mjs';
 import { wonderEncounterHint } from './wonder-foes.mjs?v=1';
 import { WONDERLAND_FIELDS, wonderlandState, wonderlandUnlocked, completeWonderland, wonderlandLevel, prepareWonderlandGame } from './wonderland.mjs?v=3';
@@ -7,8 +9,9 @@ import { setupSmallGames } from './games/shell.mjs';
 import { drawMiniPreview } from './games/preview.mjs';
 import { createPlatformEncounters } from './games/platformer/encounters.mjs';
 import { participantRoster, CHARACTER_PROFILES, DEFAULT_CHARACTER, nextCharacter } from './characters/roster.mjs';
-import { normalizeWorlds, saveWorldNodeLevel } from './worlds.mjs?v=1';
-import { setupWorldEditor } from './world-editor.mjs?v=1';
+import { normalizeWorlds, saveWorldNodeLevel, getOrCreateExampleWorld3D } from './worlds.mjs?v=babylon-1';
+import { requires3D, canEnter3D, assert3DCharacter } from './games/platformer3d/access.mjs';
+import { setupWorldEditor } from './world-editor.mjs?v=babylon-1';
 import { ADVENTURE_FIELDS, adventureState, adventureUnlocked, completeAdventure, adventureLevel, prepareAdventureGame } from './adventurers.mjs?v=5';
 import { setupAdventureMap } from './adventure-map.mjs?v=4';
 import { isWaterTheme } from './sea-life.mjs?v=4';
@@ -16,17 +19,18 @@ import { canEditDesign, saveEnemyDesign, pruneEnemyDesigns } from './enemy-desig
 import { setupEnemyEditor } from './enemy-editor.mjs?v=7';
 import { normalizeAppearance, normalizeCharacters, setupCharacterMaker, characterPortrait, loadCharacterArt, releaseCharacterComposites } from './character-maker.mjs?v=3';
 import { beltNearCell, validateBelts } from './mechanisms.mjs?v=2';
-import { TILE, ROWS, ITEMS, PIPE_TYPES, THEMES, PALETTE_GROUPS, rocketCountdown, nearbyShell, pipeUnderPlayer, challengeResult, clone, randomLevel, blankLevel, exampleLevel, validateLevel, positions, resizeLevel, resizeUnderground, createGame, stepGame, seedTerrainLevel } from './engine.mjs?v=44';
+import { TILE, ROWS, ITEMS, PIPE_TYPES, THEMES, PALETTE_GROUPS, rocketCountdown, nearbyShell, pipeUnderPlayer, challengeResult, clone, randomLevel, blankLevel, exampleLevel, validateLevel, positions, resizeLevel, resizeUnderground, createGame, stepGame, seedTerrainLevel } from './engine.mjs?v=46';
 import { CAMPAIGN_FIELDS, CRAZY_FIELDS, TOGETHER_FIELDS, campaignLevel, crazyLevel, togetherLevel } from './levels.mjs?v=15';
-import { drawTile, drawWorld, preview, CHARACTER_NAMES, assetURL, loadCrazyBackgrounds, hero, releasePlatformSprites } from './art.mjs?v=61';
-import { loadLook } from './look.mjs?v=8';
+import { drawTile, drawWorld, preview, CHARACTER_NAMES, assetURL, loadCrazyBackgrounds, hero, releasePlatformSprites } from './art.mjs?v=64';
+import { loadLook } from './look.mjs?v=9';
 import { normalizeLibrary, savedLevelDetail } from './storage.mjs?v=20';
-import { createCoopGame, stepCoopGame, packCoopGame, unpackCoopGame, remoteControls } from './coop.mjs?v=swing-9';
+import { createCoopGame, stepCoopGame, packCoopGame, unpackCoopGame, remoteControls } from './coop.mjs?v=health-power-1';
 import { roomRequest, RoomConnection } from './network.mjs';
 import { RenderQuality, FrameRateMeter, SceneEffects, followCamera, keyCameraFrame, viewportRenderSize, viewportWorldPoint } from './presentation.mjs?v=12';
-import { GamepadInput, emptyGamepadControls } from './gamepad.mjs?v=4';
+import { GamepadInput, emptyGamepadControls } from './gamepad.mjs?v=5';
 import { BackgroundRaster, DepthPanelCache } from './depth-backgrounds.mjs?v=9';
 
+setupImageErrors();
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const canvas = $('#world'), ctx = canvas.getContext('2d'), scroll = $('#world-scroll');
@@ -45,7 +49,7 @@ const currentFields = () => campaignKind === 'crazy' ? CRAZY_FIELDS : CAMPAIGN_F
 const currentCampaignLevel = index => campaignKind === 'crazy' ? crazyLevel(index) : campaignLevel(index);
 function activeLevel() { return game?.sceneLevel || networkLevel || playLevel || level; }
 let game = null, hover = null, stroke = null, paletteDrag = null, undoStack = [], redoStack = [], toastTimer, saveTimer, audioContext;
-let input = { left: false, right: false, jump: false, fire: false, mount: false, pipe: false }, keys = new Set(), touchKeys = new Map();
+let input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false }, keys = new Set(), touchKeys = new Map();
 const controller = new GamepadInput();
 const secondMiniController = new GamepadInput();
 let controllerInput = emptyGamepadControls();
@@ -174,7 +178,8 @@ function updateUI() {
   $('#world-menu-edit').disabled = !!room || roomBusy;
   $('#world-menu-play').disabled = !!room || roomBusy || !worlds.find(w => w.id === selectedWorldId)?.nodes.some(n => n.level);
   const displayLevel = activeLevel();
-  const pixelsPerUnit = scroll.clientHeight / (ROWS * TILE);
+  // Keep characters and tiles at the same size when the HUD reserves screen space.
+  const pixelsPerUnit = $('#world-shell').clientHeight / (ROWS * TILE);
   worldDisplayWidth = displayLevel.width * TILE * pixelsPerUnit;
   worldDisplayHeight = displayLevel.tiles.length * TILE * pixelsPerUnit;
   worldSpace.style.width = `${Math.max(scroll.clientWidth, worldDisplayWidth)}px`;
@@ -319,7 +324,7 @@ for (const profile of Object.values(CHARACTER_PROFILES)) {
   const button = document.createElement('button');
   button.type = 'button'; button.className = 'character-option'; button.dataset.character = profile.id;
   button.setAttribute('aria-pressed', String(profile.id === character));
-  const image = document.createElement('img'); image.src = assetURL(profile.portrait); image.alt = ''; image.width = 48; image.height = 48;
+  const image = document.createElement('img'); image.dataset.asset = profile.portrait; image.src = assetURL(profile.portrait); image.alt = ''; image.width = 48; image.height = 48;
   const label = document.createElement('span'); label.textContent = profile.name;
   button.append(image, label); button.addEventListener('click', () => selectCharacter(profile.id));
   characterOptions.append(button);
@@ -354,21 +359,24 @@ $('#character-maker-button').addEventListener('click', async () => {
 });
 
 let pendingCharacterLaunch = null;
-function chooseStartingCharacter(launch) {
+function chooseStartingCharacter(launch, {require3D=false}={}) {
   if (room || roomBusy) return;
   closeMenu();
   const list = $('#starting-character-list');
   list.replaceChildren();
   const choices = [
-    ...Object.entries(CHARACTER_NAMES).map(([id, name]) => ({ id, name })),
-    ...customCharacters.map(entry => ({ id: entry.id, name: entry.appearance.name, appearance: entry.appearance }))
+    ...Object.entries(CHARACTER_NAMES).filter(([id])=>!require3D||canEnter3D({character:id})).map(([id, name]) => ({ id, name })),
+    ...(require3D ? [] : customCharacters.map(entry => ({ id: entry.id, name: entry.appearance.name, appearance: entry.appearance })))
   ];
+  $('#starting-character-title').textContent=require3D?'Kies een personage met 3D-model':'Kies je karakter';
+  if(!choices.length){toast('Er zijn nog geen personages met een 3D-model beschikbaar.');return;}
   for (const choice of choices) {
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'character-option';
     const selected = choice.appearance ? selectedCustomCharacter === choice.id : !selectedCustomCharacter && character === choice.id;
     button.setAttribute('aria-pressed', String(selected));
     const image = document.createElement('img'); image.width = 56; image.height = 56; image.alt = '';
+    if(!choice.appearance)image.dataset.asset=CHARACTER_PROFILES[choice.id].portrait;
     image.src = choice.appearance ? characterPortrait(choice.appearance) : characterPortraits[choice.id] || assetURL(CHARACTER_PROFILES[choice.id].portrait);
     const name = document.createElement('span'); name.textContent = choice.name;
     button.append(image, name);
@@ -659,7 +667,7 @@ function playSound(event) {
     oscillator.connect(gain); gain.connect(audioContext.destination); oscillator.start(at); oscillator.stop(at + .15);
   });
 }
-function resetInput() { controllerInput = emptyGamepadControls(); keys.clear(); touchKeys.clear(); pendingActions.clear(); input = { left: false, right: false, jump: false, fire: false, mount: false, pipe: false }; }
+function resetInput() { controllerInput = emptyGamepadControls(); keys.clear(); touchKeys.clear(); pendingActions.clear(); input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false }; }
 function queueAction(action) {
   if (action === 'left' || action === 'right') pendingActions.delete(action === 'left' ? 'right' : 'left');
   pendingActions.add(action);
@@ -667,7 +675,7 @@ function queueAction(action) {
 }
 function updateInput() {
   const touches = [...touchKeys.values()];
-  input = { left: keys.has('ArrowLeft') || keys.has('KeyA') || touches.includes('left'), right: keys.has('ArrowRight') || keys.has('KeyD') || touches.includes('right'), jump: keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || touches.includes('jump'), fire: keys.has('KeyF') || keys.has('KeyX') || touches.includes('fire'), mount: keys.has('KeyR') || keys.has('ArrowDown') || touches.includes('mount'), pipe: keys.has('ArrowDown') || keys.has('KeyS') || touches.includes('pipe') };
+  input = { left: keys.has('ArrowLeft') || keys.has('KeyA') || touches.includes('left'), right: keys.has('ArrowRight') || keys.has('KeyD') || touches.includes('right'), jump: keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || touches.includes('jump'), run: keys.has('ShiftLeft') || keys.has('ShiftRight') || touches.includes('run'), fire: keys.has('KeyF') || keys.has('KeyX') || touches.includes('fire'), mount: keys.has('KeyR') || keys.has('ArrowDown') || touches.includes('mount'), pipe: keys.has('ArrowDown') || keys.has('KeyS') || touches.includes('pipe') };
   for (const action of Object.keys(controllerInput)) input[action] ||= controllerInput[action];
 }
 function updatePowers() {
@@ -690,25 +698,25 @@ function updatePowers() {
   if (p?.mounted?.kind === 'dolphin' || p?.mounted?.kind === 'seahorse') powers.push('R / ↓: afstappen · springen: omhoog · S: omlaag' + (p.mounted.kind==='seahorse' ? ' · F / X: wegblazen' : ''));
   if (isWaterTheme(game?.theme)) powers.push('≈ Houd springen vast om omhoog te zwemmen');
   const status = powers.join(' · ');
-  if ($('#power-status').textContent !== status) $('#power-status').textContent = status;
-  $('#power-status').hidden = !status;
-  $('#touch-fire').hidden = !p?.fire && !p?.ice && !p?.bubblegun;
-  $('#touch-fire').textContent = p?.bubblegun ? 'Bellen ○' : p?.ice ? 'IJs ❄' : 'Vuur ●';
-  $('#touch-fire').setAttribute('aria-label', p?.bubblegun ? 'Schiet een luchtbel' : p?.ice ? 'Gooi een ijsbal' : 'Gooi een vuurbal');
+  if ($('#power-status').textContent !== status) setHUDText($('#power-status'), status);
+  setHUDHidden($('#power-status'), !status);
+  setHUDHidden($('#touch-fire'), !p?.fire && !p?.ice && !p?.bubblegun && p?.mounted?.kind !== 'seahorse');
+  setHUDText($('#touch-fire'), p?.bubblegun ? 'Bellen ○' : p?.ice ? 'IJs ❄' : 'Vuur ●');
+  setHUDAttribute($('#touch-fire'), 'aria-label', p?.bubblegun ? 'Schiet een luchtbel' : p?.ice ? 'Gooi een ijsbal' : 'Gooi een vuurbal');
   const shell = game && nearbyShell(game);
-  $('#touch-mount').hidden = !shell && !game?.dinos.some(d => d.alive);
-  $('#touch-mount').textContent = shell ? 'Helm ↓' : p?.mounted ? 'Afstap ↓' : 'Dino ↓';
-  $('#touch-mount').setAttribute('aria-label', shell ? 'Zet het schild op als helm' : 'Stap op of van de dino');
+  setHUDHidden($('#touch-mount'), !shell && !game?.dinos.some(d => d.alive));
+  setHUDText($('#touch-mount'), shell ? 'Helm ↓' : p?.mounted ? 'Afstap ↓' : 'Dino ↓');
+  setHUDAttribute($('#touch-mount'), 'aria-label', shell ? 'Zet het schild op als helm' : 'Stap op of van de dino');
   const nearby = p && !p.respawn && !p.mounted && game.dinos.some(d => d.alive && !game.players?.some(other => other.mounted === d) && d.grounded && Math.abs(d.x - p.x) < 46 && Math.abs(d.y + d.h - p.y - p.h) < 38);
   const pipe = game && pipeUnderPlayer(game);
-  $('#touch-pipe').hidden = !game?.tiles.some(row => row.some(id => ['in', 'both'].includes(PIPE_TYPES[id]?.mode)));
+  setHUDHidden($('#touch-pipe'), !game?.tiles.some(row => row.some(id => ['in', 'both'].includes(PIPE_TYPES[id]?.mode))));
   const lockedCave = game && positions({ tiles: game.tiles }, 63).some(d => Math.abs(p.x + p.w / 2 - (d.x + .5) * TILE) < 40 && Math.abs(p.y + p.h - (d.y + 1) * TILE) < 40);
-  $('#context-hint').hidden = !p?.vineId && !nearby && !pipe && !shell && !lockedCave;
-  $('#context-hint').textContent = p?.vineId ? '← → · Slinger! Springen · Loslaten' : lockedCave ? 'Grot op slot · Zoek de sleutel' : pipe ? pipe.to ? `${{ up: '↓', down: '↑', left: '→', right: '←' }[PIPE_TYPES[pipe.from.id].opening]} / S · Ga de buis in` : 'Deze buis heeft nog geen uitgang' : shell ? 'R / ↓ · Zet het schild op als helm' : 'R / ↓ · Stap op de dino';
-  $('#network-status').hidden = !room;
-  $('#field-status').hidden = wonderlandIndex === null && adventureIndex === null && campaignIndex === null && !game?.challenge && game?.caveState?.active == null;
-  $('#field-status').textContent = wonderlandIndex !== null ? `Wonderland · ${WONDERLAND_FIELDS[wonderlandIndex].name} · ${[wonderlandStatus(game),wonderEncounterHint(game)||WONDERLAND_FIELDS[wonderlandIndex].hint].filter(Boolean).join(' · ')}` : adventureIndex !== null ? `De avonturiers · ${adventureIndex + 1}. ${ADVENTURE_FIELDS[adventureIndex].name}${adventureLaunching ? ' · Raketlancering' : ''}` : game?.caveState?.active != null ? 'Grot · De uitgang is links' : campaignIndex !== null ? `${campaignKind === 'crazy' ? 'Gek veld' : 'Veld'} ${campaignIndex + 1} / 10 · ${currentFields()[campaignIndex].name}` : game?.challenge ? activeLevel().name : '';
-  if (room) $('#network-status').textContent = `${room.code} · Jij bent ${(p?.appearance?.name || CHARACTER_NAMES[p?.character || character])}${p?.respawn > 0 ? ' · Terug bij de start…' : ''}`;
+  setHUDHidden($('#context-hint'), !p?.vineId && !nearby && !pipe && !shell && !lockedCave);
+  setHUDText($('#context-hint'), p?.vineId ? '← → · Slinger! Springen · Loslaten' : lockedCave ? 'Grot op slot · Zoek de sleutel' : pipe ? pipe.to ? `${{ up: '↓', down: '↑', left: '→', right: '←' }[PIPE_TYPES[pipe.from.id].opening]} / S · Ga de buis in` : 'Deze buis heeft nog geen uitgang' : shell ? 'R / ↓ · Zet het schild op als helm' : 'R / ↓ · Stap op de dino');
+  setHUDHidden($('#network-status'), !room);
+  setHUDHidden($('#field-status'), wonderlandIndex === null && adventureIndex === null && campaignIndex === null && !game?.challenge && game?.caveState?.active == null);
+  setHUDText($('#field-status'), wonderlandIndex !== null ? `Wonderland · ${WONDERLAND_FIELDS[wonderlandIndex].name} · ${[wonderlandStatus(game),wonderEncounterHint(game)||WONDERLAND_FIELDS[wonderlandIndex].hint].filter(Boolean).join(' · ')}` : adventureIndex !== null ? `De avonturiers · ${adventureIndex + 1}. ${ADVENTURE_FIELDS[adventureIndex].name}${adventureLaunching ? ' · Raketlancering' : ''}` : game?.caveState?.active != null ? 'Grot · De uitgang is links' : campaignIndex !== null ? `${campaignKind === 'crazy' ? 'Gek veld' : 'Veld'} ${campaignIndex + 1} / 10 · ${currentFields()[campaignIndex].name}` : game?.challenge ? activeLevel().name : '');
+  if (room) setHUDText($('#network-status'), `${room.code} · Jij bent ${(p?.appearance?.name || CHARACTER_NAMES[p?.character || character])}${p?.respawn > 0 ? ' · Terug bij de start…' : ''}`);
 }
 function updateGameHud() {
   if (!game) return;
@@ -716,26 +724,20 @@ function updateGameHud() {
   // without forcing those scans and DOM writes into every render frame.
   if (game.state === 'playing' && game.events.length === 0 && game.time >= lastHudTime && game.time - lastHudTime < 1 / 15) return;
   lastHudTime = game.time;
-  $('#coin-count').textContent = game.challenge?.kind === 'coin-race' && game.players ? game.players.map(p => `${(p.appearance?.name || CHARACTER_NAMES[p.character])} ● ${p.coins || 0}`).join(' · ') : `● ${game.coins}${game.challenge?.kind === 'coin-team' ? ` / ${game.challenge.target}` : ''}`;
-  const remaining = game.challenge ? game.challenge.seconds - game.time : 0;
-  const seconds = game.challenge ? remaining > 1e-8 ? Math.ceil(remaining) : 0 : Math.floor(game.time);
-  $('#game-time').textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
-  if (game.pSwitch) $('#game-time').textContent += ` · P ${Math.ceil(game.pSwitch.remaining)}s`;
-  if (adventureIndex !== null) {
-    const boss = game.enemies.find(e => e.boss && e.alive);
-    $('#coin-count').textContent += ` · Tas ● ${adventure.coins} · ♥ ${adventure.lives}${boss ? ' · Eindbaas ♥ '+boss.hp : ''}`;
-  }
+  updateVitalsHUD($('#vitals-status'), game.players || [game.player], game.player);
+  updateHUDCounters($('#game-hud'), game, adventureIndex !== null ? adventure : null);
   updatePowers();
 }
 function startGame() {
   endStroke(); endDrag(); beltStart = null;
   try {
     if (room?.role === 'guest') return;
-    game = room ? createCoopGame(networkLevel, character) : createGame(networkLevel || playLevel || level);
+    if(worldPlaying&&requires3D(worlds.find(w=>w.id===worldPlaying.worldId)))assert3DCharacter({character,appearance:selectedAppearance()});
+    game = room ? createCoopGame(networkLevel, character) : createGame(networkLevel || playLevel || level, { character });
     if (room) {
       game.players[0].appearance = normalizeAppearance(selectedAppearance());
       game.players[1].appearance = normalizeAppearance(remotePacket.appearance);
-    } else game.player.appearance = normalizeAppearance(selectedAppearance());
+    } else { game.player.appearance = normalizeAppearance(selectedAppearance()); game.player.character = character; }
     if (wonderlandIndex !== null) prepareWonderlandGame(game, wonderlandIndex);
     if (adventureIndex !== null) {
       if (adventureLaunching) {
@@ -850,10 +852,29 @@ function showResult() {
     }
   }
 }
+async function openWorld3D(world,node,mode) {
+  if(room||roomBusy){toast('Verlaat eerst de speelkamer om een 3D-veld te openen.');return;}
+  const identity={character,appearance:selectedAppearance()};
+  if(!canEnter3D(identity)){chooseStartingCharacter(()=>openWorld3D(world,node,mode),{require3D:true});return;}
+  try {
+    const {openPlatformer3D}=await import('./games/platformer3d/shell.mjs?v=babylon-1');
+    await openPlatformer3D({level:node.level,identity,mode,onSave(next){saveWorldNodeLevel(world,node.id,next);return persist();},onComplete(){if(!world.completed.includes(node.id)){world.completed.push(node.id);persist();}},onExit(result){
+      if(result.won&&!world.completed.includes(node.id)){world.completed.push(node.id);persist();}
+      worldEditor.open(mode==='edit'?'edit':'play',world.id);
+    }});
+  } catch(error){toast(error.message);worldEditor.open(mode,world.id);}
+}
+function playWorldField(world,node){
+  if(requires3D(world)&&!canEnter3D({character,appearance:selectedAppearance()})){chooseStartingCharacter(()=>playWorldField(world,node),{require3D:true});return;}
+  if(node.level.kind==='platformer3d'){openWorld3D(world,node,'play');return;}
+  if(!positions(node.level,10).length||!positions(node.level,11).length){toast('Plaats eerst een startplek en een finishvlag in dit veld.');worldEditor.open('edit',world.id);return;}
+  worldPlaying={worldId:world.id,nodeId:node.id};playLevel=clone(node.level);campaignIndex=null;adventureIndex=null;wonderlandIndex=null;startGame();
+}
 const worldEditor = setupWorldEditor({
   worlds: () => worlds, selectedWorld: () => selectedWorldId,
   selectWorld: id => { selectedWorldId = id; }, save: persist, warn: toast, confirm: confirmAction,
   editField: (world, node) => {
+    if(node.level.kind==='platformer3d'){openWorld3D(world,node,'edit');return;}
     const backup = worldDraftBackup || clone(level);
     replaceLevel(node.level);
     worldDraftBackup = backup; worldEditing = { worldId: world.id, nodeId: node.id };
@@ -861,14 +882,7 @@ const worldEditor = setupWorldEditor({
     toast(`Je richt ‘${node.level.name}’ in. Gebruik Wereldkaart om terug te gaan.`);
     canvas.focus({ preventScroll: true });
   },
-  playField: (world, node) => {
-    if (!positions(node.level,10).length || !positions(node.level,11).length) {
-      toast('Plaats eerst een startplek en een finishvlag in dit veld.');
-      worldEditor.open('edit',world.id); return;
-    }
-    worldPlaying = { worldId: world.id, nodeId: node.id };
-    playLevel = clone(node.level); campaignIndex = null; startGame();
-  }
+  playField: playWorldField
 });
 function openWorldMap(mode = 'edit') {
   if (room || roomBusy) { toast('Verlaat eerst de speelkamer om je wereld te openen.'); return; }
@@ -923,6 +937,13 @@ for(const button of homeButtons())button.addEventListener('click',()=>{
   const launch = () => {
   if(kind==='wonderland')wonderlandMap.open();
   else if(kind==='adventure')adventureMap.open();
+  else if(kind==='three'){
+    try{
+      const world=getOrCreateExampleWorld3D(worlds);
+      openWorldMap('play');$('#world-editor-dialog').close();selectedWorldId=world.id;persist();
+      openWorld3D(world,world.nodes.find(n=>n.level?.kind==='platformer3d'),'play');
+    }catch(error){toast(error.message);openHome();}
+  }
   else if(kind==='worlds')openWorldMap('edit');
   else if(kind==='regular')startCampaign(campaignCompleted?0:campaignProgress,'regular',false);
   else if(kind==='crazy')startCampaign(crazyCompleted?0:crazyProgress,'crazy',false);
@@ -933,7 +954,7 @@ for(const button of homeButtons())button.addEventListener('click',()=>{
     if(kind==='together') { const section=$('[data-section="together"]').closest('details');section.open=true;section.parentElement.closest('details').open=true; }
   }
   };
-  if(['wonderland','adventure','regular','crazy','minis','worlds','together'].includes(kind))chooseStartingCharacter(launch);
+  if(['wonderland','adventure','regular','crazy','minis','worlds','together','three'].includes(kind))chooseStartingCharacter(launch,{require3D:kind==='three'});
   else launch();
 });
 const wonderlandMap = setupWonderlandMap({state:()=>wonderland,save:persist,launch:startWonderland});
@@ -1103,7 +1124,7 @@ document.addEventListener('keydown', event => {
   if (!event.ctrlKey && !event.metaKey && event.code === 'KeyH') { toggleInterface(); return; }
   if (event.code === 'Escape') { togglePause(); return; }
   if (game) {
-    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyF', 'KeyX', 'KeyR', 'Space'].includes(event.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyF', 'KeyX', 'KeyR', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
       event.preventDefault();
       if (game.state === 'playing' && !keys.has(event.code) && actionKeys[event.code]) queueAction(actionKeys[event.code]);
       if (game.state === 'playing' && !keys.has(event.code) && event.code === 'ArrowDown') queueAction('mount');
@@ -1146,14 +1167,14 @@ function pollController() {
       const index = Math.max(0, buttons.indexOf(document.activeElement));
       if (direction) buttons[(index + direction + buttons.length) % buttons.length]?.focus();
       else if (action === 'jump' || action === 'pause') buttons[index]?.click();
-      else if (action === 'fire') $('#starting-character-dialog').close();
+      else if ((action === 'fire' || action === 'cancel')) $('#starting-character-dialog').close();
     }
     return;
   }
   if (homeOpen || miniOpen) {
     controllerInput=emptyGamepadControls();updateInput();
     if(miniOpen)smallGames.handleController(sample, secondMiniSample);
-    else for(const action of sample.pressed) { const dir={left:'left',right:'right',up:'up',pipe:'down'}[action];if(dir)moveHome(dir);else if(action==='jump'||action==='pause')homeButtons()[homeIndex].click();else if(action==='fire')$('#start-screen').close(); }
+    else for(const action of sample.pressed) { const dir={left:'left',right:'right',up:'up',pipe:'down'}[action];if(dir)moveHome(dir);else if(action==='jump'||action==='pause')homeButtons()[homeIndex].click();else if((action==='fire'||action==='cancel'))$('#start-screen').close(); }
     return;
   }
   if (wonderOpen) { wonderlandMap.handleController(sample); controllerInput = emptyGamepadControls(); updateInput(); return; }
@@ -1216,7 +1237,7 @@ function animate(timestamp) {
     updateGameHud();
     if (game.state !== 'playing') showResult();
   } else accumulator = 0;
-  if ($('#start-screen').open || smallGames.isOpen() || document.hidden) { gameDepthCache.dispose(); gameBackgroundRaster.dispose(); renderQuality.reset(); requestAnimationFrame(animate); return; }
+  if ($('#start-screen').open || smallGames.isOpen() || $('#platformer3d-dialog') || document.hidden) { gameDepthCache.dispose(); gameBackgroundRaster.dispose(); renderQuality.reset(); requestAnimationFrame(animate); return; }
   if ($('dialog[open]')) renderQuality.reset();
   // Keep the raster fixed during the layer comparison: change one variable only.
   else if (!renderProbe && renderQuality.observe(timestamp, screenDensity)) resizeWorldRaster();
@@ -1260,9 +1281,9 @@ async function startIllustratedGame() {
       if (storageProblem) toast('De vorige sessie kon niet worden geladen. Je kunt een gedownload levelbestand openen.');
     });
   } catch (error) {
-    $('#loading-status').textContent = `${error.message}. Probeer de afbeeldingen opnieuw te laden.`;
+    $('#loading-status').textContent = error.name === 'ImageLoadError' ? 'Niet alle afbeeldingen konden worden geladen. Bekijk de meldingen hieronder.' : `${error.message}. Probeer de afbeeldingen opnieuw te laden.`;
     $('#loading-retry').hidden = false;
   }
 }
-$('#loading-retry').addEventListener('click', startIllustratedGame);
+$('#loading-retry').addEventListener('click', () => location.reload());
 startIllustratedGame();

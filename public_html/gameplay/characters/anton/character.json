@@ -1,0 +1,42 @@
+{
+  "id": "anton",
+  "name": "anton",
+  "portrait": "images/portrait.png",
+  "poses": {
+    "idle": "images/platform/idle.png",
+    "idle-1": "images/platform/idle-1.png",
+    "idle-2": "images/platform/idle-2.png",
+    "idle-3": "images/platform/idle-3.png",
+    "idle-4": "images/platform/idle-4.png",
+    "idle-5": "images/platform/idle-5.png",
+    "idle-6": "images/platform/idle-6.png",
+    "idle-7": "images/platform/idle-7.png",
+    "idle-8": "images/platform/idle-8.png",
+    "idle-9": "images/platform/idle-9.png",
+    "side": "images/platform/side.png",
+    "run": "images/platform/jump.png",
+    "jump": "images/platform/jump.png",
+    "victory": "images/platform/victory.png",
+    "land": "images/platform/land.png",
+    "ride": "images/platform/ride.png",
+    "walk": "images/platform/walk.png",
+    "walk-1": "images/platform/walk-1.png",
+    "walk-2": "images/platform/walk-2.png",
+    "walk-3": "images/platform/walk-3.png",
+    "walk-4": "images/platform/walk-4.png"
+  },
+  "model3d": {
+    "file": "3d/model.glb"
+  },
+  "settings": {
+    "2d": {
+      "parachute": false,
+      "runAnimation": "roll",
+      "balance": {
+        "health": 5,
+        "power": 5
+      },
+      "renderScale": 1.5625
+    }
+  }
+}

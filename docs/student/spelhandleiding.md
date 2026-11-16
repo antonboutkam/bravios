@@ -4,13 +4,15 @@
 
 Bestandspaden in deze handleiding zijn relatief aan de projectroot, tenzij anders vermeld.
 
-Een Nederlandse platformgame en levelbouwer voor samen spelen, geïnspireerd op klassieke Mario-spellen. Boaz, Ravi en het logo komen uit de meegeleverde assets. De andere graphics en geluiden zijn zelfgemaakt. Geen account, bibliotheken of externe bestanden nodig.
+Een Nederlandse platformgame en levelbouwer voor samen spelen. Boaz, Ravi en het logo komen uit de meegeleverde assets. De andere graphics en geluiden zijn zelfgemaakt. Geen account, bibliotheken of externe bestanden nodig.
 
 ## Meteen spelen
 
 Start het project volgens de [startinstructies](starten.md) en open **http://localhost:8080**. Voor offline solo spelen maak je eerst met `npm run build` het bestand `public_html/speel.html`. Dit HTML-bestand bevat het spel inclusief de plaatjes en werkt ook zonder internet. Je kunt het bestand kopiëren naar een andere computer.
 
-Kies Boaz of Ravi via het portretje naast de speelknop of in het menu **☰**. Je keuze wordt op dit apparaat bewaard.
+Kies je personage wanneer je een spel start. Je keuze wordt op dit apparaat bewaard.
+
+**Pinball** is een zilveren bal voor 2D-velden. Houd rechts of links vast om de hele wereld een beetje die kant op te kantelen. De bal rolt door de helling. Laat los om uit te rollen; stuur tegen om te remmen. Spring met de gewone springknop. Pinball heeft geen parachute.
 
 1. Sleep een onderdeel uit de bouwdoos naar het veld, of kies een onderdeel en klik/veeg om te bouwen.
 2. Gebruik de gum om blokjes te verwijderen. Een getekende lijn kun je in één keer ongedaan maken.
@@ -95,7 +97,7 @@ Vier vreemde achtergrondafbeeldingen tonen zwevende theepotten, snoepland met vl
 
 ### Automatische parachute
 
-Boaz en Ravi hebben nu standaard een parachute. Zodra ze tijdens één afdaling **meer dan drie blokjes (96 spelpixels)** zijn gevallen, gaat hij automatisch open. De valafstand wordt vanaf het hoogste punt gemeten. De parachute begrenst de valsnelheid op 160 spelpixels per seconde; je kunt gewoon links en rechts blijven sturen. Een val van hoogstens drie blokjes opent hem niet. Bij landen, opnieuw omhoog springen, een buisreis, een reddingssprong of afgaan wordt hij ingeklapt. Onder water gebruik je de bestaande zwembeweging en verschijnt geen parachute.
+Boaz, Ravi en Pixel hebben standaard een parachute. Anton heeft er geen. Dit is per personage instelbaar in `character.json` onder `settings.2d.parachute`. Zodra ze tijdens één afdaling **meer dan drie blokjes (96 spelpixels)** zijn gevallen, gaat hij automatisch open. De valafstand wordt vanaf het hoogste punt gemeten. De parachute begrenst de valsnelheid op 160 spelpixels per seconde; je kunt gewoon links en rechts blijven sturen. Een val van hoogstens drie blokjes opent hem niet. Bij landen, opnieuw omhoog springen, een buisreis, een reddingssprong of afgaan wordt hij ingeklapt. Onder water gebruik je de bestaande zwembeweging en verschijnt geen parachute.
 
 De parachute werkt ook met kattenvorm, schildpadhelm, achteruit lopen en op de dino. Elke speler heeft in samen spelen zijn eigen parachute en valafstand; beide worden in de gedeelde spelstand bewaard. De parachute vertraagt vallen maar geeft geen bescherming tegen vijanden, lava of stekels. Pauze bevriest de beweging en de rustige beweging van het doek respecteert **minder beweging**.
 
@@ -176,7 +178,19 @@ In **☰ → Speciale velden voor samen spelen** staan drie velden. Kies **Maak 
 
 In een wedstrijd toont het scherm de muntjes van Boaz en Ravi afzonderlijk. Het resultaat noemt de winnaar of een gelijkspel. Je behoudt je verzamelde muntjes na een respawn. In de teamjacht telt jullie gezamenlijke score. De finishvlag beëindigt deze uitdagingen niet; de timer of het muntjesdoel bepaalt het einde. Pauze stopt ook de wedstrijdtimer.
 
+## Levensbalk en schietkracht
+
+Onderaan zie je **Leven** en **Schietkracht** in een balk over de volle schermbreedte. Een gewone treffer kost één levensvakje en maakt je personage iets kleiner. Bij nul levens ga je af. Schilden en helmen beschermen nog steeds; lava, verplettering en gaten kunnen direct dodelijk zijn.
+
+De tellers tonen je verzamelde muntjes, speeltijd en levens. In **De avonturiers** zie je je echte aantal extra levens; in de andere velden betekent **∞** dat je onbeperkt opnieuw kunt proberen. **Score demo** is voorlopig een fictieve score. De vakken **Groter worden** en **Bellenpistool** onder **Arsenaal · later** reserveren ruimte voor toekomstige opslag; je kunt er nog geen hulpmiddelen bewaren of activeren.
+
+Vuur, ijs en luchtbellen kosten één schietpunt. Is de blauwe balk leeg, wacht dan even: binnen zes seconden actieve speeltijd is hij weer vol. Pauzeren stopt het herladen. Je houdt je wapen na een gewone treffer.
+
+Iedere held heeft tien punten verdeeld over leven en schietkracht. Boaz heeft **6/4**, Ravi **4/6**, Anton en Pixel **5/5**. Je kunt deze verdeling in het eigen `character.json` aanpassen onder `settings.2d.balance`. Samen moeten de twee waarden tien blijven. In co-op heeft iedere speler eigen balken.
+
 ## Bediening
+
+Met de richtingstoetsen of A/D wandel je. Houd **Shift** erbij vast om te rennen. Op een controller gebruik je **B / rondje**, op een aanraakscherm **Ren B**. Anton maakt tijdens het rennen op de grond doorlopend koprollen. Laat de sprintknop los om weer te wandelen. Vuren doe je met **F / X** op het toetsenbord of **X / vierkant** op de controller.
 
 | Actie | Toets |
 | --- | --- |
@@ -203,7 +217,7 @@ Verbind een controller via USB of Bluetooth en druk op een knop terwijl Bravios 
 | --- | --- |
 | Lopen | Linkerstick of richtingstoetsen |
 | Springen / zwemmen | A / kruisje (vasthouden voor hoger springen) |
-| Vuur of ijs | X / vierkant of B / rondje |
+| Vuur of ijs | X / vierkant |
 | Op / van de dino | Y / driehoek |
 | Buis binnengaan | Richtingstoets omlaag of linkerstick omlaag |
 | Starten / pauze / doorgaan | Start / Options |
@@ -245,11 +259,11 @@ De helpers blijven op hun plaats staan en zakken naar de grond als je ze in de l
 - De finishvlag aanraken om te winnen.
 - Een ster maakt je 10 seconden onoverwinnelijk: contact verslaat vijanden en stekels doen tijdelijk geen pijn. Vallen in een gat kost nog steeds een poging. De resterende tijd staat in beeld.
 - Een rainbow ster beschermt **2:00 minuten**, ook tegen lava, stekels, bommen en vallen. In een gat word je teruggebracht naar veilige grond. Je krijgt rainbow schoenen met een regenboogspoor; die blijven na de timer tot je opnieuw begint of af bent. Een gewone ster verkort de rainbow bescherming niet.
-- Een kattenbelletje verandert je in een kat. De kat springt veel hoger en maakt een automatische reddingssprong als hij in een gat valt. Zolang er een kat meespeelt, wordt de wereld meteen nacht. Een aanraking met een vijand kost je kattenvorm en geeft kort bescherming; Een kat kan door lava en stekels afgaan; een rainbow ster beschermt tegen beide, een gewone ster alleen tegen stekels.
+- Een kattenbelletje verandert je in een kat. De kat springt veel hoger en maakt een automatische reddingssprong als hij in een gat valt. Zolang er een kat meespeelt, wordt de wereld meteen nacht. Een aanraking met een vijand kost één levenspunt en je kattenvorm en geeft kort bescherming; Een kat kan door lava en stekels afgaan; een rainbow ster beschermt tegen beide, een gewone ster alleen tegen stekels.
 - Vliegt er dichtbij een draak, springende robot, hamer, vuur- of ijsbal, dan neemt het katteninstinct **0,8 seconde** de controle over: de kat springt en rent naar het doel. Daarna bestuur je weer zelf. Het instinct kan hoogstens eens per 4 seconden starten.
 - Bij **Buizen ▾** kies je een gewone buis, een **ingang ↓**, een **uitgang ↑** of **twee richtingen ↕**. Ga bovenop een ingang staan en druk **↓ / S**, of op **Buis ↓** op een tablet. Ingangen en uitgangen worden elk van links naar rechts geteld: A1 gaat naar A1, A2 naar A2. Buizen met twee richtingen verbinden in paren B1, B2, enzovoort. De codes staan boven de buizen in de bouwer; een **?** betekent dat een ingang nog geen partner heeft. Houd de ruimte boven beide buizen vrij. Een geblokkeerde uitgang werkt niet. Loslaten en opnieuw drukken voorkomt onbedoeld terugreizen.
 - Bij **Sterren ▾** kies je tussen de gewone ster en de rainbow ster. De gekozen variant blijft als hoofdknop beschikbaar om te plaatsen of te slepen.
-- Een vuurbloem laat je vuurballen gooien met F of X. Vuurballen stuiteren en verslaan vijanden; ze stoppen bij muren. Een aanraking met een vijand kost je de vuurkracht.
+- Een vuurbloem laat je vuurballen gooien met F of X. Vuurballen stuiteren en verslaan vijanden; ze stoppen bij muren. Een gewone treffer kost een levenspunt; je houdt de vuurkracht tot je afgaat.
 - Plaats een dino in je level. Spring op zijn rug of druk dichtbij op R / ↓. Je kunt samen lopen en springen; met R / ↓ stap je af. Een aanraking met een vijand laat je afstappen, zodat je nog een kans hebt.
 - Een robotje staat 5 seconden op te laden en springt daarna willekeurig naar links of rechts. Na het landen laadt hij weer op. De balk boven zijn hoofd laat de voortgang zien.
 - Een kikker steekt 3 seconden zijn tong uit en kruipt daarna 3 seconden langzaam vooruit. Zijn tong raakt je ook op afstand en stopt bij muren.

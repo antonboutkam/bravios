@@ -73,6 +73,9 @@ export const ENEMY_CATALOG = [
       }
     },
     "description": "Pas op! Spring op zijn hoofd om hem te verslaan.",
+    "model3d": {
+      "file": "gameplay/enemies/game/walker/3d/model.glb"
+    },
     "group": "game",
     "key": "game/walker"
   },

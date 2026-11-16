@@ -2,7 +2,7 @@
 
 ![Bravios-logo](public_html/assets/scenery/ui/logo.png)
 
-Bravios is een Nederlandstalige 2D-platformgame met een levelbouwer. Bouw een parcours, verzamel muntjes, ontwijk vijanden en haal de finish. Je kunt ook eigen werelden en personages maken en campagnes en kleine games spelen.
+Bravios is een Nederlandstalige platformgame met een 2D-levelbouwer en 3D-velden met een eigen blokkenbouwer. Bouw een parcours, verzamel muntjes, ontwijk vijanden en haal de finish. Je kunt ook eigen werelden en personages maken en campagnes en kleine games spelen.
 
 Voor eerstejaars studenten mbo niveau 4 Software Development: begin bij de [studentenhandleiding](docs/student/README.md). Daar vind je installatie, starten en een eerste uitleg van de broncode.
 
@@ -46,6 +46,10 @@ Of open een terminal in de projectmap en kies één van deze commando’s:
 | Node.js 18+ | `node server/server.js` of `npm start` |
 
 Eén van deze omgevingen is voldoende. Extra pakketten installeren is niet nodig. Open **http://localhost:8080** en stop met Ctrl+C. Samenspel vereist de PHP-server. Zie de [installatie-instructies](docs/student/installatie/README.md) en de [startinstructies](docs/student/starten.md) voor hulp.
+
+## 3D proberen
+
+Kies op het startscherm **Speel 3D-voorbeeld**, of maak een kopie via **Bouw een wereld → Voorbeeldwereld met 3D**. Kies **Spelen** om de zwevende tuinen te bezoeken of **Veld inrichten** om in 3D te bouwen. Een wereld met een 3D-veld is alleen speelbaar met personages met een 3D-model; de eerste modellen zijn Boaz en Ravi. [Uitleg en modelbestanden](docs/other/architecture/platformer3d.md).
 
 ## Documentatie
 

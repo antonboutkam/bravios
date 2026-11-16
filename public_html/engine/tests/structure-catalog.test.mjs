@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankLevel,createGame,stepGame,validateLevel,QUESTION_REWARDS,PIPE_TYPES,chainBall} from '../engine.mjs';
 import {structureProfile,structureAssets,structureFootprint} from '../structures/runtime.mjs';
-import {structureVisual} from '../structures/sprites.mjs';
+import {structureVisual,drawStructureTile} from '../structures/sprites.mjs';
+import {drawTile} from '../art.mjs';
 import {createMechanisms,stepMechanisms,mechanismBodies} from '../mechanisms.mjs';
 import {createSwingPlatforms,bounceDonut,stepSwingPlatforms} from '../swing-platforms.mjs';
 import {firebarFlames,firebarHits} from '../firebars.mjs';
@@ -24,6 +25,30 @@ test('pendulumlengte en diameter volgen dezelfde geometrie als de afbeelding',()
 test('Wonderland-platforms gebruiken JSON-collision en beweging',()=>change('wonder-swing',c=>{c.collision.solid=false;c.settings.horizontalReach=0;},()=>{const o={kind:'swing',x:100,y:100,w:96,h:12,baseX:100,baseY:100};const g={time:2,player:{x:0,y:0,w:22,h:28},wonderland:{objects:[o],scale:1,gravity:'down',gravityTime:0,sizeTime:0,reverse:0},events:[]};stepWonderMagic(g,{},.1,()=>true);assert.equal(o.x,100);assert.equal(wonderBodies(g).length,0);}));
 test('catalogus blijft bruikbaar in levels, samenspel en offlineassets',()=>{const level=blankLevel(50);level.tiles[8][12]=46;assert.deepEqual(validateLevel(level),level);const game=createCoopGame(level),copy=unpackCoopGame(packCoopGame(game));assert.equal(copy.movingWalls[0].catalogId,'mechanisms/moving-wall-up');assert.ok(structureAssets().length>70);assert.equal(QUESTION_REWARDS[35],9);assert.equal(PIPE_TYPES[55].opening,'left');assert.ok(structureVisual(structureProfile(63),{doorOpen:1}).image.includes('door-8'));});
 
-test('een massief blok kan via JSON schade bij landen krijgen',()=>change(65,c=>c.collision.damage=true,()=>{const g=make(65);Object.assign(g.player,{y:320-g.player.h-.5,vy:120});stepGame(g,{});assert.equal(g.state,'dead');}));
+test('een massief blok kan via JSON schade bij landen krijgen',()=>change(65,c=>c.collision.damage=true,()=>{const g=make(65);Object.assign(g.player,{y:320-g.player.h-.5,vy:120});stepGame(g,{});assert.equal(g.state,'playing');assert.equal(g.player.health,g.player.maxHealth-1);}));
 
 test('de levelbouwer gebruikt de JSON-afmetingen voor de hele voetafdruk',()=>change(46,c=>Object.assign(c.settings,{width:96,height:32}),()=>{assert.deepEqual(structureFootprint(46),{width:3,height:1});assert.deepEqual(structureFootprint(65),{width:1,height:1});}));
+
+test('het startblok gebruikt nooit een ingeladen vast personageplaatje',()=>{
+ const previous=globalThis.Image;
+ try{globalThis.Image=class {complete=true;naturalWidth=120;};
+   const ctx={save(){},restore(){},drawImage(){throw new Error('Statisch startfiguur getekend');}};
+   assert.equal(drawStructureTile(ctx,10,0,0,32,{theme:'grass',icon:true}),false);
+   assert.equal(drawStructureTile(ctx,10,0,0,32,{theme:'grass'}),false);
+ }finally{if(previous===undefined)delete globalThis.Image;else globalThis.Image=previous;}
+});
+
+test('de startplek blijft een neutrale vlag voor ieder personage en ieder thema',()=>{
+ const record=(character,theme,icon)=>{
+   const calls=[],ctx=new Proxy({}, {get:(_,key)=>(...args)=>calls.push([key,...args]),set:(_,key,value)=>{calls.push([key,value]);return true;}});
+   drawTile(ctx,10,0,0,32,theme,{character,icon});return calls;
+ };
+ for(const icon of [false,true]){
+   const expected=record('boaz','grass',icon);
+   assert.ok(expected.some(([name])=>name==='closePath'),'de vlag heeft een eigen getekende vorm');
+   assert.ok(!expected.some(([name])=>name==='drawImage'),'geen opgeslagen personageafbeelding op de startplek');
+   for(const character of ['ravi','anton','pixel'])for(const theme of ['grass','night','castle','winter','moon','underwater'])assert.deepEqual(record(character,theme,icon),expected);
+ }
+ const paths=Object.values(structureProfile(10).visuals).map(v=>v.image);
+ assert.ok(paths.every(path=>/\/start-marker(?:-editor)?\.png$/.test(path)),'exports gebruiken nieuwe, personagevrije bestandsadressen');
+});

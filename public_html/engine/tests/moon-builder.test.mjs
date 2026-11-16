@@ -27,7 +27,7 @@ test('bean box opens once, vine stops at terrain and supports climbing',()=>{
 test('chain balls swing, hurt on touch and pause with the world',()=>{
  const l=blankLevel(40);l.tiles[6][8]=70;const g=createGame(l);const a=chainBalls(g)[0];
  advance(g,10);assert.notEqual(chainBalls(g)[0].x,a.x);g.state='paused';const t=g.time;advance(g,20);assert.equal(g.time,t);
- g.state='playing';const b=chainBalls(g)[0];Object.assign(g.player,{x:b.x,y:b.y,vy:0});stepGame(g,{});assert.equal(g.state,'dead');
+ g.state='playing';const b=chainBalls(g)[0];Object.assign(g.player,{x:b.x,y:b.y,vy:0});stepGame(g,{});assert.equal(g.state,'playing');assert.equal(g.player.health,g.player.maxHealth-1);
 });
 test('quad mounts and dismounts, plane patrols and drops falling fire',()=>{
  const l=blankLevel(40);l.tiles[13][4]=74;l.tiles[4][8]=77;const g=createGame(l);advance(g,120);

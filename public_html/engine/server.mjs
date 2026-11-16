@@ -10,7 +10,7 @@ import { CHARACTER_SHEETS } from './character-maker.mjs';
 import { LOOK_SHEETS } from './look.mjs';
 import { TERRAIN_SHEETS } from './terrain.mjs';
 const files = new Set([
-  'index.html', 'speel.html', 'engine/styles.css', 'engine/tegels.html', 'engine/tiles-demo.mjs',
+  'index.html', 'speel.html', 'engine/games/platformer3d/vendor/HavokPhysics.wasm', 'engine/styles.css', 'engine/tegels.html', 'engine/tiles-demo.mjs',
   'engine/tests/creatures.mjs', 'assets/scenery/ui/favicon.svg',
   'assets/backgrounds/worlds/wonderland/world-inspiration.png', 'assets/backgrounds/worlds/adventure/adventure-map.png',
   'assets/scenery/ui/logo.png', 'assets/scenery/ui/logo-transparent.png', 'assets/backgrounds/crazy-backgrounds.png',
@@ -19,7 +19,7 @@ const files = new Set([
 ]);
 for (const name of ['graphics-diagnostic', 'depth-backgrounds', 'swing-platforms', 'adventure-map', 'helmet-beetles', 'sea-life', 'wonder-foes', 'monsters', 'castle-fire', 'creatures']) files.add(`engine/tests/${name}.html`);
 for (const name of (await collectModules(new URL('./', import.meta.url), ['bootstrap.mjs', 'small-games.mjs', 'rhythm-game.mjs'])).keys()) files.add('engine/' + name);
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm' };
 const port = Number(process.env.PORT || 8080);
 http.createServer(async (req, res) => {
   let name;
@@ -29,10 +29,11 @@ http.createServer(async (req, res) => {
   const characterFile = /^gameplay\/characters\/(?:characters\.json|[a-z][a-z0-9-]{0,39}\/character\.json|[a-z][a-z0-9-]{0,39}\/images\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+\.png)$/.test(name);
   const enemyFile=/^gameplay\/enemies\/(?:enemies\.json|(?:game|bosses)\/[a-z][a-z0-9-]{0,39}\/(?:enemy\.json|images\/[a-zA-Z0-9_-]+\.png))$/.test(name);
   const structureFile=/^gameplay\/(?:structures\.json|(?:platforms|obstacles|powerups|interactables)\/[a-z][a-z0-9-]{0,39}\/(?:structure\.json|images\/[a-zA-Z0-9_-]+\.png))$/.test(name);
-  if (!files.has(name) && !characterFile && !enemyFile && !structureFile) { res.writeHead(404); res.end('Niet gevonden'); return; }
+  const modelFile=/^gameplay\/(?:characters\/[a-z][a-z0-9-]{0,39}|enemies\/(?:game|bosses)\/[a-z][a-z0-9-]{0,39})\/3d\/(?:model\.glb|previews\/(?:front|back|left|right|perspective)\.png)$/.test(name);
+  if (!files.has(name) && !characterFile && !enemyFile && !structureFile && !modelFile) { res.writeHead(404); res.end('Niet gevonden'); return; }
   try {
     const data = await readFile(path.join(root, name));
     res.writeHead(200, { 'Content-Type': mime[path.extname(name)], 'Cache-Control': 'no-cache' });
     res.end(data);
-  } catch { res.writeHead(500); res.end('Bestand kon niet worden geladen.'); }
+  } catch (error) { res.writeHead(error.code === 'ENOENT' ? 404 : 500); res.end('Bestand kon niet worden geladen.'); }
 }).listen(port, '0.0.0.0', () => console.log(`Bravios draait op http://localhost:${port}`));

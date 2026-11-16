@@ -1,6 +1,6 @@
-import { assetURL } from './paths.mjs';
+import { loadImageAsset, reportImageProblem } from './image-loader.mjs';
 import { CHARACTER_PROFILES } from './characters/roster.mjs';
-import { RUN_POSES } from './characters/shared/poses.mjs';
+import { animationFrames, poseCanvasSize } from './characters/shared/poses.mjs?v=walk-run-1';
 import { loadTerrain } from './terrain.mjs?v=3';
 // Character poses are individual transparent images; scenery and creatures use atlases.
 export const LOOK_SHEETS = {
@@ -91,11 +91,7 @@ export function sheetCutout(pixels, width, height) {
 
 export async function loadLook() {
   const sheets = Object.fromEntries(await Promise.all(Object.entries(LOOK_SHEETS).map(async ([name, path]) => {
-    const img = new Image();
-    await new Promise((resolve, reject) => {
-      img.onload = resolve; img.onerror = () => reject(new Error(`Nieuwe afbeelding kon niet worden geladen: ${path}`));
-      img.src = assetURL(path);
-    });
+    const img = await loadImageAsset(path);
     return [name, img];
   })));
   const prepared = new Map();
@@ -109,9 +105,8 @@ export async function loadLook() {
   for (const sheet of Object.keys(LOOK_ATLASES)) Object.assign(regions, atlasRegions(sheet, sheets[sheet].naturalWidth, sheets[sheet].naturalHeight));
   for (const [name, [sheet, x, y, width, height, mode]] of Object.entries(regions)) {
     const image = sheets[sheet];
-    if (x + width > image.naturalWidth || y + height > image.naturalHeight) throw new Error(`Uitsnede buiten afbeelding: ${name}`);
-    const scale = Math.min(1, 384 / Math.max(width, height));
-    const surface = document.createElement('canvas'); surface.width = Math.round(width * scale); surface.height = Math.round(height * scale);
+    if (x + width > image.naturalWidth || y + height > image.naturalHeight) throw reportImageProblem(LOOK_SHEETS[sheet], `Uitsnede ${name} valt buiten de afbeelding (${image.naturalWidth} × ${image.naturalHeight}).`);
+    const surface = document.createElement('canvas'); [surface.width, surface.height] = poseCanvasSize(width, height);
     const c = surface.getContext('2d', { willReadFrequently: true });
     c.drawImage(image, x, y, width, height, 0, 0, surface.width, surface.height);
     const data = c.getImageData(0, 0, surface.width, surface.height);
@@ -127,14 +122,15 @@ export async function loadLook() {
       }
       bounds = { x: 0, y: 0, width: surface.width, height: surface.height };
     } else bounds = sheetCutout(data.data, surface.width, surface.height);
-    if (!bounds) throw new Error(`Lege uitsnede: ${name}`);
+    if (!bounds) throw reportImageProblem(LOOK_SHEETS[sheet], `Afbeelding ${name} bevat geen zichtbare pixels. Controleer de transparantie.`);
     c.putImageData(data, 0, 0); prepared.set(name, { surface, bounds });
   }
   // Use one crop for the whole cycle so heads, bodies and foot positions stay aligned.
-  for (const id of Object.keys(CHARACTER_PROFILES)) {
-    const frames = RUN_POSES.map(pose => prepared.get(`${id}:${pose}`));
-    if (frames.some(frame => !frame)) continue;
-    if (frames.some(frame => frame.surface.width !== frames[0].surface.width || frame.surface.height !== frames[0].surface.height)) throw new Error(`${id}: de vier loopframes moeten dezelfde canvasafmetingen hebben.`);
+  for (const [id, profile] of Object.entries(CHARACTER_PROFILES)) for (const action of ['walk', 'run']) {
+    const names = animationFrames(profile.views.side.poses, action);
+    const frames = names.map(pose => prepared.get(`${id}:${pose}`));
+    if (!frames.length) continue;
+    if (frames.some(frame => frame.surface.width !== frames[0].surface.width || frame.surface.height !== frames[0].surface.height)) throw reportImageProblem(profile.views.side.poses[names[0]], `De ${action}-frames moeten na verkleinen dezelfde canvasafmetingen hebben. Geladen: ${names.map((pose,i)=>`${pose}.png (${frames[i].surface.width} × ${frames[i].surface.height})`).join(', ')}.`, `Personage ${profile.name}`);
     const x = Math.min(...frames.map(frame => frame.bounds.x)), y = Math.min(...frames.map(frame => frame.bounds.y));
     const right = Math.max(...frames.map(frame => frame.bounds.x + frame.bounds.width));
     const bottom = Math.max(...frames.map(frame => frame.bounds.y + frame.bounds.height));

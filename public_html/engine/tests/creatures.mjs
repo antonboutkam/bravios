@@ -1,6 +1,6 @@
 import { blankLevel, createGame, stepGame, worldTheme } from '../engine.mjs?v=12';
 import { drawWorld, creatureFrame } from '../art.mjs?v=13';
-import { loadLook } from '../look.mjs?v=8';
+import { loadLook } from '../look.mjs?v=9';
 import { SceneEffects } from '../presentation.mjs?v=2';
 
 const canvas = document.querySelector('#world'), ctx = canvas.getContext('2d');

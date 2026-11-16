@@ -1,5 +1,7 @@
 import { THEMES } from './engine.mjs?v=40';
-import { WORLD_MAP, worldId, createWorld, validateWorld, addWorldNode, toggleWorldLink, removeWorldNode, configureWorldNode } from './worlds.mjs?v=1';
+import { WORLD_MAP, worldId, createWorld, exampleWorld3D, validateWorld, addWorldNode, toggleWorldLink, removeWorldNode, configureWorldNode } from './worlds.mjs?v=babylon-1';
+
+import { requires3D, characters3D } from './games/platformer3d/access.mjs';
 
 export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, editField, playField, warn, confirm }) {
   const dialog = document.querySelector('#world-editor-dialog');
@@ -44,7 +46,7 @@ export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, edi
     }
     for (const [index,field] of world.nodes.entries()) {
       const complete = world.completed.includes(field.id);
-      const label = field.level?.name || `Veld ${index+1} · nog instellen`;
+      const label = (field.level?.kind === 'platformer3d' ? '3D · ' : '') + (field.level?.name || `Veld ${index+1} · nog instellen`);
       const group = element('g',{'data-world-node':field.id,transform:`translate(${field.x} ${field.y})`,tabindex:0,role:'button','aria-label':`${label}${complete ? ' · gehaald' : ''}`,'aria-pressed':field.id===selectedNode,'class':`world-node${field.id===selectedNode ? ' selected' : ''}${field.id===linkStart ? ' linking' : ''}`});
       group.append(element('circle',{r:25,fill:themeColors[field.level?.theme] || '#ede5d6'}));
       group.append(element('text',{y:6,'text-anchor':'middle','class':'world-node-number'},complete ? '✓' : index+1));
@@ -61,18 +63,35 @@ export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, edi
     $('[data-world-play-details]').hidden = mode !== 'play';
     if (mode === 'play') {
       $('[data-world-play-name]').textContent = field?.level?.name || 'Kies een veld op de kaart';
-      $('[data-world-play-info]').textContent = field?.level ? `${THEMES[field.level.theme]} · ${field.level.width} × ${field.level.tiles.length} blokjes` : field ? 'Dit veld is nog niet ingericht. Kies Bewerken om het klaar te maken.' : 'Klik op een ingericht veld. De lijntjes wijzen de routes tussen je velden aan.';
+      $('[data-world-play-info]').textContent = field?.level ? field.level.kind==='platformer3d' ? `3D-platformer · ${field.level.width} × ${field.level.height} × ${field.level.depth} blokjes` : `${THEMES[field.level.theme]} · ${field.level.width} × ${field.level.tiles.length} blokjes` : field ? 'Dit veld is nog niet ingericht. Kies Bewerken om het klaar te maken.' : 'Klik op een ingericht veld. De lijntjes wijzen de routes tussen je velden aan.';
       $('[data-world-play-field]').disabled = !field?.level;
     }
     if (mode === 'edit' && field) {
       $('#world-field-name').value = field.level?.name || `Veld ${current().nodes.indexOf(field)+1}`;
       $('#world-field-theme').value = field.level?.theme || 'grass';
       $('#world-field-width').value = field.level?.width || 72;
-      $('#world-field-height').value = field.level?.tiles.length || 16;
+      $('#world-field-height').value = field.level?.height || field.level?.tiles?.length || 16;
+      $('#world-field-kind').value=field.level?.kind || 'platformer';
+      $('#world-field-kind').disabled=!!field.level;
+      $('#world-field-depth').value=field.level?.depth || 24;
+      fieldKindUI();
       $('[data-world-build-field]').disabled = !field.level;
       $('[data-world-field-note]').textContent = field.level ? 'Instellingen bewaren houdt je bouwwerk vast. Bij verkleinen verdwijnen blokjes buiten de nieuwe grootte.' : 'Kies eerst de omgeving en grootte en klik op Instellingen bewaren. Daarna kun je het veld inrichten.';
     }
   }
+  function fieldKindUI(){
+    const three=$('#world-field-kind').value==='platformer3d';
+    $('[data-world-depth]').hidden=!three;$('#world-field-width').max=three?80:360;$('#world-field-height').max=three?32:64;
+    for(const option of $('#world-field-theme').options)option.disabled=three&&!['grass','winter','castle','sunset'].includes(option.value);
+    if(three&&!['grass','winter','castle','sunset'].includes($('#world-field-theme').value))$('#world-field-theme').value='grass';
+    $('[data-world-size-note]').textContent=three?'Breedte × hoogte × diepte. Deze wereld is alleen speelbaar met personages met een 3D-model.':'Afmetingen in blokjes. Hoogte is inclusief een eventuele onderwereld.';
+  }
+  $('#world-field-kind').addEventListener('change',()=>{if($('#world-field-kind').value==='platformer3d'){$('#world-field-width').value=24;$('#world-field-height').value=16;}fieldKindUI();});
+  function fieldSettings(){return {name:$('#world-field-name').value,theme:$('#world-field-theme').value,width:Number($('#world-field-width').value),height:Number($('#world-field-height').value),depth:Number($('#world-field-depth').value),kind:$('#world-field-kind').value};}
+  $('[data-world-demo3d]').addEventListener('click',()=>attempt(()=>{
+    if(worlds().length>=WORLD_MAP.maxWorlds)throw new Error('Er passen maximaal 20 werelden in je collectie.');
+    const world=exampleWorld3D();worlds().push(world);selectWorld(world.id);selectedNode=world.nodes.find(n=>n.level?.kind==='platformer3d').id;changed('Voorbeeldwereld gemaakt. Richt het 3D-veld in of kies Spelen.');
+  }));
   function render() {
     refreshMenu();
     const world = current();
@@ -89,6 +108,7 @@ export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, edi
     for (const button of dialog.querySelectorAll('[data-world-mode]')) button.setAttribute('aria-pressed',button.dataset.worldMode===mode);
     for (const button of dialog.querySelectorAll('[data-world-tool]')) button.setAttribute('aria-pressed',button.dataset.worldTool===tool);
     $('[data-world-instructions]').textContent = mode === 'play' ? 'Kies een veld en druk op Speel dit veld. Na de finish keer je terug naar deze kaart.' : tool === 'link' ? 'Klik op twee rondjes of trek een lijn van het ene rondje naar het andere. Herhaal dezelfde verbinding om haar weg te halen.' : tool === 'move' ? 'Sleep een rondje naar een andere plek. Klik op een rondje om het veld in te stellen.' : 'Klik op een lege plek voor een nieuw rondje. Klik op een rondje om de omgeving en grootte te kiezen.';
+    $('[data-world-3d-access]').textContent=requires3D(world)?`Wereld met 3D · speelbaar met: ${characters3D().map(p=>p.name).join(', ') || 'nog geen personages met een model'}. Dit geldt ook voor de 2D-velden in deze wereld.`:'';
     paintMap(); details();
   }
   function changed(text) { const saved=save(); render(); if(saved===false)message('Bewaren lukt niet. Download je wereld om een kopie te bewaren.');else if(text)message(text); }
@@ -122,7 +142,7 @@ export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, edi
   form.addEventListener('submit',event => {
     event.preventDefault();
     attempt(() => {
-      configureWorldNode(current(),selectedNode,{name:$('#world-field-name').value,theme:$('#world-field-theme').value,width:Number($('#world-field-width').value),height:Number($('#world-field-height').value)});
+      configureWorldNode(current(),selectedNode,fieldSettings());
       changed('Instellingen bewaard. Je kunt nu het veld inrichten.');
     });
   });
@@ -131,7 +151,7 @@ export function setupWorldEditor({ worlds, selectedWorld, selectWorld, save, edi
     // Apply the visible settings before leaving for the builder.
     if(!form.reportValidity())return;
     attempt(() => {
-      configureWorldNode(current(),selectedNode,{name:$('#world-field-name').value,theme:$('#world-field-theme').value,width:Number($('#world-field-width').value),height:Number($('#world-field-height').value)});
+      configureWorldNode(current(),selectedNode,fieldSettings());
       save();const world=current(),field=node();dialog.close();editField(world,field);
     });
   }

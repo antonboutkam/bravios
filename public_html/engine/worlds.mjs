@@ -1,5 +1,7 @@
 import { THEMES, blankLevel, clone, resizeLevel, seedTerrainLevel, validateLevel, positions } from './engine.mjs?v=44';
 
+import { validateLevel3D, createLevel3D, resizeLevel3D } from './games/platformer3d/level.mjs';
+const validateField = data => data?.kind === 'platformer3d' ? validateLevel3D(data) : validateLevel(data);
 export const WORLD_MAP = { width: 1000, height: 600, maxNodes: 40, maxWorlds: 20 };
 export function worldId() { return globalThis.crypto?.randomUUID?.() || `w-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`; }
 const validId = id => typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id);
@@ -12,7 +14,7 @@ export function validateWorld(raw) {
   const nodes = raw.nodes.map(node => {
     if (!node || !validId(node.id) || ids.has(node.id) || !Number.isFinite(node.x) || !Number.isFinite(node.y) || node.x < 32 || node.x > 968 || node.y < 32 || node.y > 540) throw new Error('Deze wereld heeft een ongeldig veld.');
     ids.add(node.id);
-    return { id: node.id, x: node.x, y: node.y, level: node.level == null ? null : validateLevel(node.level) };
+    return { id: node.id, x: node.x, y: node.y, level: node.level == null ? null : validateField(node.level) };
   });
   const links = [];
   for (const pair of raw.links) {
@@ -51,13 +53,16 @@ export function removeWorldNode(world, id) {
 export function saveWorldNodeLevel(world, id, data) {
   const node = world.nodes.find(n => n.id === id);
   if (!node) throw new Error('Dit veld bestaat niet meer.');
-  const level = validateLevel(data);
+  const level = validateField(data);
   if (JSON.stringify(node.level) !== JSON.stringify(level)) world.completed = world.completed.filter(done => done !== id);
   node.level = level; return node;
 }
-export function configureWorldNode(world, id, { name, theme, width, height }) {
+export function configureWorldNode(world, id, { name, theme, width, height, kind = 'platformer', depth = 24 }) {
   const node = world.nodes.find(n => n.id === id);
   if (!node || typeof name !== 'string' || !name.trim() || name.length > 48 || !Object.hasOwn(THEMES, theme) || !Number.isInteger(width) || width < 20 || width > 360 || !Number.isInteger(height) || height < 16 || height > 64) throw new Error('Kies een naam, omgeving, breedte (20–360) en hoogte (16–64).');
+  if (!['platformer','platformer3d'].includes(kind)) throw new Error('Kies 2D of 3D.');
+  if(node.level && (node.level.kind || 'platformer') !== kind) throw new Error('Maak een nieuw veld om van 2D naar 3D te wisselen. Je bestaande bouwwerk blijft bewaard.');
+  if(kind==='platformer3d') return saveWorldNodeLevel(world,id,node.level ? resizeLevel3D(node.level,{name,theme,width,height,depth}) : createLevel3D(name,theme,width,height,depth));
   const previous = node.level;
   const next = previous ? resizeLevel(previous, width, height) : seedTerrainLevel(blankLevel(width, height));
   // Keep the start and finish when a smaller field crops their original cells.
@@ -69,4 +74,22 @@ export function configureWorldNode(world, id, { name, theme, width, height }) {
   if (!previous && theme === 'castle') for (const y of [0,1,2,height-2,height-1]) next.tiles[y].fill(65);
   next.name = name.trim(); next.theme = theme;
   return saveWorldNodeLevel(world,id,next);
+}
+
+export function exampleWorld3D() {
+  const world=createWorld('De zwevende tuinen');
+  const first=addWorldNode(world,200,250),second=addWorldNode(world,500,250);
+  configureWorldNode(world,first.id,{name:'Op weg naar de tuinen',theme:'grass',width:40,height:16});
+  configureWorldNode(world,second.id,{name:'De zwevende tuinen · 3D',theme:'grass',width:24,height:16,depth:24,kind:'platformer3d'});
+  toggleWorldLink(world,first.id,second.id);
+  return world;
+}
+export function getOrCreateExampleWorld3D(worlds) {
+  const existing=worlds.find(world=>world.id==='bravios-3d-example'&&world.nodes.some(node=>node.level?.kind==='platformer3d'));
+  if(existing)return existing;
+  if(worlds.length>=WORLD_MAP.maxWorlds)throw new Error('Je collectie bevat al 20 werelden. Open een bestaand 3D-veld via de wereldmaker.');
+  const world=exampleWorld3D();world.id='bravios-3d-example';
+  // Do not overwrite an edited example that no longer contains a 3D field.
+  if(worlds.some(other=>other.id===world.id))world.id=worldId();
+  worlds.push(world);return world;
 }

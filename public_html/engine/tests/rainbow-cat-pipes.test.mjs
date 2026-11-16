@@ -27,7 +27,7 @@ test('rainbow beschermt precies 2 minuten, schoenen blijven en een gewone ster v
   assert.equal(game.player.rainbow, RAINBOW_SECONDS); assert.equal(game.tiles[13][2], 0);
   advance(game, 110); collect(game, 14); assert.ok(game.player.rainbow > 9);
   advance(game, 10.1); assert.equal(game.player.rainbow, 0); assert.equal(game.player.rainbowShoes, true);
-  game.enemies.push(enemyAtPlayer(game)); stepGame(game, {}); assert.equal(game.state, 'dead');
+  game.enemies.push(enemyAtPlayer(game)); stepGame(game, {}); assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - 1);
   const exact = setup(); collect(exact, 30); advance(exact, 120); assert.equal(exact.player.rainbow, 0);
 });
 test('rainbow verslaat vijanden en beschermt tegen lava, stekels en bommen', () => {

@@ -1,4 +1,4 @@
-import { assetURL } from '../paths.mjs';
+import { requestImageAsset } from '../image-loader.mjs';
 import { enemyProfile } from './runtime.mjs';
 const images = new Map();
 export function enemyAnimation(enemy, night=false) {
@@ -15,7 +15,7 @@ export function enemyAnimation(enemy, night=false) {
 function imageFor(path) {
   if(images.has(path))return images.get(path);
   if(typeof Image==='undefined')return null;
-  const img=new Image();img.src=assetURL(path);
+  const {image:img}=requestImageAsset(path,'Vijand');
   images.set(path,img);
   if(images.size>48)images.delete(images.keys().next().value);
   return img;

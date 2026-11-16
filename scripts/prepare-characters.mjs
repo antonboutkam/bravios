@@ -2,8 +2,9 @@ import { readFile, writeFile, realpath } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { loadCharacterCatalog } from '../public_html/engine/characters/load-catalog.mjs';
-import { REQUIRED_POSES, RUN_POSES } from '../public_html/engine/characters/shared/poses.mjs';
+import { REQUIRED_POSES, animationFrames, poseCanvasSize } from '../public_html/engine/characters/shared/poses.mjs';
 
+import { verifyModel3D } from './verify-3d-model.mjs';
 import { catalogOutput } from './catalog-output.mjs';
 
 export { REQUIRED_POSES };
@@ -12,6 +13,10 @@ export async function discoverCharacters(directory) {
   const listed = await loadCharacterCatalog(async relative => {
     const text = await readFile(path.join(root, relative.replace(/^gameplay\/characters\//, '')), 'utf8');
     try { return JSON.parse(text); } catch { throw new Error(`${relative}: Ongeldige JSON.`); }
+  }, async relative => {
+    const filename = path.join(root, relative.replace(/^gameplay\/characters\//, ''));
+    try { await verifyModel3D(filename, path.dirname(path.dirname(filename))); return true; }
+    catch (error) { if (error.code === 'ENOENT') return false; throw error; }
   });
   const entries = listed.map(profile => ({ name: profile.id }));
   for (const entry of entries) {
@@ -33,16 +38,17 @@ export async function discoverCharacters(directory) {
       try { resolved = await realpath(filename); png = await readFile(resolved); } catch { fail(`Afbeelding ontbreekt: ${relative}`); }
       if (!resolved.startsWith(folder + path.sep)) fail(`Afbeelding buiten de karaktermap: ${relative}`);
       if (png.length < 33 || !png.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) || !png.readUInt32BE(16) || !png.readUInt32BE(20)) fail(`Ongeldig PNG-bestand: ${relative}`);
-      imageSizes.set(relative, [png.readUInt32BE(16), png.readUInt32BE(20)].join('x'));
+      imageSizes.set(relative, poseCanvasSize(png.readUInt32BE(16), png.readUInt32BE(20)).join('x'));
       return `gameplay/characters/${entry.name}/${relative}`;
     }
+    const profile = listed.find(profile => profile.id === config.id);
     const portrait = await image(config.portrait), poses = {};
-    for (const pose of REQUIRED_POSES) poses[pose] = await image(config.poses?.[pose]);
-    if (RUN_POSES.some(pose => Object.hasOwn(config.poses, pose))) {
-      for (const pose of RUN_POSES) poses[pose] = await image(config.poses[pose]);
-      if (new Set(RUN_POSES.map(pose => imageSizes.get(config.poses[pose]))).size !== 1) fail('De vier loopframes moeten dezelfde canvasafmetingen hebben.');
+    for (const pose of Object.keys(profile.views.side.poses)) poses[pose] = await image(config.poses[pose]);
+    for (const action of ['walk', 'run']) {
+      const frames = animationFrames(poses, action);
+      if (new Set(frames.map(pose => imageSizes.get(config.poses[pose]))).size > 1) fail(`De ${action}-frames moeten na verkleinen dezelfde canvasafmetingen hebben (gelijke beeldverhouding).`);
     }
-    profiles.push({ id: config.id, name: config.name.trim(), portrait, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } });
+    profiles.push({ ...profile, portrait, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } });
   }
   if (!profiles.length) throw new Error('Geen karakters gevonden. Voeg een map met character.json toe.');
   return profiles;

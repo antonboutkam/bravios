@@ -1,4 +1,4 @@
-import { assetURL } from './paths.mjs';
+import { loadImageAsset } from './image-loader.mjs';
 import {STRUCTURE_CATALOG} from './structures/catalog.mjs';
 import {structureProfile} from './structures/runtime.mjs';
 import { TERRAIN_VARIANTS, terrainConnections, terrainChoice } from './terrain-rules.mjs?v=1';
@@ -70,11 +70,7 @@ export async function loadTerrain(grassSprite) {
   const prepared = new Map();
   await Promise.all(Object.entries(TERRAIN_SHEETS).map(async ([material, path]) => {
     const terrain=structureProfile(material)?.terrain||{material};
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-      image.onload = resolve; image.onerror = () => reject(new Error(`Blokvarianten konden niet worden geladen: ${path}`));
-      image.src = assetURL(path);
-    });
+    const image = await loadImageAsset(path, `Blokvarianten · ${material}`);
     const cells = [], width = image.naturalWidth / 5, height = image.naturalHeight / 4;
     for (let variant = 0; variant < TERRAIN_COUNT; variant++) {
       const canvas = terrainCanvas(), ctx = canvas.getContext('2d', { willReadFrequently: true });

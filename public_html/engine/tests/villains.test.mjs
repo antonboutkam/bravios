@@ -29,7 +29,7 @@ test('een bewegend schild is gevaarlijk en kan met een sprong worden gestopt', (
   turtle.vx = 240; turtle.safe = 0; dropOn(game, turtle); assert.equal(turtle.vx, 0);
   turtle.vx = -240; turtle.safe = 0;
   Object.assign(game.player, { x: turtle.x + 2, y: 420, vy: 0, grounded: true }); stepGame(game, {});
-  assert.equal(game.state, 'dead');
+  assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - 1);
 });
 test('weggeschopte schilden gaan in beide richtingen door dikke muren en buizen en blijven op de grond', () => {
   for (const direction of [-1, 1]) for (const material of [1, 2, 3, 5, 12, 32, 33, 34]) {
@@ -63,7 +63,7 @@ test('draak vliegt heen en weer en blijft zweven in plaats van op de vloer te va
 test('plant staat stil, hapt om de beurt met beide koppen en kan niet worden platgesprongen', () => {
   const game = setup(24), plant = game.enemies[0], x = plant.x, y = plant.y;
   assert.equal(plant.biteHead, 0); advance(game, 1.4); assert.equal(plant.biteHead, 1);
-  assert.equal(plant.x, x); assert.equal(plant.y, y); dropOn(game, plant); assert.equal(game.state, 'dead');
+  assert.equal(plant.x, x); assert.equal(plant.y, y); dropOn(game, plant); assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - 1);
 });
 test('skeletschildpad valt uit elkaar en staat na vijf seconden weer op; vuur verslaat hem niet', () => {
   const game = setup(25), skeleton = game.enemies[0]; dropOn(game, skeleton);
@@ -88,7 +88,7 @@ test('lava blijft gevaarlijk met een ster, vuurkracht, schild of dino', () => {
   }
 });
 test('dikke stekelschildpad heeft drie levens en een gevaarlijke rug', () => {
-  const stomp = setup(27); dropOn(stomp, stomp.enemies[0]); assert.equal(stomp.state, 'dead');
+  const stomp = setup(27); dropOn(stomp, stomp.enemies[0]); assert.equal(stomp.state, 'playing'); assert.equal(stomp.player.health, stomp.player.maxHealth - 1);
   const game = setup(27), boss = game.enemies[0]; boss.vx = 0;
   shootAt(game, boss); assert.equal(boss.hp, 2); assert.equal(boss.alive, true); advance(game, .2);
   shootAt(game, boss); assert.equal(boss.hp, 1); advance(game, .2);
@@ -102,7 +102,7 @@ test('hamerschildpad gooit elke twee seconden een hamer; hamers raken spelers en
   const game = setup(28); advance(game, 1.7); assert.equal(game.hazards.length, 0);
   advance(game, .1); assert.equal(game.hazards[0].kind, 'hammer'); assert.ok(game.hazards[0].vx < 0);
   game.hazards = [{ kind: 'hammer', x: game.player.x + 3, y: game.player.y + 3, w: 10, h: 10, vx: 0, vy: 0, life: 3 }];
-  stepGame(game, {}); assert.equal(game.state, 'dead');
+  stepGame(game, {}); assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - 1);
   const blocked = setup(28); blocked.hazards = [{ kind: 'hammer', x: 6 * 32 - 11, y: 420, w: 10, h: 10, vx: 160, vy: 0, life: 3 }]; blocked.tiles[13][6] = 1;
   advance(blocked, .02); assert.equal(blocked.hazards.length, 0);
 });
@@ -122,6 +122,6 @@ test('vuur verkort de bomlont; ijs bevriest de lont en pauze bevriest alle gevar
 test('explosies raken beide spelers in co-op en blijven in de gedeelde spelstand staan', () => {
   const game = createCoopGame(blankLevel(40)); advance(game, .2);
   game.hazards.push({ kind: 'blast', x: 50, y: 390, w: 96, h: 96, life: .35 });
-  stepCoopGame(game, [{}, {}]); assert.ok(game.players.every(p => p.respawn > 0)); assert.equal(game.state, 'playing');
+  stepCoopGame(game, [{}, {}]); assert.ok(game.players.every(p => p.health === p.maxHealth - 1 && p.respawn === 0)); assert.equal(game.state, 'playing');
   const snapshot = packCoopGame(game); assert.deepEqual(unpackCoopGame(snapshot).hazards, game.hazards);
 });

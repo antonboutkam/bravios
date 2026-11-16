@@ -116,7 +116,7 @@ function roomAppearance(mixed $appearance): ?array {
 }
 function roomInput(mixed $input): array {
     $input = is_array($input) ? $input : []; $result = ['appearance' => roomAppearance($input['appearance'] ?? null)];
-    foreach (['left', 'right', 'jump', 'fire', 'mount', 'pipe'] as $key) $result[$key] = ($input[$key] ?? false) === true;
+    foreach (['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe'] as $key) $result[$key] = ($input[$key] ?? false) === true;
     foreach (['jump', 'fire', 'mount', 'pipe'] as $key) {
         $value = $input['taps'][$key] ?? 0;
         $result['taps'][$key] = is_int($value) && $value >= 0 && $value <= 100000000 ? $value : 0;
@@ -136,9 +136,19 @@ function roomSnapshot(mixed $snapshot, int $width, int $height = 16): array {
         || !is_array($snapshot['tiles'] ?? null) || count($snapshot['tiles']) !== $height) roomFail(400, 'Ongeldige spelstand.');
     foreach ($snapshot['players'] as &$p) {
         if (!is_array($p) || !is_numeric($p['x'] ?? null) || !is_numeric($p['y'] ?? null) || !in_array($p['character'] ?? '', roomCharacterIds(), true)) roomFail(400, 'Ongeldige speler.');
+        if (array_key_exists('sprinting', $p) && !is_bool($p['sprinting'])) roomFail(400, 'Ongeldige sprintstand.');
+        if (array_key_exists('moveDistance', $p) && (!is_numeric($p['moveDistance']) || !is_finite((float)$p['moveDistance']) || $p['moveDistance'] < 0 || $p['moveDistance'] >= 4800)) roomFail(400, 'Ongeldige animatieafstand.');
+        if (array_key_exists('pinballAngle', $p) && (!is_numeric($p['pinballAngle']) || !is_finite((float)$p['pinballAngle']) || abs((float)$p['pinballAngle']) > 2 * M_PI)) roomFail(400, 'Ongeldige balrotatie.');
+        if (array_intersect(['health', 'maxHealth', 'power', 'maxPower'], array_keys($p))) {
+            if (!is_int($p['maxHealth'] ?? null) || !is_int($p['maxPower'] ?? null)
+                || $p['maxHealth'] < 2 || $p['maxPower'] < 2 || $p['maxHealth'] + $p['maxPower'] !== 10
+                || !is_int($p['health'] ?? null) || $p['health'] < 0 || $p['health'] > $p['maxHealth']
+                || (!is_int($p['power'] ?? null) && !is_float($p['power'] ?? null)) || !is_finite((float)$p['power']) || $p['power'] < 0 || $p['power'] > $p['maxPower']) roomFail(400, 'Ongeldige levens- of schietbalk.');
+        }
         if (array_key_exists('appearance', $p)) $p['appearance'] = roomAppearance($p['appearance']);
     }
     unset($p);
+    if (array_key_exists('pinballTilt', $snapshot) && (!is_numeric($snapshot['pinballTilt']) || !is_finite((float)$snapshot['pinballTilt']) || abs((float)$snapshot['pinballTilt']) > M_PI * 8 / 180 + 1e-9)) roomFail(400, 'Ongeldige wereldkanteling.');
     foreach (['movingWalls', 'belts', 'vines', 'donuts', 'firebars'] as $key) if (array_key_exists($key, $snapshot) && !is_array($snapshot[$key])) roomFail(400, 'Ongeldige mechanieken.');
     if (array_key_exists('helpers', $snapshot) && !is_array($snapshot['helpers'])) roomFail(400, 'Ongeldige helpers.');
     foreach (['enemies', 'dinos', 'fireballs', 'hazards'] as $key) if (!is_array($snapshot[$key] ?? null)) roomFail(400, 'Ongeldige spelstand.');

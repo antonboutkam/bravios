@@ -79,7 +79,7 @@ test('flatfish hides until approached; moray emerges at 25 seconds or on proximi
  e.age=0;e.extension=0;Object.assign(m.player,{x:e.x-60,y:e.y});updateSeaEnemy(m,e,2,freeMove);assert.equal(e.extension,96);assert.equal(e.x,home);assert.equal(e.facing,-1);
 });
 test('sea contact hurts; hidden flatfish and fallen bones are harmless',()=>{
- for(const id of [86,95,96]){const g=createGame(fixture(id)),e=g.enemies[0];Object.assign(g.player,{x:e.x,y:e.y,vy:0});stepGame(g,{});assert.equal(g.state,'dead');}
+ for(const id of [86,95,96]){const g=createGame(fixture(id)),e=g.enemies[0];Object.assign(g.player,{x:e.x,y:e.y,vy:0});stepGame(g,{});assert.equal(g.state,'playing');assert.equal(g.player.health,g.player.maxHealth-1);}
  const g=createGame(fixture(87)),e=g.enemies[0];Object.assign(g.player,{x:e.x-2,y:e.y,facing:1});stepGame(g,{});assert.equal(g.state,'playing');
 });
 test('pause freezes state, coop advances sea timers once and snapshots preserve mounts and ink',()=>{

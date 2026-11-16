@@ -70,5 +70,8 @@
       ]
     }
   },
-  "description": "Pas op! Spring op zijn hoofd om hem te verslaan."
+  "description": "Pas op! Spring op zijn hoofd om hem te verslaan.",
+  "model3d": {
+    "file": "3d/model.glb"
+  }
 }

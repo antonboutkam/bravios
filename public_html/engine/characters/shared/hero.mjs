@@ -1,8 +1,10 @@
-import { assetURL } from '../../paths.mjs';
+import { loadImageAsset } from '../../image-loader.mjs';
+import { drawPinball } from '../../pinball.mjs';
 import { CHARACTER_PROFILES } from '../roster.mjs';
 import { drawCustomHero } from '../custom/maker.mjs';
-import { characterPose } from './poses.mjs';
-import { hasLook, lookSprite, drawLook } from '../../look.mjs?v=8';
+import { characterPose, rollingPose } from './poses.mjs?v=walk-run-1';
+import { characterSettings2D } from './settings.mjs?v=health-power-1';
+import { hasLook, lookSprite, drawLook } from '../../look.mjs?v=9';
 export const CHARACTER_NAMES = Object.fromEntries(Object.entries(CHARACTER_PROFILES).map(([id,profile])=>[id,profile.name]));
 const CHARACTER_IMAGES = Object.fromEntries(Object.entries(CHARACTER_PROFILES).map(([id,profile])=>[id,profile.portrait]));
 const characterSprites = {};
@@ -37,10 +39,7 @@ export function spriteCutout(pixels, width, height) {
 
 export async function loadCharacters() {
   await Promise.all(Object.entries(CHARACTER_IMAGES).map(async ([name, path]) => {
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-      image.onload = resolve; image.onerror = () => reject(new Error(`${CHARACTER_NAMES[name]} kon niet worden geladen.`)); image.src = assetURL(path);
-    });
+    const image = await loadImageAsset(path, `Portret · ${CHARACTER_NAMES[name]}`);
     const surface = document.createElement('canvas'); surface.width = image.naturalWidth; surface.height = image.naturalHeight;
     const context = surface.getContext('2d', { willReadFrequently: true }); context.drawImage(image, 0, 0);
     const data = context.getImageData(0, 0, surface.width, surface.height);
@@ -50,20 +49,37 @@ export async function loadCharacters() {
   }));
 }
 
+// A small Bravios robot while character artwork is unavailable.
 const HERO = [
-  '     RRRRR      ', '    RRRRRRRRR   ', '    HHHSSK      ', '   HSHSSSKSS    ',
-  '   HSHHSSSKSS   ', '    HSSSSKKKK   ', '     SSSSSSS    ', '    RRBRRR      ',
-  '   RRRBRRBRRR   ', '  RRRRBBBBRRRR  ', '  SSRBYBBYBRSS  ', '  SSSBBBBBBSSS  ',
-  '    BBB  BBB    ', '   BBB    BBB   ', '   HHH    HHH   ', '  HHHH    HHHH  '
+  '       YY       ', '       YY       ', '    TTTTTTTT    ', '   TTTTTTTTTT   ',
+  '   TTWTTTTWTT   ', '   TTTTTTTTTT   ', '   TTTYYYYTTT   ', '    TTTTTTTT    ',
+  '  YY TTTTTT YY  ', '  YY TTWWTT YY  ', '  TT TWWWWT TT  ', '  TT TTWWTT TT  ',
+  '  YY TTTTTT YY  ', '     TT  TT     ', '     TT  TT     ', '    YYY  YYY    '
 ];
 export function hero(ctx, x, y, width = 32, facing = 1, shield = false, frame = 0, character = 'boaz', pose = {}) {
   if (drawCustomHero(ctx, pose.appearance, x, y, width, facing, pose)) return;
+  if (character === 'pinball') {
+    const radius = width * .44;
+    drawPinball(ctx, x + width / 2, y + width - radius, radius, pose.reducedMotion ? 0 : pose.pinballAngle || 0);
+    return;
+  }
+  const settings = characterSettings2D(character), renderScale = settings.renderScale ?? 1;
   if (hasLook()) {
-    const state = characterPose(CHARACTER_PROFILES[character]?.views.side.poses || {}, pose);
+    const poses = CHARACTER_PROFILES[character]?.views.side.poses || {};
+    const state = characterPose(poses, pose);
     const sprite = lookSprite(`${character}:${state}`);
     if (sprite) {
-      const height = width * 1.18, spriteWidth = height * sprite.bounds.width / sprite.bounds.height;
-      const animate = state === 'run' && !pose.reducedMotion;
+      const height = width * 1.18 * renderScale, spriteWidth = height * sprite.bounds.width / sprite.bounds.height;
+      if (rollingPose(poses, settings, pose)) {
+        // Keep the normal pose size throughout a roll. Only the pivot height
+        // changes to keep the rotated image above the floor. Walls stop travel.
+        const angle = pose.reducedMotion ? 0 : (pose.moveDistance || 0) / 48 * Math.PI * 2;
+        const support = (Math.abs(Math.sin(angle)) * spriteWidth + Math.abs(Math.cos(angle)) * height) / 2;
+        ctx.save(); ctx.translate(x + width / 2, y + width - support); ctx.scale(facing, 1); ctx.rotate(angle);
+        drawLook(ctx, `${character}:${state}`, -spriteWidth / 2, -height / 2, spriteWidth, height);
+        ctx.restore(); return;
+      }
+      const animate = (state === 'run' || state === 'walk') && !pose.reducedMotion;
       const bob = animate ? Math.abs(Math.sin((pose.time || 0) * 18)) * width * .035 : 0;
       ctx.save(); ctx.translate(x + width / 2, y + width - bob); ctx.scale(facing, 1);
       if (animate) ctx.rotate(Math.sin((pose.time || 0) * 18) * .025);
@@ -74,14 +90,14 @@ export function hero(ctx, x, y, width = 32, facing = 1, shield = false, frame = 
   const sprite = characterSprites[character];
   if (sprite) {
     const { bounds, surface } = sprite;
-    const stride = pose.running && !pose.reducedMotion ? Math.sin(pose.time * 18) : 0;
+    const stride = (pose.walking || pose.running) && !pose.reducedMotion ? Math.sin(pose.time * 18) : 0;
     const squash = pose.landing ? Math.sin(pose.landing / .16 * Math.PI) * .12 : 0;
     const stretch = pose.airborne ? .045 : 0;
-    const height = width, drawWidth = height * bounds.width / bounds.height;
+    const height = width * renderScale, drawWidth = height * bounds.width / bounds.height;
     ctx.save(); ctx.imageSmoothingEnabled = false;
     ctx.translate(x + width / 2, y + width - Math.abs(stride) * .7);
     ctx.scale(facing * (1 + squash - stretch), 1 - squash + stretch);
-    ctx.rotate(pose.running ? .035 * facing : pose.airborne ? -.045 * facing : 0);
+    ctx.rotate((pose.walking || pose.running) ? .035 * facing : pose.airborne ? -.045 * facing : 0);
     // Animate the two legs independently while retaining the supplied character art.
     const split = .70, legH = bounds.height * (1 - split);
     for (let leg = 0; leg < 2; leg++) {
@@ -94,7 +110,7 @@ export function hero(ctx, x, y, width = 32, facing = 1, shield = false, frame = 
     ctx.restore(); return;
   }
   ctx.save(); ctx.translate(x + (facing < 0 ? width : 0), y); ctx.scale(facing * width / 16, width / 16);
-  const palette = { R: shield ? '#79bc86' : '#e27c67', H: '#5e4c43', S: '#f2c6a0', K: '#443d3e', B: '#637fa0', Y: '#f8d273' };
+  const palette = { T: shield ? '#79bc86' : '#22acb5', W: '#a6f4df', Y: '#ffaf47' };
   HERO.forEach((row, yy) => [...row].forEach((key, xx) => {
     if (palette[key]) rect(ctx, palette[key], xx, yy + (yy > 11 && frame % 2 ? (xx < 8 ? -.7 : .7) : 0), 1, 1);
   })); ctx.restore();

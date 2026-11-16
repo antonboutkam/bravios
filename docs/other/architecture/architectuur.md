@@ -12,7 +12,7 @@ The HTML entry loads `engine/bootstrap.mjs` and `engine/styles.css`. Network pla
 
 ## Platform
 
-Bravios runs in the browser using standard HTML, CSS and JavaScript. It does not use React, Phaser, Unity or another game library. The `.mjs` files are JavaScript modules with `import` and `export`, loaded from the local web server. HTML defines buttons, dialogs and canvas elements. CSS styles the controls; Canvas 2D draws the game world.
+Bravios runs in the browser using standard HTML, CSS and JavaScript. The existing 2D engine does not use a game library. The optional [3D fields](platformer3d.md) use a locally bundled Babylon.js engine with Havok physics. The `.mjs` files are JavaScript modules with `import` and `export`, loaded from the local web server. HTML defines buttons, dialogs and canvas elements. CSS styles the controls; Canvas 2D draws the 2D game world and WebGL 2 draws 3D fields.
 
 Node.js runs the development server, build and JavaScript tests. PHP is needed only for rooms and their tests. No database or npm packages are required. Version requirements and commands are in [package.json](../../../package.json): Node ≥18; the installation guide specifies PHP ≥8.1 for network play.
 
@@ -57,7 +57,8 @@ Paths below are relative to the project root. Where only a filename is listed, i
 | Characters and enemies | `character-maker.mjs`, `enemy-design.mjs`, `enemy-editor.mjs` | Combining parts, settings and enemy editor |
 | Campaigns | `levels.mjs`, `adventurers.mjs`, `wonderland.mjs` | Levels and campaign rules; the latter two also track progress |
 | Maps | `adventure-map.mjs`, `wonderland-map.mjs` | Campaign maps, navigation and shops where applicable |
-| Custom worlds | `worlds.mjs`, `world-editor.mjs` | Custom map data, validation and editor |
+| Custom worlds | `worlds.mjs`, `world-editor.mjs` | Custom map data, 2D/3D field validation and editor |
+| 3D fields | `games/platformer3d/` | Model eligibility, 3D physics, WebGL rendering, block builder and model gallery |
 | Small games | `public_html/engine/games/`, `public_html/engine/runtime/` | Four separate game packs, sessions, deferred loading and return to the main game |
 | Storage | `storage.mjs`, storage code in `app.mjs` | Normalizing level collections and saving browser data |
 | Multiplayer | `coop.mjs`, `network.mjs`, `room.php` | Shared simulation, HTTP room traffic and server validation |
@@ -92,7 +93,7 @@ Boaz and Ravi use individual pose PNGs in their character directories, including
 
 ## Source, web server and offline build
 
-Edit `index.html`, `styles.css` and the modules. [build.mjs](../../../public_html/engine/build.mjs) processes modules and registered images, combines CSS and scripts, and embeds images as data URLs. The result is `public_html/speel.html`, which supports solo play without a server. Network play requires a running PHP server.
+Edit `index.html`, `styles.css` and the modules. [build.mjs](../../../public_html/engine/build.mjs) processes modules and registered images, combines CSS and scripts, and embeds images and registered GLB models as data URLs. The result is `public_html/speel.html`, which supports solo play without a server. Network play requires a running PHP server.
 
 The bundler follows the module graph from `app.mjs`, including dynamic imports with literal paths. Each module has its own factory and runs on first use. The server uses the same graph to allow module paths; restart it after adding imports. Character images are derived from the generated catalog; other images remain explicitly registered in asset lists. See [game packs](spelpakketten.md) for the supported module subset, cleanup and unloading limits.
 

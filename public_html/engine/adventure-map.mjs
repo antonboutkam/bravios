@@ -2,7 +2,7 @@ import { assetURL as adventureAssetURL } from './paths.mjs';
 import { CHARACTER_PROFILES } from './characters/roster.mjs';
 import { ADVENTURE_FIELDS, ADVENTURE_SHOPS, ADVENTURE_GOODS, adventureUnlocked, buyAdventureGood } from './adventurers.mjs?v=4';
 import { characterPortrait } from './character-maker.mjs?v=3';
-import { lookPortrait } from './look.mjs?v=8';
+import { lookPortrait } from './look.mjs?v=9';
 // Asset lookup also works in the standalone build, without depending on the renderer.
 
 export function setupAdventureMap({ state, save, launch, character: getCharacter, appearance }) {
@@ -143,7 +143,7 @@ export function setupAdventureMap({ state, save, launch, character: getCharacter
         const direction={left:'left',right:'right',up:'up',pipe:'down'}[action];
         if(direction){if(browsingShop)chooseGood(direction);else moveOnMap(direction);}
         else if(action==='jump'||action==='pause')activate();
-        else if(action==='fire'){if(browsingShop)leaveShop();else dialog.close();}
+        else if(action==='fire'||action==='cancel'){if(browsingShop)leaveShop();else dialog.close();}
       }
       return true;
     },

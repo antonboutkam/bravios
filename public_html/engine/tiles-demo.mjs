@@ -1,4 +1,4 @@
-import { loadLook } from './look.mjs?v=8';
+import { loadLook } from './look.mjs?v=9';
 import { terrainAppearance } from './engine.mjs?v=40';
 import { TERRAIN_VARIANTS, matchingTerrainVariants, terrainFits } from './terrain-rules.mjs?v=1';
 import { TERRAIN_COUNT, terrainSprite, drawTerrain } from './terrain.mjs?v=3';

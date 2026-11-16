@@ -101,7 +101,7 @@ export function setupSmallGames({services={},participants=count=>participantRost
       if(!dialog.open)return;
       padHeld=sample.navigation||{...sample.controls,up:sample.pressed.includes('up'),down:sample.controls.pipe};
       // Handle transitions once, so a simultaneous A/B press cannot start the next screen.
-      if(sample.pressed.includes('fire')){if(current||loading)showMenu();else dialog.close();return;}
+      if((sample.pressed.includes('fire')||sample.pressed.includes('cancel'))){if(current||loading)showMenu();else dialog.close();return;}
       if(loading)return;
       if(!current){
         const buttons=[...menu.querySelectorAll('button')];

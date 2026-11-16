@@ -1,10 +1,15 @@
+import { playerHealthScale } from './player-vitals.mjs';
+import { characterSettings2D } from './characters/shared/settings.mjs?v=health-power-1';
+import { drawStartMarker } from './start-marker.mjs';
+import { isPinball, drawPinball, pinballCamera } from './pinball.mjs';
+import { loadImageAsset } from './image-loader.mjs';
 import { assetURL } from './paths.mjs';
-import { drawStructureSprite, drawStructureTile } from './structures/sprites.mjs';
+import { drawStructureSprite, drawStructureTile } from './structures/sprites.mjs?v=neutral-start-1';
 import { structureProfile, structureSetting, structureIs } from './structures/runtime.mjs';
 import { enemyProfile } from './enemies/runtime.mjs';
 import { drawEnemySprite } from './enemies/sprites.mjs';
-import { hero, CHARACTER_NAMES } from './characters/shared/hero.mjs';
-export { hero, CHARACTER_NAMES, spriteCutout, loadCharacters } from './characters/shared/hero.mjs';
+import { hero, CHARACTER_NAMES } from './characters/shared/hero.mjs?v=walk-run-1';
+export { hero, CHARACTER_NAMES, spriteCutout, loadCharacters } from './characters/shared/hero.mjs?v=walk-run-1';
 import { createFirebars, drawFirebar, firebarReach, FIREBAR_TILE, FIREBAR_REACH } from './firebars.mjs?v=1';
 import { drawMonsterArt } from './monster-art.mjs?v=1';
 import { drawDepthBackground } from './depth-backgrounds.mjs?v=9';
@@ -16,8 +21,8 @@ import { drawSeaCreature, drawSeaIcon, drawSeaEffects, drawWhaleFish } from './s
 import { drawEnemyWings, drawEnemyFront } from './enemy-design-art.mjs?v=36';
 import { characterSurface } from './character-maker.mjs?v=3';
 import { createMechanisms } from './mechanisms.mjs?v=2';
-import { TILE, THEMES, chainBall, PIPE_TYPES, frogTongue, worldTheme, caveLinks, pipeConnections, QUESTION_REWARDS, terrainAppearance, visualFacing, rocketCountdown } from './engine.mjs?v=44';
-import { hasLook, lookSprite, drawLook } from './look.mjs?v=8';
+import { TILE, THEMES, chainBall, PIPE_TYPES, frogTongue, worldTheme, caveLinks, pipeConnections, QUESTION_REWARDS, terrainAppearance, visualFacing, rocketCountdown } from './engine.mjs?v=46';
+import { hasLook, lookSprite, drawLook } from './look.mjs?v=9';
 import { hasTerrain, drawTerrain, terrainVariant, JOIN } from './terrain.mjs?v=3';
 
 const spriteCache = new Map();
@@ -38,12 +43,7 @@ export { assetURL } from './paths.mjs';
 export const CRAZY_BACKGROUND_ASSET = 'assets/backgrounds/crazy-backgrounds.png';
 let crazyBackgroundImage = null;
 export async function loadCrazyBackgrounds() {
-  const image = new Image();
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = () => reject(new Error('De gekke achtergronden konden niet worden geladen.'));
-    image.src = assetURL(CRAZY_BACKGROUND_ASSET);
-  });
+  const image = await loadImageAsset(CRAZY_BACKGROUND_ASSET, 'Gekke achtergronden');
   crazyBackgroundImage = image;
 }
 function drawCrazyBackground(ctx, scene, viewport, width, height) {
@@ -281,7 +281,7 @@ export function drawRider(ctx, dino, character, cat = false, pose = {}) {
   const state = creatureFrame('dino', pose), seat = dinoPlacement(dino, state);
   const name = cat ? 'cat:idle' : `${character}:ride`, sprite = lookSprite(name);
   if (!sprite) { hero(ctx, dino.x - 2, seat.seatY - 32, 32, dino.facing, false, 0, character); return; }
-  const height = cat ? 24 : 31, width = height * sprite.bounds.width / sprite.bounds.height;
+  const height = cat ? 24 : 31 * (characterSettings2D(character).renderScale ?? 1), width = height * sprite.bounds.width / sprite.bounds.height;
   ctx.save(); ctx.translate(seat.seatX, seat.seatY); ctx.scale(dino.facing, 1);
   // Seated hips touch the saddle; bent knees and boots hang down its sides.
   drawLook(ctx, name, -width * (cat ? .52 : .43), -height * (cat ? 1 : .70), width, height);
@@ -817,9 +817,7 @@ function paintTile(ctx, id, x, y, size = TILE, theme = 'grass', { top = true, ic
       r('#c2a5a3', 9, 12, 14, 3); r('#7d7183', 10, 15, 11, 3); r('#c2a5a3', 9, 19, 14, 3); r('#7d7183', 10, 23, 11, 3); break;
     case 9:
       r('#eedcc0', 10, 17, 12, 13); r('#e19d91', 9, 4, 14, 4); r('#da8379', 4, 8, 24, 14); r('#d2776f', 2, 13, 28, 10); r('#f9ead1', 7, 10, 6, 6); r('#f9ead1', 21, 13, 5, 6); r('#f9ead1', 16, 5, 5, 5); r('#645449', 13, 24, 2, 4); r('#645449', 19, 24, 2, 4); break;
-    case 10:
-      if (!icon) { ctx.fillStyle = '#fff5d272'; ctx.beginPath(); ctx.arc(16, 17, 20, 0, 7); ctx.fill(); }
-      hero(ctx, 1, 0, 32, 1, false, 0, character); break;
+    case 10: drawStartMarker(ctx,0,0,32,{icon}); break;
     case 11: {
       const offset = icon ? 0 : -64, poleH = icon ? 32 : 96;
       r('#e8dfb8', 7, offset + 3, 3, poleH - 3); r('#b5a783', 9, offset + 3, 1, poleH - 3); r('#f5d685', 6, offset, 5, 5);
@@ -908,7 +906,15 @@ function drawMachinery(ctx, state, guides = false) {
   }
   ctx.restore();
 }
-export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hover = null, beltStart = null, character = 'boaz', viewport = null, effects = null, reducedMotion = false, depthLayers = true, depthPanelCache = null, backgroundRaster = null } = {}) {
+export function drawWorld(ctx, level, options = {}) {
+  const viewport = options.viewport || { left: 0, right: level.width * TILE, top: 0, bottom: level.tiles.length * TILE };
+  const camera = pinballCamera(options.game, viewport, options.reducedMotion);
+  if (!camera.angle) return drawWorldFlat(ctx, level, options);
+  ctx.save();
+  ctx.translate(camera.x, camera.y); ctx.rotate(camera.angle); ctx.scale(camera.scale, camera.scale); ctx.translate(-camera.x, -camera.y);
+  try { drawWorldFlat(ctx, level, options); } finally { ctx.restore(); }
+}
+function drawWorldFlat(ctx, level, { grid = true, game = null, time = 0, hover = null, beltStart = null, character = 'boaz', viewport = null, effects = null, reducedMotion = false, depthLayers = true, depthPanelCache = null, backgroundRaster = null } = {}) {
   const width = level.width * TILE, height = level.tiles.length * TILE;
   const left = Math.max(0, (viewport?.left || 0) - 96), right = Math.min(width, (viewport?.right ?? width) + 96);
   const firstColumn = Math.max(0, Math.floor(left / TILE)), lastColumn = Math.min(level.width - 1, Math.floor(right / TILE));
@@ -1098,11 +1104,14 @@ export function drawWorld(ctx, level, { grid = true, game = null, time = 0, hove
         const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
         ctx.translate(cx, cy); ctx.rotate(magicGravity === 'up' ? Math.PI : -Math.PI / 2); ctx.translate(-cx, -cy);
       }
+      const healthScale = playerHealthScale(p), feetX = p.x + p.w / 2, feetY = p.y + p.h;
+      ctx.translate(feetX, feetY); ctx.scale(healthScale, healthScale); ctx.translate(-feetX, -feetY);
       const frame = p.grounded && Math.abs(p.vx) > 10 ? Math.floor(time * 9) : 0;
       if (isSeaMount(p.mounted)) hero(ctx,p.x-2,p.y-2,32,facing,p.shield,0,p.character||character,{appearance:p.appearance});
       else if (p.mounted) drawRider(ctx, visualMount, p.character || character, p.cat, { appearance: p.appearance, airborne: !p.grounded, moving: Math.abs(p.vx) > 10, time, reducedMotion });
       else if (p.cat) drawCat(ctx, p.x - 3, p.y - 4, facing, frame, p.instinct > 0, { airborne: !p.grounded, moving: Math.abs(p.vx) > 10, vy: p.vy, time, reducedMotion, landing: reducedMotion ? 0 : effects?.landings[playerIndex] || 0 });
-      else hero(ctx, p.x - 3 * (game.wonderland?.scale || 1), p.y - 4 * (game.wonderland?.scale || 1), 32 * (game.wonderland?.scale || 1), facing, p.shield, frame, p.character || character, { appearance: p.appearance, won: game.state === 'won', reducedMotion, speed: Math.abs(p.vx), running: p.grounded && Math.abs(p.vx) > 10 && !p.mounted, airborne: !p.grounded, time: reducedMotion ? 0 : time, landing: reducedMotion ? 0 : effects?.landings[playerIndex] || 0 });
+      else if (isPinball(p)) drawPinball(ctx, p.x + p.w / 2, p.y + p.h / 2, p.w / 2, reducedMotion ? 0 : p.pinballAngle || 0);
+      else hero(ctx, p.x - 3 * (game.wonderland?.scale || 1), p.y - 4 * (game.wonderland?.scale || 1), 32 * (game.wonderland?.scale || 1), facing, p.shield, frame, p.character || character, { appearance: p.appearance, won: game.state === 'won', reducedMotion, speed: Math.abs(p.vx), walking: p.grounded && Math.abs(p.vx) > 10 && !p.mounted && !p.sprinting, running: p.grounded && Math.abs(p.vx) > 10 && !p.mounted && p.sprinting, moveDistance: p.moveDistance, airborne: !p.grounded, time: reducedMotion ? 0 : time, landing: reducedMotion ? 0 : effects?.landings[playerIndex] || 0 });
       if (p.shellHelmet) drawShellHelmet(ctx, { ...p, facing, mounted: visualMount }, { airborne: !p.grounded, moving: Math.abs(p.vx) > 10, time, reducedMotion });
       if (p.rainbowShoes) RAINBOW_COLORS.forEach((color, i) => {
         rect(ctx, color, p.x + 1, p.y + p.h - 6 + i, 8, 1); rect(ctx, color, p.x + p.w - 9, p.y + p.h - 6 + i, 8, 1);

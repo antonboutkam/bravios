@@ -1,5 +1,7 @@
+import { resetPlayerVitals, ensurePlayerVitals } from './player-vitals.mjs';
+import { isPinball, fitPinball, stepPinballTilt } from './pinball.mjs';
 import { DEFAULT_CHARACTER, nextCharacter, CHARACTER_PROFILES } from './characters/roster.mjs';
-import { TILE, createGame, stepGame, clone } from './engine.mjs?v=44';
+import { TILE, createGame, stepGame, clone } from './engine.mjs?v=46';
 
 export function createCoopGame(level, hostCharacter = DEFAULT_CHARACTER) {
   if (!Object.hasOwn(CHARACTER_PROFILES, hostCharacter)) hostCharacter = DEFAULT_CHARACTER;
@@ -16,6 +18,8 @@ export function createCoopGame(level, hostCharacter = DEFAULT_CHARACTER) {
   if (clear) game.players[1].x = candidate.x;
   game.players.forEach((player, index) => {
     player.character = index ? nextCharacter(hostCharacter) : hostCharacter;
+    fitPinball(player);
+    resetPlayerVitals(player);
     player.respawn = 0; player.lastJump = false; player.lastMount = false;
     player.spawn = { x: player.x, y: player.y };
     player.safeSpot = { ...player.spawn }; player.trail = []; player.fartTrail = [];
@@ -25,6 +29,7 @@ export function createCoopGame(level, hostCharacter = DEFAULT_CHARACTER) {
 }
 export function stepCoopGame(game, inputs, dt = 1 / 120) {
   if (game.state !== 'playing') return;
+  stepPinballTilt(game, inputs, dt);
   const events = [];
   for (let index = 0; index < game.players.length && game.state === 'playing'; index++) {
     const p = game.players[index], wasRespawning = p.respawn > 0;
@@ -36,7 +41,10 @@ export function stepCoopGame(game, inputs, dt = 1 / 120) {
       p.vineId = null; p.vineGrip = 0; p.vineCooldown = .35; p.mounted = null; p.respawn = 1.5; p.vx = 0; p.vy = 0;
       game.state = 'playing';
     } else if (wasRespawning && p.respawn === 0) {
-      Object.assign(p, game.spawnPlayer, p.spawn, { coins: p.coins, safeSpot: { ...p.spawn }, trail: [], fartTrail: [], invincible: 2, respawn: 0, lastJump: false, lastMount: false });
+      const body = isPinball(p) ? { w: 24, h: 24 } : {};
+      Object.assign(p, game.spawnPlayer, p.spawn, body, { coins: p.coins, safeSpot: { ...p.spawn }, trail: [], fartTrail: [], invincible: 2, respawn: 0, lastJump: false, lastMount: false });
+      fitPinball(p);
+      resetPlayerVitals(p);
       events.push('respawn');
     }
   }
@@ -49,14 +57,14 @@ export function packCoopGame(game) {
 export function unpackCoopGame(snapshot, index = 1) {
   const game = clone(snapshot);
   game.random = Math.random;
-  game.players.forEach(p => { p.mounted = game.dinos[p.mounted] || null; });
+  game.players.forEach(p => { ensurePlayerVitals(p); p.mounted = game.dinos[p.mounted] || null; });
   game.player = game.players[index];
   return game;
 }
 
 export function remoteControls(packet = {}, previousTaps = {}) {
   const controls = {};
-  for (const key of ['left', 'right', 'jump', 'fire', 'mount', 'pipe']) controls[key] = packet[key] === true;
+  for (const key of ['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe']) controls[key] = packet[key] === true;
   for (const action of ['jump', 'fire', 'mount', 'pipe']) {
     const count = packet.taps?.[action] || 0;
     if (count !== (previousTaps[action] || 0)) controls[action] = true;

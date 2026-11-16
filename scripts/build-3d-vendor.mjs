@@ -1,0 +1,10 @@
+import { readFile, writeFile, copyFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const dependencies=resolve(process.argv[2]||'/tmp/bravios-babylon');
+const {build}=await import(pathToFileURL(resolve(dependencies,'node_modules/esbuild/lib/main.js')));
+const target=new URL('../public_html/engine/games/platformer3d/vendor/',import.meta.url);
+const result=await build({stdin:{contents:await readFile(new URL('./babylon-entry.mjs',import.meta.url),'utf8'),resolveDir:dependencies,sourcefile:'babylon-entry.mjs'},bundle:true,format:'iife',globalName:'BraviosBabylon',minify:true,write:false,define:{'import.meta.url':'""'}});
+await writeFile(new URL('babylon.mjs',target),result.outputFiles[0].text+'\nexport const library = BraviosBabylon;\n');
+for(const [source,name] of [['@babylonjs/core/license.md','BABYLON-LICENSE.txt'],['@babylonjs/havok/LICENSE','HAVOK-LICENSE.txt'],['@babylonjs/havok/lib/esm/HavokPhysics.wasm','HavokPhysics.wasm']])await copyFile(resolve(dependencies,'node_modules',source),new URL(name,target));
+console.log('Babylon.js en Havok lokaal gebundeld.');

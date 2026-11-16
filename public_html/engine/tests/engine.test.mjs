@@ -68,8 +68,8 @@ test('vallen en stekels kosten een poging', () => {
   const falling = groundedGame(); for (const row of falling.tiles) row[2] = 0; advance(falling, {}, 1); assert.equal(falling.state, 'dead');
   const spikes = groundedGame(); spikes.tiles[13][2] = 7; spikes.player.shield = true; stepGame(spikes, {}); assert.equal(spikes.state, 'dead');
 });
-test('vijand aanraken kost een poging; paddenstoel beschermt eenmaal', () => {
-  const unprotected = groundedGame(); unprotected.enemies.push({ ...unprotected.player, vx: -48, alive: true }); stepGame(unprotected, {}); assert.equal(unprotected.state, 'dead');
+test('vijand aanraken kost een levenspunt; paddenstoel beschermt eenmaal', () => {
+  const unprotected = groundedGame(); unprotected.enemies.push({ ...unprotected.player, vx: -48, alive: true }); stepGame(unprotected, {}); assert.equal(unprotected.state, 'playing'); assert.equal(unprotected.player.health, unprotected.player.maxHealth - 1);
   const protectedGame = groundedGame(); protectedGame.tiles[13][2] = 9; stepGame(protectedGame, {}); assert.equal(protectedGame.player.shield, true);
   protectedGame.enemies.push({ ...protectedGame.player, vx: -48, alive: true }); stepGame(protectedGame, {});
   assert.equal(protectedGame.state, 'playing'); assert.equal(protectedGame.player.shield, false); assert.ok(protectedGame.player.invincible > 0);

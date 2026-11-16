@@ -1,3 +1,4 @@
+import { resetPlayerVitals, ensurePlayerVitals, rechargePower, spendPower } from './player-vitals.mjs';
 import { STRUCTURE_CATALOG } from './structures/catalog.mjs';
 import { structureProfile, structureSetting, structureIs, structureCollision, structurePipes, structureRewards, structureTiles, structureSolidTile } from './structures/runtime.mjs';
 import { ENEMY_CATALOG } from './enemies/catalog.mjs';
@@ -10,6 +11,8 @@ import { SEA_ITEMS, SEA_KINDS, SEA_MOUNTS, isWaterTheme, isSeaEnemy, isSeaMount,
 import { ENEMY_KINDS, validateEnemyDesigns, pruneEnemyDesigns } from './enemy-design.mjs?v=5';
 import { validateBelts, createMechanisms, mechanismBodies, stepMechanisms } from './mechanisms.mjs?v=2';
 import { terrainChoice } from './terrain-rules.mjs?v=1';
+import { characterSettings2D } from './characters/shared/settings.mjs?v=health-power-1';
+import { isPinball, activePinball, fitPinball, stepPinballTilt, rollPinball } from './pinball.mjs';
 export const TILE = 32;
 export const ROWS = 16;
 export const P_SWITCH_SECONDS = structureSetting(80,'durationSeconds',30);
@@ -21,6 +24,8 @@ export const RAINBOW_FART_SECONDS = 20;
 export const REVERSE_INTRO_SECONDS = 2.4;
 export const PARACHUTE_DROP = 3 * TILE;
 export const PARACHUTE_SPEED = 160;
+export const WALK_SPEED = 220;
+export const RUN_SPEED = 330;
 export const ROCKET_FUSE_SECONDS = 5.6;
 export const THEMES = { moon: 'Maanlandschap', grass: 'Groene heuvels', sunset: 'Zonsondergang', night: 'Sterrennacht', castle: 'Binnen in het kasteel', winter: 'Winterlandschap', underwater: 'Onder water', 'underwater-night': 'Onder water bij nacht' };
 export const CRAZY_BACKGROUNDS = ['teapots', 'candy', 'space', 'jellyfish'];
@@ -264,11 +269,15 @@ export function resizeUnderground(level, depth) {
   pruneEnemyDesigns(copy);
   return copy;
 }
-export function createGame(level, { random = Math.random } = {}) {
+export function createGame(level, { random = Math.random, character } = {}) {
   const start = structureTiles('start').flatMap(id=>positions(level,id))[0];
   if (!start || !structureTiles('finish').flatMap(id=>positions(level,id)).length) throw new Error('Plaats eerst een startplek én een finishvlag.');
   const tiles = clone(level.tiles);
-  const player = { vineId: null, vineGrip: 0, vineCooldown: 0, inkTime: 0, inkX: 0, inkY: 0, blowTime: 0, x: start.x * TILE + 5, y: start.y * TILE + 4, w: 22, h: 28, vx: 0, vy: 0, grounded: false, fallDistance: 0, parachute: false, coyote: 0, buffer: 0, facing: 1, shield: false, shellHelmet: false, invincible: 0, star: 0, rainbow: 0, rainbowShoes: false, rainbowFart: 0, fartTrail: [], fartLength: 320, trail: [], trailTime: 0, cat: false, instinct: 0, instinctCooldown: 0, instinctX: 0, pipeCooldown: 0, pipeHeld: false, swimCooldown: 0, coins: 0, safeSpot: { x: start.x * TILE + 5, y: start.y * TILE + 4 }, helperGift: null, rocketStage: null, rocketFuse: 0, rocketTime: 0, rocketDuration: 0, rocketStartX: 0, rocketStartY: 0, rocketDirection: 1, rocketLastCount: 6, fire: false, ice: false, bubblegun: false, fireCooldown: 0, mounted: null, mountCooldown: 0 };
+  const player = { sprinting: false, moveDistance: 0, vineId: null, vineGrip: 0, vineCooldown: 0, inkTime: 0, inkX: 0, inkY: 0, blowTime: 0, x: start.x * TILE + 5, y: start.y * TILE + 4, w: 22, h: 28, vx: 0, vy: 0, grounded: false, fallDistance: 0, parachute: false, coyote: 0, buffer: 0, facing: 1, shield: false, shellHelmet: false, invincible: 0, star: 0, rainbow: 0, rainbowShoes: false, rainbowFart: 0, fartTrail: [], fartLength: 320, trail: [], trailTime: 0, cat: false, instinct: 0, instinctCooldown: 0, instinctX: 0, pipeCooldown: 0, pipeHeld: false, swimCooldown: 0, coins: 0, safeSpot: { x: start.x * TILE + 5, y: start.y * TILE + 4 }, helperGift: null, rocketStage: null, rocketFuse: 0, rocketTime: 0, rocketDuration: 0, rocketStartX: 0, rocketStartY: 0, rocketDirection: 1, rocketLastCount: 6, fire: false, ice: false, bubblegun: false, fireCooldown: 0, mounted: null, mountCooldown: 0 };
+  if (character) player.character = character;
+  fitPinball(player);
+  player.pinballAngle = 0;
+  resetPlayerVitals(player);
   const enemies = Object.keys(enemyKinds).map(Number).flatMap(id => positions(level, id).map(({ x, y }) => {
     const kind = enemyKinds[id], profile = enemyProfile({kind,tileId:id}), width = kind === 'centipede' ? (level.enemyDesigns?.find(e => e.x === x && e.y === y)?.design.length ?? 4) * 24 : profile.size[0];
     const height = profile.size[1];
@@ -288,7 +297,7 @@ export function createGame(level, { random = Math.random } = {}) {
   for (const id of Object.keys(enemyKinds).map(Number)) for (const { x, y } of positions(level, id)) tiles[y][x] = 0;
   dinos.forEach(d => { tiles[Math.floor(d.y / TILE)][Math.floor(d.x / TILE)] = 0; });
   for (const id of structureTiles('moving-wall')) for (const { x, y } of positions(level, id)) tiles[y][x] = 0;
-  return { pSwitch: null, crumbling: [], sceneLevel: clone(level), caveState: { active: null, outside: null, rooms: {}, returns: [] }, caveLocks: caveLinks(level.tiles), keyReveal: null, ...createMechanisms(level), ...createSwingPlatforms(level), ...createFirebars(level), player, enemies, helpers, dinos, fireballs: [], hazards: positions(level, 84).map(({ x, y }) => ({ kind: 'chainhead', design: clone(level.enemyDesigns?.find(e => e.x === x && e.y === y && e.tileId === 84)?.design || null), anchorX: x * TILE + 16, anchorY: y * TILE + 16, x: x * TILE + 40, y: y * TILE, w: 28, h: 28, vx: 0, vy: 0, life: 1, hopTime: 0, grounded: false })), departingRockets: [], rocketIntro: 0, rocketCharacter: null, random, tiles, start: { ...start }, reversed: false, reverseIntro: 0, reverseCharacter: null, reverseReturnPipe: null, finish: structureTiles('finish').flatMap(id=>positions(level,id))[0], width: level.width, theme: level.theme, terrainSeed: level.terrainSeed ?? 0, challenge: level.challenge ? clone(level.challenge) : null, coins: 0, totalCoins: positions(level, 4).length + positions(level, 3).length, time: 0, state: 'playing', lastJump: false, lastMount: false, events: [] };
+  return { pinballTilt: 0, pSwitch: null, crumbling: [], sceneLevel: clone(level), caveState: { active: null, outside: null, rooms: {}, returns: [] }, caveLocks: caveLinks(level.tiles), keyReveal: null, ...createMechanisms(level), ...createSwingPlatforms(level), ...createFirebars(level), player, enemies, helpers, dinos, fireballs: [], hazards: positions(level, 84).map(({ x, y }) => ({ kind: 'chainhead', design: clone(level.enemyDesigns?.find(e => e.x === x && e.y === y && e.tileId === 84)?.design || null), anchorX: x * TILE + 16, anchorY: y * TILE + 16, x: x * TILE + 40, y: y * TILE, w: 28, h: 28, vx: 0, vy: 0, life: 1, hopTime: 0, grounded: false })), departingRockets: [], rocketIntro: 0, rocketCharacter: null, random, tiles, start: { ...start }, reversed: false, reverseIntro: 0, reverseCharacter: null, reverseReturnPipe: null, finish: structureTiles('finish').flatMap(id=>positions(level,id))[0], width: level.width, theme: level.theme, terrainSeed: level.terrainSeed ?? 0, challenge: level.challenge ? clone(level.challenge) : null, coins: 0, totalCoins: positions(level, 4).length + positions(level, 3).length, time: 0, state: 'playing', lastJump: false, lastMount: false, events: [] };
 }
 export function caveLinks(tiles) {
   const scan = id => positions({ tiles }, id).sort((a, b) => a.x - b.x || a.y - b.y);
@@ -309,7 +318,7 @@ function caveRoomLevel() {
 }
 function visitCave(game, door) {
   const players = game.players || [game.player], state = game.caveState;
-  for (const p of players) { p.mounted = null; p.w = 22; p.h = 28; }
+  for (const p of players) { p.mounted = null; p.w = isPinball(p) ? 24 : 22; p.h = isPinball(p) ? 24 : 28; }
   if (state.active === null) {
     const id = `${door.x},${door.y}`;
     state.returns = players.map(p => ({ x: p.x, y: p.y, safeSpot: clone(p.safeSpot), spawn: p.spawn ? clone(p.spawn) : null }));
@@ -751,6 +760,7 @@ function dismountDino(game) {
   const sides = [p.facing, -p.facing].map(side => ({ x: dino.x + (side > 0 ? dino.w + 3 : -25), y: dino.y + dino.h - 28, w: 22, h: 28 }));
   const body = sides.find(candidate => canOccupy(game, candidate)) || { x: p.x + 3, y: p.y, w: 22, h: 28 };
   Object.assign(p, body); p.mounted = null; p.mountCooldown = .5; p.grounded = false; p.coyote = 0; p.vy = -180; p.jumpCut = false;
+  fitPinball(p, game.wonderland?.scale || 1);
   game.events.push('dismount');
 }
 export function frogTongue(enemy) {
@@ -1036,16 +1046,20 @@ function updateFireballs(game, dt) {
 }
 function hurt(game, lethal = false) {
   const p = game.player;
-  if (p.rocketStage) return;
+  if (game.state !== 'playing' || p.respawn > 0 || p.rocketStage) return;
+  ensurePlayerVitals(p);
   if (p.rainbow > 0 || (!lethal && (p.invincible > 0 || p.star > 0))) return;
   if (p.vineId) clearVine(p);
   if (!lethal && p.shellHelmet) { p.shellHelmet = false; p.invincible = 1.5; game.events.push('hurt'); return; }
   if (!lethal && p.mounted) { dismountDino(game); p.invincible = 1.5; game.events.push('hurt'); return; }
   if (!lethal && p.shield) { p.shield = false; p.invincible = 1.5; p.vy = -280; game.events.push('hurt'); return; }
-  if (!lethal && p.fire) { p.fire = false; p.invincible = 1.5; p.vy = -280; p.jumpCut = false; game.events.push('hurt'); return; }
-  if (!lethal && p.ice) { p.ice = false; p.invincible = 1.5; p.vy = -280; p.jumpCut = false; game.events.push('hurt'); return; }
-  if (!lethal && p.bubblegun) { p.bubblegun = false; p.invincible = 1.5; p.vy = -280; p.jumpCut = false; game.events.push('hurt'); return; }
-  if (!lethal && p.cat) { p.cat = false; p.instinct = 0; p.invincible = 1.5; p.vy = -280; p.jumpCut = false; game.events.push('hurt'); return; }
+  p.health = lethal ? 0 : Math.max(0, p.health - 1);
+  if (p.health > 0) {
+    p.cat = false; p.instinct = 0;
+    p.invincible = 1.5; p.vy = -280; p.jumpCut = false;
+    game.events.push('hurt'); return;
+  }
+  p.power = 0; p.fire = false; p.ice = false; p.cat = false;
   p.parachute = false; p.fallDistance = 0;
   p.bubblegun = false; p.shellHelmet = false; p.rainbowFart = 0; p.fartTrail = [];
   game.state = 'dead'; game.events.push('dead');
@@ -1061,6 +1075,12 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
   }
   if (advanceWorld) { game.time += dt; stepPSwitches(game, dt); stepCrumbling(game, dt); }
   const p = game.player;
+  ensurePlayerVitals(p);
+  fitPinball(p, game.wonderland?.scale || 1);
+  if (advanceWorld && !game.players) stepPinballTilt(game, [input], dt);
+  rechargePower(p, dt);
+  const settings2D = characterSettings2D(p.character);
+  if (!settings2D.parachute) { p.parachute = false; p.fallDistance = 0; }
   if (advanceWorld) stepWonderExits(game,dt);
   p.wonderSlow=Math.max(0,(p.wonderSlow||0)-dt);
   input = stepWonderMagic(game, input, dt, canOccupy);
@@ -1128,6 +1148,7 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
   const waterRide = underwater && isSeaMount(p.mounted);
   const vineMoved = moveOnVine(game, input, dt, canOccupy);
   const wonderMoved = !vineMoved && moveWonderGravity(game, input, dt, move);
+  p.sprinting = !!input.run && !!(input.left !== input.right && (input.left || input.right)) && !underwater && !p.mounted && !p.cat && !p.slope && !wonderMoved && !vineMoved;
   if (!wonderMoved && !vineMoved) {
     p.coyote = p.grounded ? .10 : Math.max(0, p.coyote - dt);
     if (input.jump && !game.lastJump) p.buffer = .12;
@@ -1135,15 +1156,19 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
     game.lastJump = !!input.jump;
     const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     const sliding = p.grounded && p.slope;
-    const target = (sliding ? p.slope * (underwater ? structureSetting(p.slopeTile,'waterSlideSpeed',150) : structureSetting(p.slopeTile,'slideSpeed',300)) + direction * structureSetting(p.slopeTile,'steerSpeed',75) : direction * (waterRide ? p.mounted.kind === 'dolphin' ? 310 : 210 : underwater ? 165 : p.mounted?.kind === 'quad' ? 330 : p.mounted ? 265 : 220)) * (p.wonderSlow > 0 ? .5 : 1);
+    const target = (sliding ? p.slope * (underwater ? structureSetting(p.slopeTile,'waterSlideSpeed',150) : structureSetting(p.slopeTile,'slideSpeed',300)) + direction * structureSetting(p.slopeTile,'steerSpeed',75) : direction * (waterRide ? p.mounted.kind === 'dolphin' ? 310 : 210 : underwater ? 165 : p.mounted?.kind === 'quad' ? 330 : p.mounted ? 265 : p.sprinting ? RUN_SPEED : WALK_SPEED)) * (p.wonderSlow > 0 ? .5 : 1);
     // Direction changes on foot should take effect this step, instead of first
     // spending ~100 ms braking in the old direction. Keep special locomotion
     // and the extra momentum of a vine launch on their existing acceleration.
     const vineLaunch = p.vineCooldown > 0 && Math.abs(p.vx) > 220;
     const responsive = !underwater && !p.mounted && !sliding && !vineLaunch;
-    if (responsive && direction && p.vx * direction < 0) p.vx = 0;
-    const acceleration = (responsive ? p.grounded ? 9000 : 6000 : p.grounded ? 2400 : 1400) * dt;
-    p.vx += Math.max(-acceleration, Math.min(acceleration, target - p.vx));
+    if (activePinball(p)) {
+      rollPinball(p, game.pinballTilt || 0, underwater ? 500 : game.theme === 'moon' ? 300 : 1800, dt, sliding ? p.slope : 0);
+    } else {
+      if (responsive && direction && p.vx * direction < 0) p.vx = 0;
+      const acceleration = (responsive ? p.grounded ? 9000 : 6000 : p.grounded ? 2400 : 1400) * dt;
+      p.vx += Math.max(-acceleration, Math.min(acceleration, target - p.vx));
+    }
     if (direction) p.facing = direction;
     if (underwater && input.jump && p.swimCooldown <= 0) { p.vy = p.cat ? -340 : -260; p.swimCooldown = .25; p.grounded = false; p.buffer = 0; p.jumpCut = false; game.events.push('swim'); }
     else if (!underwater && p.buffer > 0 && p.coyote > 0) { p.vy = p.cat ? -980 : p.mounted ? -730 : -660; p.buffer = 0; p.coyote = 0; p.grounded = false; p.jumpCut = true; game.events.push('jump'); }
@@ -1155,10 +1180,14 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
     const climbing=!p.mounted&&structureIs(climbTile,'beanstalk');
     if (climbing) { p.vy = input.jump ? -structureSetting(climbTile,'climbSpeed',160) : input.mount ? structureSetting(climbTile,'climbSpeed',160) : 0; p.parachute = false; p.jumpCut = false; }
   }
-  const previousY = p.y, previousBottom = p.y + p.h;
+  const previousX = p.x, previousY = p.y, previousBottom = p.y + p.h;
   if (!wonderMoved && !vineMoved) move(game, p, dt, true);
   if (!vineMoved) seaCurrent(game,p,dt,move);
-  if (isWaterTheme(game.theme) || p.grounded || p.vy <= 0) { p.parachute = false; p.fallDistance = 0; }
+  const traveled = Math.abs(p.x - previousX);
+  if (activePinball(p) && traveled <= RUN_SPEED * dt * 2) p.pinballAngle = ((p.pinballAngle || 0) + (p.x - previousX) / (p.w / 2)) % (Math.PI * 2);
+  if (p.grounded && traveled > .001 && traveled <= RUN_SPEED * dt * 2) p.moveDistance = ((p.moveDistance || 0) + traveled) % 4800;
+  if (traveled <= .001) p.sprinting = false;
+  if (!settings2D.parachute || isWaterTheme(game.theme) || p.grounded || p.vy <= 0) { p.parachute = false; p.fallDistance = 0; }
   else {
     p.fallDistance = (p.fallDistance || 0) + Math.max(0, p.y - previousY);
     if (p.fallDistance > PARACHUTE_DROP) {
@@ -1236,8 +1265,8 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
     if(hazard.kind==='wonder'&&hazard.effect==='slow')p.wonderSlow=.6;
     else { const combat=enemyProfile(hazard)?.combat; if(combat?.contactDamage!==false)hurt(game,combat?.lethalContact ?? hazard.kind==='ant'); }
   }
-  if (input.fire && waterRide && p.mounted.kind === 'seahorse' && p.fireCooldown <= 0 && game.state === 'playing') blowSeaEnemies(game,p);
-  if (input.fire && (p.fire || p.ice || p.bubblegun) && p.fireCooldown <= 0 && game.fireballs.length < (game.players ? 10 : 5) && game.state === 'playing') {
+  if (input.fire && waterRide && p.mounted.kind === 'seahorse' && p.fireCooldown <= 0 && game.state === 'playing' && spendPower(p)) blowSeaEnemies(game,p);
+  if (input.fire && (p.fire || p.ice || p.bubblegun) && p.fireCooldown <= 0 && game.fireballs.length < (game.players ? 10 : 5) && game.state === 'playing' && spendPower(p)) {
     const size = p.bubblegun ? 16 : 8;
     game.fireballs.push({ kind: p.bubblegun ? 'bubble' : p.ice ? 'ice' : 'fire', x: p.facing > 0 ? p.x + p.w + 1 : p.x - size - 1, y: p.y + (p.bubblegun ? 10 : 12), w: size, h: size, vx: p.facing * (p.bubblegun ? 280 : 350), vy: p.bubblegun ? -15 : -80, life: p.bubblegun ? 1.6 : 3, alive: true });
     p.fireCooldown = p.bubblegun ? .35 : .3; game.events.push(p.bubblegun ? 'bubbleshoot' : 'shoot');

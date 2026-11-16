@@ -16,9 +16,11 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
 try{
  browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/__export`);
- await page.evaluate(async()=>{globalThis.braviosExportStructures=true;await (await import('/engine/look.mjs')).loadLook();});
+ // Use the same module URL as art.mjs/hero.mjs so their loaded artwork is shared.
+ await page.evaluate(async()=>{globalThis.braviosExportStructures=true;await (await import('/engine/look.mjs?v=9')).loadLook();});
  const {STRUCTURE_CATALOG}=await import('../public_html/engine/structures/catalog.mjs');
  for(const c of STRUCTURE_CATALOG){
+  if(process.argv.length>2&&!process.argv.slice(2).includes(c.key))continue;
   if(c.tileIds.length&&c.tileIds.every(id=>id>101))continue;
   const visuals=await page.evaluate(async c=>{
    const {drawTile,drawVine,drawDonut,drawChainBall}=await import('/engine/art.mjs');
@@ -56,7 +58,8 @@ try{
      else drawTile(ctx,c.tileIds[0],0,0,32,theme,{top:!inside,icon:(icon||['chain-ball','firebar','vine'].includes(c.kind))&&c.kind!=='question',time,revealContents:icon&&c.kind!=='question',doorOpen:state.startsWith('door-')?Number(state.slice(5))/8:0});
      ctx.restore();
     }
-    result[state]={image:`images/${state}.png`,frameWidth,frameHeight,frames,fps,bounds,data:canvas.toDataURL('image/png').split(',')[1]};
+    const filename=c.kind==='start'?`start-marker${icon?'-editor':''}`:state;
+    result[state]={image:`images/${filename}.png`,frameWidth,frameHeight,frames,fps,bounds,data:canvas.toDataURL('image/png').split(',')[1]};
    }
    result.default=result[c.kind.startsWith('wonder-')?'default':'grass'];return result;
   },c);

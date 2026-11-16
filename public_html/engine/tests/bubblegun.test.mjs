@@ -44,9 +44,9 @@ test('gevangen schildpadden zijn geen helm en andere projectielen veranderen een
   Object.assign(game.player,{x:enemy.x-30,y:enemy.y});assert.equal(nearbyShell(game),null);
   game.fireballs.push({kind:'ice',x:enemy.x,y:enemy.y,w:8,h:8,vx:0,vy:0,life:1,alive:true});stepGame(game,{});assert.equal(enemy.frozen,0);assert.equal(enemy.bubbled,true);
 });
-test('pauze bevriest bellen en vangst; herstart en een vijandaanraking verwijderen de bubblegun',()=>{
+test('pauze bevriest bellen en vangst; een treffer kost leven, herstart verwijdert de bubblegun',()=>{
   const game=setup();capture(game);stepGame(game,{fire:true});game.state='paused';const before=clone(game);advance(game,120);assert.deepEqual(clone(game),before);
-  game.state='playing';game.hazards.push({kind:'hammer',x:game.player.x,y:game.player.y,w:10,h:10,vx:0,vy:0,life:1});stepGame(game,{});assert.equal(game.player.bubblegun,false);assert.equal(game.state,'playing');
+  game.state='playing';game.hazards.push({kind:'hammer',x:game.player.x,y:game.player.y,w:10,h:10,vx:0,vy:0,life:1});stepGame(game,{});assert.equal(game.player.bubblegun,true);assert.equal(game.player.health,game.player.maxHealth-1);assert.equal(game.state,'playing');
   assert.equal(createGame(blankLevel()).player.bubblegun,false);
 });
 test('de tweede speler kan schieten en snapshots bewaren vangst en projectielen; zweven wordt eenmaal per stap bijgewerkt',()=>{

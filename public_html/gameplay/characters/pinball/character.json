@@ -1,0 +1,22 @@
+{
+  "id": "pinball",
+  "name": "Pinball",
+  "portrait": "images/ball.png",
+  "poses": {
+    "idle": "images/ball.png",
+    "side": "images/ball.png",
+    "walk": "images/ball.png",
+    "run": "images/ball.png",
+    "jump": "images/ball.png",
+    "victory": "images/ball.png",
+    "land": "images/ball.png",
+    "ride": "images/ball.png"
+  },
+  "settings": {
+    "2d": {
+      "parachute": false,
+      "runAnimation": "frames",
+      "balance": { "health": 5, "power": 5 }
+    }
+  }
+}

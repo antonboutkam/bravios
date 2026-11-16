@@ -1,11 +1,12 @@
 import {structureProfile,structureSetting} from './structures/runtime.mjs';
 import {drawStructureSprite} from './structures/sprites.mjs';
+import { isPinball } from './pinball.mjs';
 import { drawDepthBackground } from './depth-backgrounds.mjs?v=9';
 // Runtime-only campaign objects: regular levels and the builder keep their own rules.
 const wonderOverlap=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 export function wonderBodies(game){return (game.wonderland?.objects||[]).filter(o=>structureProfile('wonder-'+o.kind)?.collision.solid&&(o.kind!=='fading'||o.active)).map(o=>{o.oneWay=structureProfile('wonder-'+o.kind).collision.oneWay;return o;});}
 function wonderResize(game,scale,clear) {
-  const p=game.player,w=22*scale,h=28*scale;
+  const p=game.player,w=(isPinball(p)?24:22)*scale,h=(isPinball(p)?24:28)*scale;
   const body={...p,x:p.x+(p.w-w)/2,y:p.y+p.h-h,w,h};
   if(!clear(game,body))return false;
   Object.assign(p,body);game.wonderland.scale=scale;return true;

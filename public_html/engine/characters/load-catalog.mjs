@@ -1,5 +1,7 @@
-import { REQUIRED_POSES, RUN_POSES } from './shared/poses.mjs';
-export async function loadCharacterCatalog(readJSON) {
+import { model3DConfig } from '../games/platformer3d/assets.mjs';
+import { REQUIRED_POSES } from './shared/poses.mjs?v=walk-run-1';
+import { normalizeSettings2D } from './shared/settings.mjs?v=health-power-1';
+export async function loadCharacterCatalog(readJSON, modelAvailable = async () => true) {
   const folders = await readJSON('gameplay/characters/characters.json');
   if (!Array.isArray(folders) || !folders.length) throw new Error('gameplay/characters/characters.json moet een lijst met heldenmappen bevatten.');
   const seen = new Set();
@@ -19,10 +21,15 @@ export async function loadCharacterCatalog(readJSON) {
     };
     const portrait = image(config.portrait);
     const poses = Object.fromEntries(REQUIRED_POSES.map(pose => [pose, image(config.poses?.[pose])]));
-    if (RUN_POSES.some(pose => Object.hasOwn(config.poses, pose))) {
-      if (!RUN_POSES.every(pose => Object.hasOwn(config.poses, pose))) fail('Geef alle vier de loopframes op: run-1, run-2, run-3 en run-4.');
-      for (const pose of RUN_POSES) poses[pose] = image(config.poses[pose]);
+    if (config.poses.walk !== undefined) poses.walk = image(config.poses.walk);
+    for (const action of ['idle', 'walk', 'run']) {
+      const frames = Object.keys(config.poses).filter(key => key.startsWith(`${action}-`)).sort((a,b) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
+      if (frames.length > 64 || frames.some((key, index) => key !== `${action}-${index + 1}`)) fail(`Nummer ${action}-frames aaneengesloten vanaf ${action}-1 (maximaal 64).`);
+      for (const pose of frames) poses[pose] = image(config.poses[pose]);
     }
-    return { id: folder, name: config.name.trim(), portrait, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } };
+    const settings = { '2d': normalizeSettings2D(config.settings, fail) };
+    const model = config.model3d ? model3DConfig(config.model3d, `gameplay/characters/${folder}/`) : null;
+    const model3d = model && await modelAvailable(model.file) ? model : null;
+    return { ...(model3d ? { model3d } : {}), id: folder, name: config.name.trim(), portrait, settings, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } };
   }));
 }

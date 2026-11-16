@@ -31,7 +31,7 @@ test('ster verslaat vijanden, beschermt tegen stekels en verliest zijn kracht na
   assert.equal(game.enemies[0].alive, false); assert.equal(game.state, 'playing');
   game.tiles[13][2] = 7; advance(game, .5); assert.equal(game.state, 'playing');
   game.tiles[13][2] = 0; advance(game, 10); assert.equal(game.player.star, 0);
-  game.enemies.push(contactEnemy(game)); stepGame(game, {}); assert.equal(game.state, 'dead');
+  game.enemies.push(contactEnemy(game)); stepGame(game, {}); assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - 1);
 });
 test('een ster houdt de speler niet tegen als hij in een gat valt', () => {
   const game = setup(); game.player.star = 10;
@@ -52,9 +52,9 @@ test('een vuurbal verslaat een robot en verdwijnt bij een muur', () => {
   const blocked = setup(); blocked.player.fire = true; blocked.tiles[13][4] = 1;
   stepGame(blocked, { fire: true }); advance(blocked, .3); assert.equal(blocked.fireballs.length, 0); assert.equal(blocked.tiles[13][4], 1);
 });
-test('vuurkracht absorbeert een aanraking met een vijand', () => {
+test('vuurkracht blijft behouden na verlies van een levenspunt', () => {
   const game = setup(); game.player.fire = true; game.enemies.push(contactEnemy(game)); stepGame(game, {});
-  assert.equal(game.player.fire, false); assert.equal(game.state, 'playing'); assert.ok(game.player.invincible > 0);
+  assert.equal(game.player.fire, true); assert.equal(game.player.health, game.player.maxHealth - 1); assert.equal(game.state, 'playing'); assert.ok(game.player.invincible > 0);
 });
 test('op een dino stappen, samen lopen en afstappen werkt', () => {
   const game = setup(16, 3), dino = game.dinos[0];
@@ -101,7 +101,7 @@ test('tong raakt spelers op afstand, maar een ster beschermt', () => {
   for (const star of [0, 5]) {
     const game = setup(18), frog = game.enemies[0]; advance(game, .2);
     game.player.x = frog.x - 60; game.player.star = star;
-    stepGame(game, {}); assert.equal(game.state, star ? 'playing' : 'dead');
+    stepGame(game, {}); assert.equal(game.state, 'playing'); assert.equal(game.player.health, game.player.maxHealth - (star ? 0 : 1));
   }
 });
 test('de kikkertong gaat niet door een muur', () => {

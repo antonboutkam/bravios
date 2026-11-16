@@ -13,6 +13,21 @@
     "jump": "images/platform/jump.png",
     "victory": "images/platform/victory.png",
     "land": "images/platform/land.png",
-    "ride": "images/platform/ride.png"
+    "ride": "images/platform/ride.png",
+    "walk": "images/platform/walk.png",
+    "walk-1": "images/platform/walk-1.png",
+    "walk-2": "images/platform/walk-2.png",
+    "walk-3": "images/platform/walk-3.png",
+    "walk-4": "images/platform/walk-4.png"
+  },
+  "settings": {
+    "2d": {
+      "parachute": true,
+      "runAnimation": "frames",
+      "balance": {
+        "health": 5,
+        "power": 5
+      }
+    }
   }
 }

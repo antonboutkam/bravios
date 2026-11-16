@@ -1,4 +1,4 @@
-import { assetURL } from '../paths.mjs';
+import { requestImageAsset } from '../image-loader.mjs';
 import {structureProfile} from './runtime.mjs';
 const images=new Map();
 export function structureVisual(profile,{theme='grass',top=true,icon=false,doorOpen=0,state}={}){
@@ -11,7 +11,7 @@ export function structureVisual(profile,{theme='grass',top=true,icon=false,doorO
 function sprite(path){
  if(images.has(path))return images.get(path);
  if(typeof Image==='undefined')return null;
- const image=new Image();image.src=assetURL(path);images.set(path,image);
+ const {image}=requestImageAsset(path,'Bouwonderdeel');images.set(path,image);
  if(images.size>64)images.delete(images.keys().next().value);return image;
 }
 export function drawStructureSprite(ctx,profile,x,y,width=32,height=width,options={}){
@@ -27,6 +27,7 @@ export function drawStructureTile(ctx,id,x,y,size,options={}){
  const profile=structureProfile(id);if(!profile)return false;
  // Matching terrain edges and articulated structures use their PNG components.
  if(profile.terrain&&[1,2].includes(id)&&(profile.kind==='brick'||['grass','night'].includes(options.theme)))return false;
- if(['vine','donut','firebar','chain-ball','chainhead-anchor'].includes(profile.kind))return false;
+ // The start marker is drawn as a neutral flag, never a baked-in person.
+ if(['start','vine','donut','firebar','chain-ball','chainhead-anchor'].includes(profile.kind))return false;
  return drawStructureSprite(ctx,profile,x,y,size,size,options);
 }

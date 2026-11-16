@@ -132,3 +132,7 @@ The offline build places modules in separate factories with their own variables.
 `npm test` includes `game-runtime.test.mjs` for cleanup, shared resources, loading/switching races, character identities, projections, platform return and execution of actual offline packs. Exports from all runtime modules are compared against their native equivalents. `small-games-ui.test.mjs` checks actual menu handlers through a DOM adapter, including results and encounter cancellation. Existing game-rule tests remain in place.
 
 The full local test suite and build provide automated checks. HTTP checks cover new module and asset paths. Visual browser checks and physical controller tests are separate: during the original implementation, the browser connector failed before page interaction.
+
+## 3D fields
+
+Custom world maps can also open a [3D platform field and builder](platformer3d.md). This package has a separate WebGL canvas and shell; it does not pass WebGL through the existing Canvas 2D minigame interface. Models live in each character or enemy directory under `3d/model.glb`, registered with `model3d.file`. Eligibility applies to the entire mixed world for player characters and to the 3D enemy palette. Existing pipe encounters and online rooms do not launch 3D fields.

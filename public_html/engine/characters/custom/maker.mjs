@@ -1,4 +1,4 @@
-import { assetURL } from '../../paths.mjs';
+import { loadImageAsset } from '../../image-loader.mjs';
 // Cosmetic parts have stable IDs; saved characters and room packets contain no image data.
 export const CHARACTER_SHEETS = {
   heads: 'gameplay/characters/custom/parts/heads.png', outfits: 'gameplay/characters/custom/parts/outfits.png',
@@ -68,11 +68,7 @@ let characterArtPromise;
 export function loadCharacterArt() {
   if (characterArtPromise) return characterArtPromise;
   characterArtPromise = Promise.all(Object.entries(CHARACTER_SHEETS).map(async ([sheet, path]) => {
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-      image.onload = resolve; image.onerror = () => reject(new Error('De tekeningen voor de karaktermaker konden niet worden geladen'));
-      image.src = assetURL(path);
-    });
+    const image = await loadImageAsset(path, `Karaktermaker · ${sheet}`);
     const kind = { heads: 'head', outfits: 'outfit', shoes: 'shoes', accessories: 'accessories' }[sheet];
     const columns = sheet === 'heads' || sheet === 'shoes' ? 3 : 4, rows = sheet === 'accessories' ? 3 : 2;
     CHARACTER_PARTS[kind].forEach((part, index) => {
@@ -137,16 +133,16 @@ export function drawCustomHero(context, appearance, x, y, width, facing = 1, pos
   // Dresses and coats keep their hem intact; only the feet below it swing.
   const split = appearance.outfit === 'princess' ? .86 : appearance.outfit === 'coat' ? .80 : .66;
   if (drawWalkingSprite(context, surface, { x: 0, y: 0, width: 320, height: 372 }, x + width / 2, y + width, bodyWidth, height, facing, pose, split)) return true;
-  const bob = pose.running && !pose.reducedMotion ? Math.abs(Math.sin((pose.time || 0) * 18)) * width * .04 : 0;
+  const bob = (pose.walking || pose.running) && !pose.reducedMotion ? Math.abs(Math.sin((pose.time || 0) * 18)) * width * .04 : 0;
   context.save(); context.translate(x + width / 2, y + width - bob); context.scale(facing, 1);
-  if (pose.running && !pose.reducedMotion) context.rotate(Math.sin((pose.time || 0) * 18) * .04);
+  if ((pose.walking || pose.running) && !pose.reducedMotion) context.rotate(Math.sin((pose.time || 0) * 18) * .04);
   context.drawImage(surface, 0, 0, 320, 372, -bodyWidth / 2, -height, bodyWidth, height); context.restore(); return true;
 }
 
 // Three image draws per moving hero, using the already prepared artwork.
 // No extra canvases, pixel reads, or animation data enter the saved character.
 export function drawWalkingSprite(context, surface, bounds, centerX, feetY, width, height, facing, pose = {}, split = .66) {
-  if (!pose.running || pose.airborne || pose.won || pose.landing > .04 || pose.reducedMotion) return false;
+  if (!(pose.walking || pose.running) || pose.airborne || pose.won || pose.landing > .04 || pose.reducedMotion) return false;
   const phase = (pose.time || 0) * (12 + Math.min(320, Math.abs(pose.speed ?? 150)) * .04);
   const stride = Math.sin(phase), legHeight = height * (1 - split);
   context.save(); context.translate(centerX, feetY - Math.abs(Math.sin(phase * 2)) * height * .018); context.scale(facing, 1);

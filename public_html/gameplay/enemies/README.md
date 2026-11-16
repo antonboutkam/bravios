@@ -102,3 +102,7 @@ Gebruik voor een nieuw bouwobject een **vrij geheel tegelnummer van 102 tot en m
 JSON gebruikt dubbele aanhalingstekens, `true`/`false` zonder aanhalingstekens en komma’s tussen velden. Plaats geen commentaar, geen komma na het laatste veld en geen `...` in het echte bestand. Begin met een volledige kopie van een geldig profiel en wijzig telkens één eigenschap. Een voorbeeldfragment uit een README vervangt alleen de genoemde velden; het is geen volledig configuratiebestand.
 
 Controleer zowel `npm run enemies:prepare` als `npm run structures:prepare` bij een nieuw tegelnummer. De tweede controle detecteert ook een nummer dat al door een structuur wordt gebruikt. Een goede eerste opdracht is: kopieer `game/walker`, geef de kopie een eigen ID en vrij nummer, vervang de afbeeldingen en verander daarna één bewegingsinstelling. Gebruik geen Wonderland-baas als eerste sjabloon voor een gewone vijand.
+
+## Vijanden in 3D
+
+De wandelvijand (`game/walker/`) heeft een echt model in `3d/model.glb` en vijf aanzichten in `3d/previews/`. De 3D-bouwer toont alleen vijanden met een geregistreerd model en ondersteund 3D-gedrag. Een 2D-sprite of alleen een nieuwe map is niet voldoende. [Uitleg en uitbreidingsafspraken](../../../docs/other/architecture/platformer3d.md).

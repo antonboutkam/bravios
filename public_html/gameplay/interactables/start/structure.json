@@ -1,7 +1,7 @@
 {
   "id": "start",
   "name": "Startplek",
-  "description": "Hier begint het avontuur. Elk level heeft \u00e9\u00e9n startplek.",
+  "description": "Hier begint het avontuur. Elk level heeft één startplek.",
   "kind": "start",
   "tileIds": [
     10
@@ -22,7 +22,7 @@
   "settings": {},
   "visuals": {
     "grass": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -35,7 +35,7 @@
       ]
     },
     "grass-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -48,7 +48,7 @@
       ]
     },
     "grass-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -61,7 +61,7 @@
       ]
     },
     "sunset": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -74,7 +74,7 @@
       ]
     },
     "sunset-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -87,7 +87,7 @@
       ]
     },
     "sunset-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -100,7 +100,7 @@
       ]
     },
     "night": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -113,7 +113,7 @@
       ]
     },
     "night-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -126,7 +126,7 @@
       ]
     },
     "night-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -139,7 +139,7 @@
       ]
     },
     "castle": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -152,7 +152,7 @@
       ]
     },
     "castle-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -165,7 +165,7 @@
       ]
     },
     "castle-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -178,7 +178,7 @@
       ]
     },
     "winter": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -191,7 +191,7 @@
       ]
     },
     "winter-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -204,7 +204,7 @@
       ]
     },
     "winter-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -217,7 +217,7 @@
       ]
     },
     "moon": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -230,7 +230,7 @@
       ]
     },
     "moon-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -243,7 +243,7 @@
       ]
     },
     "moon-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -256,7 +256,7 @@
       ]
     },
     "underwater": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -269,7 +269,7 @@
       ]
     },
     "underwater-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -282,7 +282,7 @@
       ]
     },
     "underwater-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -295,7 +295,7 @@
       ]
     },
     "underwater-night": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -308,7 +308,7 @@
       ]
     },
     "underwater-night-inside": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -321,7 +321,7 @@
       ]
     },
     "underwater-night-editor": {
-      "image": "images/grass-editor.png",
+      "image": "images/start-marker-editor.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,
@@ -334,7 +334,7 @@
       ]
     },
     "default": {
-      "image": "images/grass.png",
+      "image": "images/start-marker.png",
       "frameWidth": 120,
       "frameHeight": 144,
       "frames": 1,

@@ -1,3 +1,4 @@
+import { verifyModel3D } from './verify-3d-model.mjs';
 import { catalogOutput } from './catalog-output.mjs';
 import { readFile,writeFile,realpath } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +17,7 @@ export async function discoverEnemies(directory=new URL('../public_html/gameplay
     const png=await readFile(filename);
     if(png.length<33||!png.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))||png.readUInt32BE(16)!==a.frameWidth*a.frames||png.readUInt32BE(20)!==a.frameHeight)throw new Error(`${a.image}: ongeldige PNG of afmetingen passen niet bij de animatie.`);
   })));
+  for(const profile of profiles)if(profile.model3d)await verifyModel3D(path.join(root,profile.group,profile.id,'3d/model.glb'),path.join(root,profile.group,profile.id));
   return profiles;
 }
 export async function prepareEnemies(directory=new URL('../public_html/gameplay/enemies/',import.meta.url)) {

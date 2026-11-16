@@ -10,8 +10,8 @@ De afmetingen hieronder zijn de PNG-afmetingen op het moment van schrijven. Het 
 
 | PNG | Afmetingen en verwijzingen |
 | --- | --- |
-| [grass-editor.png](grass-editor.png) | 120 × 144 px; `grass-editor`, `sunset-editor`, `night-editor`, `castle-editor`, `winter-editor`, `moon-editor`, `underwater-editor`, `underwater-night-editor` |
-| [grass.png](grass.png) | 120 × 144 px; `grass`, `grass-inside`, `sunset`, `sunset-inside`, `night`, `night-inside`, `castle`, `castle-inside`, `winter`, `winter-inside`, `moon`, `moon-inside`, `underwater`, `underwater-inside`, `underwater-night`, `underwater-night-inside`, `default` |
+| [start-marker-editor.png](start-marker-editor.png) | 120 × 144 px; `grass-editor`, `sunset-editor`, `night-editor`, `castle-editor`, `winter-editor`, `moon-editor`, `underwater-editor`, `underwater-night-editor` |
+| [start-marker.png](start-marker.png) | 120 × 144 px; `grass`, `grass-inside`, `sunset`, `sunset-inside`, `night`, `night-inside`, `castle`, `castle-inside`, `winter`, `winter-inside`, `moon`, `moon-inside`, `underwater`, `underwater-inside`, `underwater-night`, `underwater-night-inside`, `default` |
 
 ## Een afbeelding vervangen
 

@@ -1,4 +1,4 @@
-import { assetURL } from '../../paths.mjs';
+import { loadImageAsset, reportImageProblem } from '../../image-loader.mjs';
 import { characterView } from '../roster.mjs';
 import { ResourcePool } from '../../runtime/resource-scope.mjs';
 export const characterViewPool=new ResourcePool();
@@ -7,9 +7,8 @@ export async function acquireCharacterView(identity,view,scope,pool=characterVie
   const variant=characterView(identity,view);
   if(!variant.asset)return variant;
   const image=await pool.acquire(variant.asset,async()=>{
-    const url=assetURL(variant.asset);
-    const response=await fetch(url);if(!response.ok)throw new Error('Karakterafbeelding kon niet worden geladen.');
-    return createImageBitmap(await response.blob());
+    const source=await loadImageAsset(variant.asset);
+    try{return await createImageBitmap(source);}catch{throw reportImageProblem(variant.asset,'De afbeelding kan niet voor dit spel worden voorbereid.');}
   },bitmap=>bitmap.close(),scope);
   return {...variant,image};
 }

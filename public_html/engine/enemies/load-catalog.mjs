@@ -1,3 +1,4 @@
+import { model3DConfig } from '../games/platformer3d/assets.mjs';
 // Shared by browser startup and the Node/offline preparation step.
 const ID = /^[a-z][a-z0-9-]{0,39}$/;
 const ORIGINAL_TILES = new Set([6,17,18,20,21,22,23,24,25,27,28,29,61,77,82,83,85,86,87,88,91,92,93,94,95,96,97,98]);
@@ -54,7 +55,7 @@ export async function loadEnemyCatalog(readJSON) {
         a.bounds.forEach(n=>number(n,-2048,2048,'bounds')); if(a.bounds[2]<=0||a.bounds[3]<=0) fail('bounds moeten positieve afmetingen hebben.');
         animations[state]={...a,image:base+a.image};
       }
-      catalog.push({...c,group,key:`${group}/${id}`,animations});
+      catalog.push({...c,...(c.model3d ? {model3d:model3DConfig(c.model3d,base)} : {}),group,key:`${group}/${id}`,animations});
     }
   }
   const tiles = new Set(), wonders = new Set();

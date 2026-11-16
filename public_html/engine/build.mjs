@@ -1,3 +1,5 @@
+import { model3DAssets } from './games/platformer3d/assets.mjs';
+import { ENEMY_CATALOG } from './enemies/catalog.mjs';
 import { structureAssets } from './structures/runtime.mjs';
 import { enemyAssets } from './enemies/runtime.mjs';
 import { CHARACTER_PROFILES } from './characters/roster.mjs';
@@ -13,8 +15,8 @@ const root = new URL('../', import.meta.url);
 const read = name => readFile(new URL(name, root), 'utf8');
 const [html, css, favicon] = await Promise.all(['index.html','engine/styles.css','assets/scenery/ui/favicon.svg'].map(read));
 const modules=await collectModules(new URL('./', import.meta.url));
-const assetPaths = [...structureAssets(),...enemyAssets(),'assets/backgrounds/worlds/wonderland/world-inspiration.png', 'assets/backgrounds/worlds/adventure/adventure-map.png', ...Object.values(CHARACTER_SHEETS), CRAZY_BACKGROUND_ASSET, ...Object.values(CHARACTER_PROFILES).map(profile => profile.portrait), 'assets/scenery/ui/logo.png', 'assets/scenery/ui/logo-transparent.png', ...Object.values(LOOK_SHEETS), ...Object.values(TERRAIN_SHEETS)];
-const assets = Object.fromEntries(await Promise.all([...new Set(assetPaths)].map(async name => [name, `data:image/png;base64,${(await readFile(new URL(name, root))).toString('base64')}`])));
+const assetPaths = ['engine/games/platformer3d/vendor/HavokPhysics.wasm',...model3DAssets(Object.values(CHARACTER_PROFILES),ENEMY_CATALOG),...structureAssets(),...enemyAssets(),'assets/backgrounds/worlds/wonderland/world-inspiration.png', 'assets/backgrounds/worlds/adventure/adventure-map.png', ...Object.values(CHARACTER_SHEETS), CRAZY_BACKGROUND_ASSET, ...Object.values(CHARACTER_PROFILES).map(profile => profile.portrait), 'assets/scenery/ui/logo.png', 'assets/scenery/ui/logo-transparent.png', ...Object.values(LOOK_SHEETS), ...Object.values(TERRAIN_SHEETS)];
+const assets = Object.fromEntries(await Promise.all([...new Set(assetPaths)].map(async name => [name, `data:${name.endsWith('.wasm')?'application/wasm':name.endsWith('.glb')?'model/gltf-binary':'image/png'};base64,${(await readFile(new URL(name, root))).toString('base64')}`])));
 const script = `globalThis.braviosAssets = ${JSON.stringify(assets)};\n` + bundleModules(modules);
 new Script(script, { filename: 'speel.html' });
 const offline = html
