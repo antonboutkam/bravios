@@ -26,7 +26,8 @@ test('gameplay and assets contain editable files in the requested categories and
   assert.ok(entries.some(file => file.pathname.endsWith('/enemy.json')));
   assert.ok(entries.some(file => file.pathname.endsWith('/structure.json')));
   assert.ok(entries.some(file => file.pathname.endsWith('/run-4.png')));
-  assert.deepEqual(entries.filter(file => /\.(?:mjs|js|css|php|py)$/.test(file.pathname)), []);
+  // Student-authored character functions belong next to their JSON. Engine code stays separate.
+  assert.deepEqual(entries.filter(file => /\.(?:mjs|js|css|php|py)$/.test(file.pathname) && !/\/gameplay\/characters\/[a-z][a-z0-9-]{0,39}\/callbacks\.js$/.test(file.pathname)), []);
   for (const group of ['characters', 'enemies', 'structures']) {
     const output = catalogOutput(group === 'structures' ? workshop : new URL(group + '/', workshop), group);
     assert.equal(output, fileURLToPath(new URL(`../public_html/engine/${group}/catalog.mjs`, import.meta.url)));

@@ -1,6 +1,6 @@
 # Spelpakketten
 
-Elk spel heeft een eigen map met `game.mjs` (sessiefactory en bediening), `model.mjs` (simulatie) en `render.mjs` (beeld). Spelspecifieke afbeeldingen en geluiden horen bij hetzelfde pakket. De bestaande games gebruiken hun gedeelde canvasachtergrond uit `shared/`.
+Elk spel heeft een eigen map met `game.mjs` (sessiefactory en bediening), `model.mjs` (simulatie) en `render.mjs` (beeld). Spelspecifieke afbeeldingen en geluiden horen bij hetzelfde pakket. De 2D-games gebruiken hun gedeelde canvasachtergrond uit `shared/`. `cake-throw` gebruikt de bestaande Babylon.js-versie en GLB-personages op een eigen WebGL-canvas.
 
 Registreer een nieuw spel in `catalog.mjs`. De schil in `shell.mjs` regelt fullscreen, de menukeuze en invoer. `platformer/encounters.mjs` onderbreekt en hervat de bestaande platformengine; die engine en de bouwer staan nog op hun oorspronkelijke paden.
 
@@ -66,5 +66,6 @@ Voeg voor nieuwe spelregels betekenisvolle tests toe, pas waar nodig catalogusve
 | `balloons` | [Ballonnenpret](balloons/README.md) |
 | `catch` | [Fruitvanger](catch/README.md) |
 | `rhythm` | [Stekelsprong](rhythm/README.md) |
+| `cake-throw` | [Taartgooien in 3D](cake-throw/README.md) |
 | `shared` | [Gedeelde sessie en achtergrond](shared/README.md) |
 | `platformer` | [Een tussenspel aan het platformspel koppelen](platformer/README.md) |

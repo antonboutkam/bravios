@@ -22,6 +22,7 @@ public_html/
     balloons/              game.mjs, model.mjs, render.mjs
     catch/                 game.mjs, model.mjs, render.mjs
     rhythm/                game.mjs, model.mjs, render.mjs
+    cake-throw/            3D cake duel, bakery carts and shared GLB characters
     platformer/
       encounters.mjs       integration with the existing platform game
   characters/
@@ -60,7 +61,9 @@ A session in the current menu shell provides:
 | `state` | Game state with `kind`, `state` (`playing`, `won`, `over`) and `playerCount` for multiplayer |
 | `viewport` | Logical `width`, `height` and `view`; the shell adjusts the canvas and pointer coordinates accordingly |
 | `capabilities` | Optional `jumpButtons`, `pause`, `upAction` for existing controls |
-| `update(input, dt)` | Directions are held values; this runs the session's simulation step |
+| `update(input, dt)` | Directions are held values; `input.players` also carries held directions from both controllers |
+| `mount(canvas)` | Optional async initialization of a dedicated WebGL canvas |
+| `key(event, down)`, `control(player, direction, down)` | Optional per-game keyboard and touch controls; a handled key returns true |
 | `action(player)` | A press edge for one player's action |
 | `direction(direction)` | A single direction step, suitable for dance steps, for example |
 | `pointer(phase, point, dragging)` | Touch/mouse input in logical game coordinates |
@@ -132,6 +135,16 @@ The offline build places modules in separate factories with their own variables.
 `npm test` includes `game-runtime.test.mjs` for cleanup, shared resources, loading/switching races, character identities, projections, platform return and execution of actual offline packs. Exports from all runtime modules are compared against their native equivalents. `small-games-ui.test.mjs` checks actual menu handlers through a DOM adapter, including results and encounter cancellation. Existing game-rule tests remain in place.
 
 The full local test suite and build provide automated checks. HTTP checks cover new module and asset paths. Visual browser checks and physical controller tests are separate: during the original implementation, the browser connector failed before page interaction.
+
+## 3D minigame: cake throwing
+
+`cake-throw` is registered with `renderer: 'webgl'` and `view: '3d'`. The shell shows an explicit selector containing registered 3D characters before starting it. It allocates a fresh canvas alongside the existing Canvas 2D canvas and awaits the session's `mount(canvas)`. Context types are never mixed on one canvas. On stop, the WebGL canvas is removed and the 2D canvas restored. A generation check prevents late model loads from reopening a closed game. Restart retains the chosen participants.
+
+The model is independent of the tile engine and Havok: two actors move on their own half of a flat court, collect replenishing cakes from bakery carts, and throw ballistic projectiles at the opponent's launch-time position. Swept hit checks and fixed 1/120-second simulation steps prevent tunnelling. Solo uses a computer opponent; two-player mode uses separate keyboard mappings or separate controllers. Each actor also has touch movement and throw controls. Pause/focus loss freezes simulation and clears held keyboard/touch input.
+
+The renderer reuses the vendored Babylon.js library, the existing render budget, and real `model3d.file` GLBs. Characters and their animation groups are instantiated separately, including when both players choose the same model. Carts and cakes use procedural meshes and shared materials. Leaving disposes model instances, containers, scene, engine and canvas. There is no second animation loop, network room or saved world-field conversion.
+
+[cake-throw/README.md](../../../public_html/engine/games/cake-throw/README.md) documents controls and rules. `cake-throw.test.mjs` tests rules, two-player input, async cancellation and a real Babylon NullEngine scene with both GLBs. Menu tests cover 3D selection, separate canvases, controller/touch routing, restart and return to a 2D game. Visual and physical-controller verification remain separate.
 
 ## 3D fields
 

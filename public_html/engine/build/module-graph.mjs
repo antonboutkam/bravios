@@ -6,7 +6,8 @@ const dynamicImport=/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g;
 function resolveModule(parent,specifier){
   if(!specifier.startsWith('.'))throw new Error(`Alleen relatieve runtime-imports: ${specifier}`);
   const name=path.posix.normalize(path.posix.join(path.posix.dirname(parent),specifier.split('?')[0]));
-  if(name.startsWith('../')||!name.endsWith('.mjs'))throw new Error(`Ongeldig modulepad: ${name}`);
+  const callback=/^\.\.\/gameplay\/characters\/[a-z][a-z0-9-]{0,39}\/callbacks\.js$/.test(name);
+  if(!callback&&(name.startsWith('../')||!name.endsWith('.mjs')))throw new Error(`Ongeldig modulepad: ${name}`);
   return name;
 }
 function names(list){return list.split(',').map(s=>s.trim()).filter(Boolean).map(s=>s.split(/\s+as\s+/));}

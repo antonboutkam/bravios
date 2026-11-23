@@ -10,11 +10,13 @@ The runtime loaders read the workshop manifests on refresh. Preparation scripts 
 
 The HTML entry loads `engine/bootstrap.mjs` and `engine/styles.css`. Network play calls `engine/room.php`. The generated `speel.html` stays in `public_html/`.
 
+Characters may also contain student-authored `callbacks.js`, mapped by the optional `callbacks` object in `character.json`. The six 2D events, context API and Anton examples are documented in the [character README](../../../public_html/gameplay/characters/README.md#je-karakter-programmeren-met-callbacks). `characters/callbacks.mjs` loads validated modules before the app starts, dispatches simulation events and keeps serializable per-player data in `callbackState`. Live refresh imports current files with a new revision; preparation generates `engine/characters/callback-imports.mjs` with literal imports for the offline bundle. The module graph permits only the specific `../gameplay/characters/<id>/callbacks.js` path outside `engine/`. Online callbacks execute in the host simulation; PHP validates their resulting snapshot data. Small games and 3D do not dispatch these events yet.
+
 ## Platform
 
 Bravios runs in the browser using standard HTML, CSS and JavaScript. The existing 2D engine does not use a game library. The optional [3D fields](platformer3d.md) use a locally bundled Babylon.js engine with Havok physics. The `.mjs` files are JavaScript modules with `import` and `export`, loaded from the local web server. HTML defines buttons, dialogs and canvas elements. CSS styles the controls; Canvas 2D draws the 2D game world and WebGL 2 draws 3D fields.
 
-Node.js runs the development server, build and JavaScript tests. PHP is needed only for rooms and their tests. No database or npm packages are required. Version requirements and commands are in [package.json](../../../package.json): Node ≥18; the installation guide specifies PHP ≥8.1 for network play.
+Node.js runs the development server, build and JavaScript tests. PHP is needed for rooms and the PHP backend tests. Permanent collections work with either the PHP server or the Node server. No database or npm packages are required. Version requirements and commands are in [package.json](../../../package.json): Node ≥18; the installation guide specifies PHP ≥8.1 for network play.
 
 ## From input to screen
 
@@ -60,7 +62,7 @@ Paths below are relative to the project root. Where only a filename is listed, i
 | Custom worlds | `worlds.mjs`, `world-editor.mjs` | Custom map data, 2D/3D field validation and editor |
 | 3D fields | `games/platformer3d/` | Model eligibility, 3D physics, WebGL rendering, block builder and model gallery |
 | Small games | `public_html/engine/games/`, `public_html/engine/runtime/` | Four separate game packs, sessions, deferred loading and return to the main game |
-| Storage | `storage.mjs`, storage code in `app.mjs` | Normalizing level collections and saving browser data |
+| Storage | `storage.mjs`, `collection-client.mjs`, `collection.php`, `collection-server.mjs`, `app.mjs` | Browser drafts, automatic field collections and permanent private server copies |
 | Multiplayer | `coop.mjs`, `network.mjs`, `room.php` | Shared simulation, HTTP room traffic and server validation |
 | Controller | `gamepad.mjs` | Converting controller input into actions |
 | Tools | `server.mjs`, `build.mjs` | Serving local files and building the offline file |
@@ -72,7 +74,15 @@ A level contains fields including `name`, `theme`, `width` and `tiles`. `tiles` 
 
 Use an exported level for experiments. The validator determines valid data and may normalize it. Runtime game state is a separate object containing the player, elapsed time, collected coins and moving enemies. Collecting a coin during a run should not change the saved builder level.
 
-`app.mjs` uses `localStorage` with the key `super-bouwclub-v1` for the builder level, collection and progress, among other data. `storage.mjs` helps read existing collections. Storage belongs to a browser profile and origin (protocol, host and port). `localhost:8080`, another address and the offline version may therefore show different data. Use JSON export/import to transfer levels and make backups.
+`app.mjs` keeps drafts, collections and progress in `localStorage` (`super-bouwclub-v1`). Edits automatically upsert the current standalone field using its stable ID; world fields update their own node. “Mijn velden” includes standalone fields and references to configured world fields; “Mijn werelden” lists worlds with edit/play actions. Existing drafts and collections are migrated. Invalid old drafts do not hide valid collection entries.
+
+Online, `collection-client.mjs` synchronizes fields and worlds with `engine/collection.php`. PHP handles that endpoint directly; the Node development server implements the same endpoint through `collection-server.mjs`. Both use the same permanent JSON format in `<project>/data/collections`, outside `public_html`. Set `BRAVIOS_DATA_DIR` to override this directory. The server process needs write permission there; back up the directory and keep it across deployments. `data/` is ignored by Git.
+
+A random 256-bit bearer key in browser storage (`bravios-collection-key`) identifies the private collection through an HTTP header. This is browser-specific ownership, without accounts or cross-device login. Clearing browser data also removes this key; server files alone do not reconnect a new browser automatically. Different origins and ports have separate collections. Use JSON download/import for transfer and independent backups. Never log or share collection keys.
+
+Writes use an exclusive directory lock and atomic rename. Revision checks reject concurrent overwrites with HTTP 409. On reload, collections merge by stable ID and modification timestamp; capacity errors keep both original copies. The UI only confirms server storage after a successful response. Errors retain the local copy and offer retry. The standalone `speel.html` and Python server keep browser storage only. Collection tests cover both runtimes, reopen, private separation, mixed 2D/3D worlds, unfinished drafts, deletion, revision conflicts and queued retry. Live deployment and visual checks remain separate from those tests.
+
+Above-ground height and underground depth are available in the new-field form, the builder settings and the world field form. The underground option adds empty rows below existing ground and a rock floor, preserving placed objects. 2D height plus depth is capped at 64; 3D retains its separate spatial depth setting.
 
 For rooms, `network.mjs` sends requests to `room.php`. PHP stores temporary sessions outside the document root, uses file locks and per-player access keys, and expires old rooms. This is not a permanent server collection. The Node server does not execute PHP.
 

@@ -73,3 +73,16 @@ test('counters preserve race/team rules, reserve lives, wallet, boss and countdo
   updateHUDCounters(container,{...game,challenge:{kind:'coin-race',seconds:60},players:[{character:'anton',coins:2},{character:'boaz',coins:5}]});
   assert.match(value('coin-count'),/anton 2 · Boaz 5/i);
 });
+
+test('callback bonus, cooldown, messages and runtime errors remain visible without redundant writes',()=>{
+  const dom=documentFixture(),previous=globalThis.document;globalThis.document=dom.document;
+  try {
+    const container=dom.element(),p=player();
+    p.callbackState={bonusPoints:7,specialCooldown:4,message:'Schild!',messageTime:2,error:''};
+    updateVitalsHUD(container,[p],p);const hint=container.children[0].children[3];
+    assert.match(hint.textContent,/Bonus: 7.*Kracht: 4s.*Schild!/);
+    dom.writes.length=0;updateVitalsHUD(container,[p],p);assert.deepEqual(dom.writes,[]);
+    p.callbackState.error='anton · onJump (telSprongen): Oeps';updateVitalsHUD(container,[p],p);
+    assert.equal(hint.textContent,p.callbackState.error);
+  }finally{globalThis.document=previous;}
+});

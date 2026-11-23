@@ -1126,8 +1126,15 @@ function drawWorldFlat(ctx, level, { grid = true, game = null, time = 0, hover =
       const facing = p.mounted?.facing || p.facing;
       drawBubbleGun(ctx, (seat?.seatX ?? p.x + p.w / 2) + facing * 10, seat ? seat.seatY - 6 : p.y + p.h * .50, facing, 20);
     }
-    if (p.shield) { ctx.strokeStyle = '#d8fad2a0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x + 11, p.y + 14, 24, 0, Math.PI * 2); ctx.stroke(); }
+    if (p.shield || p.callbackState?.shieldTime > 0) { ctx.strokeStyle = '#d8fad2a0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x + 11, p.y + 14, 24, 0, Math.PI * 2); ctx.stroke(); }
     if (game.players) { ctx.save(); ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#463e65'; ctx.fillText(p.appearance?.name || CHARACTER_NAMES[p.character], p.x + p.w / 2, p.y - (p.shellHelmet ? 29 : 14)); ctx.restore(); }
+    if (p.callbackState?.messageTime > 0) {
+      ctx.save(); ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+      const message = p.callbackState.message, textWidth = Math.min(300, ctx.measureText(message).width);
+      const messageX = Math.max(textWidth / 2 + 8, Math.min(game.width * TILE - textWidth / 2 - 8, p.x + p.w / 2));
+      ctx.fillStyle = '#fff9e8'; ctx.fillRect(messageX - textWidth / 2 - 5, p.y - 53, textWidth + 10, 18);
+      ctx.fillStyle = '#332449'; ctx.fillText(message, messageX, p.y - 40, 300); ctx.restore();
+    }
     }
     for (const rocket of game.departingRockets || []) if (visible(rocket)) drawRocket(ctx, rocket.x, rocket.y, { firing: true, direction: Math.sign(rocket.vx), time, reducedMotion });
     effects?.draw(ctx, left, right);

@@ -57,3 +57,20 @@ test('kaartgrenzen en veldlimieten blokkeren ongeldige gegevens',()=>{
  for(let i=1;i<WORLD_MAP.maxNodes;i++)world.nodes.push({id:`node-${i}`,x:100,y:100,level:null});
  assert.throws(()=>addWorldNode(world,900,500));
 });
+
+test('wereldeditor bewaart afzonderlijke bovenhoogte en ondergrond en houdt bestaande blokjes vast',()=>{
+ const {world,a}=fixture();
+ configureWorldNode(world,a.id,{name:'Een holte',theme:'grass',width:40,height:24,undergroundDepth:8});
+ assert.equal(a.level.height,32);assert.equal(a.level.undergroundDepth,8);
+ a.level.tiles[20][5]=3;
+ configureWorldNode(world,a.id,{name:'Een diepe holte',theme:'grass',width:40,height:24,undergroundDepth:24});
+ assert.equal(a.level.height,48);assert.equal(a.level.tiles[20][5],3);
+ configureWorldNode(world,a.id,{name:'De grens',theme:'grass',width:40,height:48,undergroundDepth:16});
+ assert.equal(a.level.height,64);
+ configureWorldNode(world,a.id,{name:'Meer onder, minder boven',theme:'grass',width:40,height:16,undergroundDepth:48});
+ assert.equal(a.level.height,64);assert.equal(a.level.undergroundDepth,48);
+ assert.deepEqual(validateWorld(clone(world)),world);
+ const before=clone(a.level);
+ assert.throws(()=>configureWorldNode(world,a.id,{name:'Te diep',theme:'grass',width:40,height:32,undergroundDepth:48}));
+ assert.deepEqual(a.level,before);
+});

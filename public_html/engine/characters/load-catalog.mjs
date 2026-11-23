@@ -1,4 +1,5 @@
 import { model3DConfig } from '../games/platformer3d/assets.mjs';
+import { normalizeCharacterCallbacks } from './callback-schema.mjs';
 import { REQUIRED_POSES } from './shared/poses.mjs?v=walk-run-1';
 import { normalizeSettings2D } from './shared/settings.mjs?v=health-power-1';
 export async function loadCharacterCatalog(readJSON, modelAvailable = async () => true) {
@@ -30,6 +31,7 @@ export async function loadCharacterCatalog(readJSON, modelAvailable = async () =
     const settings = { '2d': normalizeSettings2D(config.settings, fail) };
     const model = config.model3d ? model3DConfig(config.model3d, `gameplay/characters/${folder}/`) : null;
     const model3d = model && await modelAvailable(model.file) ? model : null;
-    return { ...(model3d ? { model3d } : {}), id: folder, name: config.name.trim(), portrait, settings, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } };
+    const callbacks = normalizeCharacterCallbacks(config.callbacks, fail);
+    return { ...(Object.keys(callbacks).length ? { callbacks } : {}), ...(model3d ? { model3d } : {}), id: folder, name: config.name.trim(), portrait, settings, views: { side: { poses, frame: 'side' }, front: { poses, frame: 'idle' } } };
   }));
 }

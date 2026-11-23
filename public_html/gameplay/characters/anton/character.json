@@ -28,6 +28,14 @@
   "model3d": {
     "file": "3d/model.glb"
   },
+  "callbacks": {
+    "onSpawn": "begroetSpeler",
+    "onJump": "telSprongen",
+    "onCollectCoin": "beloonMuntje",
+    "onDamage": "reageerOpSchade",
+    "onSpecial": "activeerSchild",
+    "onWin": "vierOverwinning"
+  },
   "settings": {
     "2d": {
       "parachute": false,

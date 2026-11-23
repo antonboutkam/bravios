@@ -1,4 +1,4 @@
-import { THEMES, blankLevel, clone, resizeLevel, seedTerrainLevel, validateLevel, positions } from './engine.mjs?v=44';
+import { THEMES, blankLevel, clone, resizeLevel, resizeUnderground, seedTerrainLevel, validateLevel, positions } from './engine.mjs?v=44';
 
 import { validateLevel3D, createLevel3D, resizeLevel3D } from './games/platformer3d/level.mjs';
 const validateField = data => data?.kind === 'platformer3d' ? validateLevel3D(data) : validateLevel(data);
@@ -22,7 +22,7 @@ export function validateWorld(raw) {
     if (!links.some(([a,b]) => a === pair[0] && b === pair[1] || a === pair[1] && b === pair[0])) links.push([...pair]);
   }
   const configured = new Set(nodes.filter(n => n.level).map(n => n.id));
-  return { version: 1, id: raw.id, name: raw.name.trim(), nodes, links, completed: [...new Set((Array.isArray(raw.completed) ? raw.completed : []).filter(id => configured.has(id)))] };
+  return { version: 1, id: raw.id, name: raw.name.trim(), nodes, links, completed: [...new Set((Array.isArray(raw.completed) ? raw.completed : []).filter(id => configured.has(id)))], ...(Number.isSafeInteger(raw.updated) && raw.updated >= 0 ? { updated: raw.updated } : {}) };
 }
 export function normalizeWorlds(raw) {
   if (!Array.isArray(raw)) return [];
@@ -57,17 +57,27 @@ export function saveWorldNodeLevel(world, id, data) {
   if (JSON.stringify(node.level) !== JSON.stringify(level)) world.completed = world.completed.filter(done => done !== id);
   node.level = level; return node;
 }
-export function configureWorldNode(world, id, { name, theme, width, height, kind = 'platformer', depth = 24 }) {
+export function configureWorldNode(world, id, { name, theme, width, height, kind = 'platformer', depth = 24, undergroundDepth }) {
   const node = world.nodes.find(n => n.id === id);
   if (!node || typeof name !== 'string' || !name.trim() || name.length > 48 || !Object.hasOwn(THEMES, theme) || !Number.isInteger(width) || width < 20 || width > 360 || !Number.isInteger(height) || height < 16 || height > 64) throw new Error('Kies een naam, omgeving, breedte (20–360) en hoogte (16–64).');
   if (!['platformer','platformer3d'].includes(kind)) throw new Error('Kies 2D of 3D.');
   if(node.level && (node.level.kind || 'platformer') !== kind) throw new Error('Maak een nieuw veld om van 2D naar 3D te wisselen. Je bestaande bouwwerk blijft bewaard.');
   if(kind==='platformer3d') return saveWorldNodeLevel(world,id,node.level ? resizeLevel3D(node.level,{name,theme,width,height,depth}) : createLevel3D(name,theme,width,height,depth));
   const previous = node.level;
-  const next = previous ? resizeLevel(previous, width, height) : seedTerrainLevel(blankLevel(width, height));
+  // Height is above ground when an explicit underground depth is supplied.
+  // Older callers still pass the total height and keep the existing depth.
+  const totalHeight = undergroundDepth === undefined ? height : height + undergroundDepth;
+  let next;
+  if (previous && undergroundDepth !== undefined) {
+    if (!Number.isInteger(undergroundDepth) || undergroundDepth < 0 || undergroundDepth > 0 && undergroundDepth < 4 || totalHeight > 64) throw new Error('Kies 0 of minstens 4 blokjes ondergrond; samen met de hoogte maximaal 64.');
+    // Shrink the relevant side first so a valid final size never exceeds 64 mid-resize.
+    next = undergroundDepth > (previous.undergroundDepth || 0)
+      ? resizeUnderground(resizeLevel(previous, width, height + (previous.undergroundDepth || 0)), undergroundDepth)
+      : resizeLevel(resizeUnderground(previous, undergroundDepth), width, totalHeight);
+  } else next = previous ? resizeLevel(previous, width, totalHeight) : resizeUnderground(seedTerrainLevel(blankLevel(width, height)), undergroundDepth || 0);
   // Keep the start and finish when a smaller field crops their original cells.
   if (previous) for (const tile of [10,11]) if (positions(previous,tile).length && !positions(next,tile).length) {
-    const x = tile === 10 ? 2 : width - 4, y = height - (next.undergroundDepth || 0) - 3;
+    const x = tile === 10 ? 2 : width - 4, y = totalHeight - (next.undergroundDepth || 0) - 3;
     for (let yy = Math.max(0,y-2); yy <= y; yy++) next.tiles[yy][x] = 0;
     next.tiles[y][x] = tile;
   }

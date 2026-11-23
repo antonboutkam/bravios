@@ -79,7 +79,9 @@ export function updateVitalsHUD(container, players, localPlayer) {
       setHUDAttribute(meter.track,'aria-valuetext',`${available} van ${max}${kind==='power'?' schoten beschikbaar':' levenspunten'}`);
     }
     const armed = p.fire || p.ice || p.bubblegun || p.mounted?.kind==='seahorse';
-    const hint = p.health===0 ? p.respawn>0 ? 'Even wachten… je komt terug' : 'Geen leven meer' : !armed ? 'Pak een vuurbloem, ijsbloem of bubblegun' : p.power<1-1e-9 ? 'Schietkracht laadt op…' : 'F / X · schieten';
+    const weaponHint = p.health===0 ? p.respawn>0 ? 'Even wachten… je komt terug' : 'Geen leven meer' : !armed ? 'Pak een vuurbloem, ijsbloem of bubblegun' : p.power<1-1e-9 ? 'Schietkracht laadt op…' : 'F / X · schieten';
+    const callbacks = p.callbackState, special = p.health > 0 && !(p.respawn > 0) && CHARACTER_PROFILES[p.character]?.callbacks?.onSpecial;
+    const hint = callbacks?.error || [weaponHint, callbacks ? `Bonus: ${callbacks.bonusPoints}` : '', special ? callbacks?.specialCooldown > 0 ? `Kracht: ${Math.ceil(callbacks.specialCooldown)}s` : 'E / RB · kracht' : '', callbacks?.messageTime > 0 ? callbacks.message : ''].filter(Boolean).join(' · ');
     if (row.hint.textContent!==hint) row.hint.textContent=hint;
   });
 }

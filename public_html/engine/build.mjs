@@ -17,7 +17,7 @@ const [html, css, favicon] = await Promise.all(['index.html','engine/styles.css'
 const modules=await collectModules(new URL('./', import.meta.url));
 const assetPaths = ['engine/games/platformer3d/vendor/HavokPhysics.wasm',...model3DAssets(Object.values(CHARACTER_PROFILES),ENEMY_CATALOG),...structureAssets(),...enemyAssets(),'assets/backgrounds/worlds/wonderland/world-inspiration.png', 'assets/backgrounds/worlds/adventure/adventure-map.png', ...Object.values(CHARACTER_SHEETS), CRAZY_BACKGROUND_ASSET, ...Object.values(CHARACTER_PROFILES).map(profile => profile.portrait), 'assets/scenery/ui/logo.png', 'assets/scenery/ui/logo-transparent.png', ...Object.values(LOOK_SHEETS), ...Object.values(TERRAIN_SHEETS)];
 const assets = Object.fromEntries(await Promise.all([...new Set(assetPaths)].map(async name => [name, `data:${name.endsWith('.wasm')?'application/wasm':name.endsWith('.glb')?'model/gltf-binary':'image/png'};base64,${(await readFile(new URL(name, root))).toString('base64')}`])));
-const script = `globalThis.braviosAssets = ${JSON.stringify(assets)};\n` + bundleModules(modules);
+const script = `globalThis.braviosOffline = true;\nglobalThis.braviosAssets = ${JSON.stringify(assets)};\n` + bundleModules(modules);
 new Script(script, { filename: 'speel.html' });
 const offline = html
   .replace(/<link rel="icon" href="assets\/scenery\/ui\/favicon.svg"><link rel="stylesheet" href="engine\/styles.css(?:\?[^\"]*)?">/, () => `<link rel="icon" href="data:image/svg+xml,${encodeURIComponent(favicon)}"><style>${css}</style>`)

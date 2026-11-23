@@ -1,5 +1,6 @@
 import { CHARACTER_PROFILES } from './characters/roster.mjs';
 import { collectModules } from './build/module-graph.mjs';
+import { handleCollection } from './collection-server.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -18,15 +19,16 @@ const files = new Set([
   ...Object.values(CHARACTER_PROFILES).map(profile => profile.portrait)
 ]);
 for (const name of ['graphics-diagnostic', 'depth-backgrounds', 'swing-platforms', 'adventure-map', 'helmet-beetles', 'sea-life', 'wonder-foes', 'monsters', 'castle-fire', 'creatures']) files.add(`engine/tests/${name}.html`);
-for (const name of (await collectModules(new URL('./', import.meta.url), ['bootstrap.mjs', 'small-games.mjs', 'rhythm-game.mjs'])).keys()) files.add('engine/' + name);
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm' };
+for (const name of (await collectModules(new URL('./', import.meta.url), ['bootstrap.mjs', 'small-games.mjs', 'rhythm-game.mjs'])).keys()) files.add(path.posix.normalize('engine/' + name));
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm' };
 const port = Number(process.env.PORT || 8080);
 http.createServer(async (req, res) => {
   let name;
   try { name = decodeURIComponent(new URL(req.url, 'http://localhost').pathname.slice(1)) || 'index.html'; }
   catch { res.writeHead(400); res.end('Ongeldig adres'); return; }
+  if (name === 'engine/collection.php') { await handleCollection(req, res, process.env.BRAVIOS_DATA_DIR || path.join(root, '../data/collections')); return; }
   if (name === 'engine/room.php') { res.writeHead(503, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Gebruik mariomaker.nuidev.nl of npm run start:network om samen te spelen.' })); return; }
-  const characterFile = /^gameplay\/characters\/(?:characters\.json|[a-z][a-z0-9-]{0,39}\/character\.json|[a-z][a-z0-9-]{0,39}\/images\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+\.png)$/.test(name);
+  const characterFile = /^gameplay\/characters\/(?:characters\.json|[a-z][a-z0-9-]{0,39}\/(?:character\.json|callbacks\.js)|[a-z][a-z0-9-]{0,39}\/images\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+\.png)$/.test(name);
   const enemyFile=/^gameplay\/enemies\/(?:enemies\.json|(?:game|bosses)\/[a-z][a-z0-9-]{0,39}\/(?:enemy\.json|images\/[a-zA-Z0-9_-]+\.png))$/.test(name);
   const structureFile=/^gameplay\/(?:structures\.json|(?:platforms|obstacles|powerups|interactables)\/[a-z][a-z0-9-]{0,39}\/(?:structure\.json|images\/[a-zA-Z0-9_-]+\.png))$/.test(name);
   const modelFile=/^gameplay\/(?:characters\/[a-z][a-z0-9-]{0,39}|enemies\/(?:game|bosses)\/[a-z][a-z0-9-]{0,39})\/3d\/(?:model\.glb|previews\/(?:front|back|left|right|perspective)\.png)$/.test(name);

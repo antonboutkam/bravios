@@ -45,7 +45,11 @@ Of open een terminal in de projectmap en kies één van deze commando’s:
 | PHP 8.1+ | `php server/server.php` |
 | Node.js 18+ | `node server/server.js` of `npm start` |
 
-Eén van deze omgevingen is voldoende. Extra pakketten installeren is niet nodig. Open **http://localhost:8080** en stop met Ctrl+C. Samenspel vereist de PHP-server. Zie de [installatie-instructies](docs/student/installatie/README.md) en de [startinstructies](docs/student/starten.md) voor hulp.
+Eén van deze omgevingen is voldoende. Extra pakketten installeren is niet nodig. Open **http://localhost:8080** en stop met Ctrl+C. Samenspel vereist de PHP-server. Eigen velden en werelden worden automatisch in **Mijn velden** en **Mijn werelden** bijgewerkt. PHP en Node bewaren ook een serverkopie; Python en de offline versie bewaren alleen in de browser. Zie de [installatie-instructies](docs/student/installatie/README.md) en de [startinstructies](docs/student/starten.md) voor hulp.
+
+## Taartgooien in 3D
+
+Kies **Kleine games → Taartgooien · 3D**. Speel tegen de computer of met twee spelers op één scherm. Haal taarten bij je bakkerskar, gooi en wijk uit. Eerst zeven raak wint. [Bediening en spelregels](public_html/engine/games/cake-throw/README.md).
 
 ## 3D proberen
 

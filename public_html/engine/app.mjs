@@ -1,17 +1,18 @@
 import { updateVitalsHUD, updateHUDCounters, setHUDText, setHUDHidden, setHUDAttribute } from './vitals-hud.mjs?v=docked-hud-1';
 import { setupImageErrors } from './image-errors.mjs';
+import { loadCharacterCallbacks } from './characters/callbacks.mjs';
 import {structureProfile,structureIs,structureTiles,structureFootprint} from './structures/runtime.mjs';
 import { wonderEncounterHint } from './wonder-foes.mjs?v=1';
 import { WONDERLAND_FIELDS, wonderlandState, wonderlandUnlocked, completeWonderland, wonderlandLevel, prepareWonderlandGame } from './wonderland.mjs?v=3';
 import { setupWonderlandMap } from './wonderland-map.mjs?v=2';
 import { wonderlandStatus } from './wonder-magic.mjs?v=14';
-import { setupSmallGames } from './games/shell.mjs';
+import { setupSmallGames } from './games/shell.mjs?v=cake-3d-1';
 import { drawMiniPreview } from './games/preview.mjs';
 import { createPlatformEncounters } from './games/platformer/encounters.mjs';
 import { participantRoster, CHARACTER_PROFILES, DEFAULT_CHARACTER, nextCharacter } from './characters/roster.mjs';
-import { normalizeWorlds, saveWorldNodeLevel, getOrCreateExampleWorld3D } from './worlds.mjs?v=babylon-1';
+import { normalizeWorlds, saveWorldNodeLevel, getOrCreateExampleWorld3D } from './worlds.mjs?v=collections-1';
 import { requires3D, canEnter3D, assert3DCharacter } from './games/platformer3d/access.mjs';
-import { setupWorldEditor } from './world-editor.mjs?v=babylon-1';
+import { setupWorldEditor } from './world-editor.mjs?v=collections-1';
 import { ADVENTURE_FIELDS, adventureState, adventureUnlocked, completeAdventure, adventureLevel, prepareAdventureGame } from './adventurers.mjs?v=5';
 import { setupAdventureMap } from './adventure-map.mjs?v=4';
 import { isWaterTheme } from './sea-life.mjs?v=4';
@@ -24,9 +25,11 @@ import { CAMPAIGN_FIELDS, CRAZY_FIELDS, TOGETHER_FIELDS, campaignLevel, crazyLev
 import { drawTile, drawWorld, preview, CHARACTER_NAMES, assetURL, loadCrazyBackgrounds, hero, releasePlatformSprites } from './art.mjs?v=64';
 import { loadLook } from './look.mjs?v=9';
 import { normalizeLibrary, savedLevelDetail } from './storage.mjs?v=20';
+import { CollectionSync, mergeCollections } from './collection-client.mjs';
+import { publicURL } from './paths.mjs';
 import { createCoopGame, stepCoopGame, packCoopGame, unpackCoopGame, remoteControls } from './coop.mjs?v=health-power-1';
 import { roomRequest, RoomConnection } from './network.mjs';
-import { RenderQuality, FrameRateMeter, SceneEffects, followCamera, keyCameraFrame, viewportRenderSize, viewportWorldPoint } from './presentation.mjs?v=12';
+import { RenderQuality, FrameRateMeter, SceneEffects, followCamera, keyCameraFrame, viewportRenderSize, viewportWorldPoint, regularGameZoom } from './presentation.mjs?v=13';
 import { GamepadInput, emptyGamepadControls } from './gamepad.mjs?v=5';
 import { BackgroundRaster, DepthPanelCache } from './depth-backgrounds.mjs?v=9';
 
@@ -45,16 +48,17 @@ let adventure = adventureState(), adventureIndex = null, adventureLaunching = fa
 let worlds = [], selectedWorldId = null, worldEditing = null, worldPlaying = null, worldDraftBackup = null;
 let playLevel = null, campaignIndex = null, campaignProgress = 0, campaignCompleted = false;
 let campaignKind = 'regular', crazyProgress = 0, crazyCompleted = false;
+let gameZoom = 110;
 const currentFields = () => campaignKind === 'crazy' ? CRAZY_FIELDS : CAMPAIGN_FIELDS;
 const currentCampaignLevel = index => campaignKind === 'crazy' ? crazyLevel(index) : campaignLevel(index);
 function activeLevel() { return game?.sceneLevel || networkLevel || playLevel || level; }
 let game = null, hover = null, stroke = null, paletteDrag = null, undoStack = [], redoStack = [], toastTimer, saveTimer, audioContext;
-let input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false }, keys = new Set(), touchKeys = new Map();
+let input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false, special: false }, keys = new Set(), touchKeys = new Map();
 const controller = new GamepadInput();
 const secondMiniController = new GamepadInput();
 let controllerInput = emptyGamepadControls();
 const pendingActions = new Set();
-const actionKeys = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump', KeyF: 'fire', KeyX: 'fire', KeyR: 'mount', ArrowDown: 'pipe', KeyS: 'pipe' };
+const actionKeys = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump', KeyF: 'fire', KeyX: 'fire', KeyR: 'mount', ArrowDown: 'pipe', KeyS: 'pipe', KeyE: 'special' };
 let lastTime = 0, accumulator = 0, pendingConfirmation = null, lastHudTime = -1;
 const sceneEffects = new SceneEffects();
 const frameRateMeter = new FrameRateMeter(), frameRateOutput = $('#frame-rate');
@@ -100,19 +104,26 @@ document.addEventListener('visibilitychange', () => { frameRateMeter.reset(); re
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 let cameraPosition = 0, keyCameraOrigin = null, viewedRoom = null;
 let storageProblem = false;
+let currentLevelId = null, standaloneDraft = true, worldDraftBackupId = null, restoredDraft = false;
+let collectionSync = null, collectionStatus = '', collectionStarted = false;
+let localCollectionSaved = true;
+const worldVersions = new Map();
 let character = DEFAULT_CHARACTER, customCharacters = [], selectedCustomCharacter = null;
 const selectedAppearance = () => customCharacters.find(entry => entry.id === selectedCustomCharacter)?.appearance || null;
 const characterPortraits = {};
 let room = null, networkLevel = null, remotePacket = {}, remoteTaps = {}, guestPresent = false, roomBusy = false;
-const tapCounts = { jump: 0, fire: 0, mount: 0, pipe: 0 };
+const tapCounts = { jump: 0, fire: 0, mount: 0, pipe: 0, special: 0 };
 let lastRoomFrame = -1;
 try {
   const raw = localStorage.getItem(STORAGE);
   if (raw) {
     const stored = JSON.parse(raw);
-    level = validateLevel(stored.draft);
-    if (!Array.isArray(stored.levels)) throw new Error('Ongeldige collectie');
+    gameZoom = regularGameZoom(stored.gameZoom);
+    try { level = validateLevel(stored.draft); restoredDraft = true; } catch { storageProblem = true; }
     library = normalizeLibrary(stored.levels);
+    currentLevelId = library.some(entry => entry.id === stored.currentLevelId) ? stored.currentLevelId : null;
+    standaloneDraft = stored.standaloneDraft !== false;
+    worldDraftBackupId = stored.worldDraftBackupId || null;
     if (Object.hasOwn(CHARACTER_NAMES, stored.character)) character = stored.character;
     if (Number.isInteger(stored.campaignProgress) && stored.campaignProgress >= 0 && stored.campaignProgress < CAMPAIGN_FIELDS.length) campaignProgress = stored.campaignProgress;
     customCharacters = normalizeCharacters(stored.customCharacters);
@@ -124,14 +135,65 @@ try {
     wonderland = wonderlandState(stored.wonderland);
     worlds = normalizeWorlds(stored.worlds);
     selectedWorldId = worlds.find(w => w.id === stored.selectedWorldId)?.id || worlds[0]?.id || null;
-    if (stored.worldEditing && worlds.find(w => w.id === stored.worldEditing.worldId)?.nodes.some(n => n.id === stored.worldEditing.nodeId && n.level)) {
+    if (restoredDraft && stored.worldEditing && worlds.find(w => w.id === stored.worldEditing.worldId)?.nodes.some(n => n.id === stored.worldEditing.nodeId && n.level)) {
       try {
         worldDraftBackup = validateLevel(stored.worldDraftBackup);
         worldEditing = { worldId: stored.worldEditing.worldId, nodeId: stored.worldEditing.nodeId };
+        standaloneDraft = false;
       } catch { worldDraftBackup = null; }
     }
   }
 } catch { storageProblem = true; }
+for (const world of worlds) worldVersions.set(world.id, JSON.stringify(world));
+if (restoredDraft && !worldEditing && standaloneDraft) {
+  currentLevelId ||= library.find(entry => JSON.stringify(entry.level) === JSON.stringify(level))?.id || null;
+  if (!currentLevelId && library.length < 100) {
+    currentLevelId = globalThis.crypto?.randomUUID?.() || `field-${Date.now()}`;
+    library.unshift({ id: currentLevelId, saved: Date.now(), level: clone(level) });
+  }
+}
+function setCollectionStatus(state, error = '') {
+  collectionStatus = state === 'saved' ? localCollectionSaved ? 'Bewaard op dit apparaat en op de server' : 'Op de server bewaard · lokale opslag is vol of geblokkeerd' : state === 'saving' ? localCollectionSaved ? 'Op dit apparaat bewaard · server bewaren…' : 'Server bewaren… · lokale opslag is vol of geblokkeerd' : localCollectionSaved ? `Alleen op dit apparaat bewaard · ${error || 'offline'}` : `Bewaren lukt niet · ${error || 'download je veld of wereld'}`;
+  for (const output of $$('[data-collection-status]')) output.textContent = collectionStatus;
+  $('#save-status').textContent = collectionStatus;
+}
+function collectionData() { return { levels: library, worlds }; }
+async function startCollectionSync() {
+  if (collectionStarted) return;
+  collectionStarted = true;
+  if (!/^https?:$/.test(location.protocol) || /\/speel\.html$/.test(location.pathname)) { setCollectionStatus('offline'); return; }
+  try {
+    const key = 'bravios-collection-key';
+    let token = localStorage.getItem(key);
+    if (!/^[a-f0-9]{64}$/.test(token || '')) {
+      token = [...crypto.getRandomValues(new Uint8Array(32))].map(n => n.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(key, token);
+    }
+    collectionSync = new CollectionSync({ endpoint: publicURL('engine/collection.php'), token, status: setCollectionStatus });
+    const fetched = await collectionSync.start(collectionData());
+    // Include edits made while the read request was in flight before comparing dates.
+    syncCollectionDrafts();
+    const merged = mergeCollections(collectionData(), fetched);
+    // A bad remote entry must never discard good local entries.
+    if (normalizeLibrary(merged.levels).length !== merged.levels.length || normalizeWorlds(merged.worlds).length !== merged.worlds.length) throw new Error('De servercollectie bevat ongeldige gegevens. Download eerst een kopie.');
+    library = normalizeLibrary(merged.levels); worlds = normalizeWorlds(merged.worlds);
+    if (currentLevelId && !worldEditing) level = clone(library.find(entry => entry.id === currentLevelId)?.level || level);
+    if (worldEditing) level = clone(worlds.find(w => w.id === worldEditing.worldId)?.nodes.find(n => n.id === worldEditing.nodeId)?.level || level);
+    selectedWorldId = worlds.find(w => w.id === selectedWorldId)?.id || worlds[0]?.id || null;
+    worldVersions.clear(); for (const world of worlds) worldVersions.set(world.id, JSON.stringify(world));
+    persist(); worldEditor.refreshMenu(); updateUI();
+  } catch (error) { if (collectionSync) collectionSync.ready = false; setCollectionStatus('error', error.message); }
+}
+function saveCurrentField() {
+  if (worldEditing || !standaloneDraft) return true;
+  let entry = library.find(item => item.id === currentLevelId);
+  if (!entry) {
+    if (library.length >= 100) { toast('Mijn velden is vol. Download of verwijder eerst een veld. Je huidige bouwveld blijft lokaal bewaard.'); return false; }
+    currentLevelId = globalThis.crypto?.randomUUID?.() || `field-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    entry = { id: currentLevelId, saved: Date.now(), level: clone(level) }; library.unshift(entry);
+  } else if (JSON.stringify(entry.level) !== JSON.stringify(level)) { entry.level = clone(level); entry.saved = Date.now(); }
+  return true;
+}
 function toast(message) {
   clearTimeout(toastTimer); $('#toast').textContent = message; $('#toast').hidden = false;
   toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 4300);
@@ -139,10 +201,17 @@ function toast(message) {
 function persist() {
   clearTimeout(saveTimer);
   try {
-    syncWorldDraft();
-    localStorage.setItem(STORAGE, JSON.stringify({ draft: level, levels: library, character, customCharacters, selectedCustomCharacter, campaignProgress, campaignCompleted, crazyProgress, crazyCompleted, adventure, wonderland, worlds, selectedWorldId, worldEditing, worldDraftBackup }));
-    $('#save-status').innerHTML = '<span class="status-dot"></span> Automatisch bewaard op dit apparaat';
-    return true;
+    syncCollectionDrafts();
+    try {
+      localStorage.setItem(STORAGE, JSON.stringify({ draft: level, levels: library, currentLevelId, standaloneDraft, worldDraftBackupId, character, customCharacters, selectedCustomCharacter, campaignProgress, campaignCompleted, crazyProgress, crazyCompleted, adventure, wonderland, worlds, selectedWorldId, worldEditing, worldDraftBackup, gameZoom }));
+      localCollectionSaved = true;
+    } catch {
+      localCollectionSaved = false;
+      setCollectionStatus('error', collectionSync?.ready ? 'Server bewaren…' : 'download je veld of wereld');
+    }
+    $('#save-status').textContent = collectionStatus || 'Bewaard op dit apparaat';
+    if (collectionSync?.ready) void collectionSync.save(collectionData());
+    return localCollectionSaved || !!collectionSync?.ready;
   } catch {
     $('#save-status').textContent = worlds.length ? 'Bewaren lukt niet · download je wereld en level' : 'Bewaren lukt niet · download je level';
     toast(worlds.length ? 'Bewaren in deze browser lukt niet. Download je wereld en je losse level als bestanden.' : 'Bewaren in deze browser lukt niet. Download je level als bestand.');
@@ -153,15 +222,23 @@ function scheduleSave() {
   $('#save-status').textContent = 'Even bewaren…'; clearTimeout(saveTimer); saveTimer = setTimeout(persist, 350);
 }
 function remember() { undoStack.push(clone(level)); if (undoStack.length > 70) undoStack.shift(); redoStack = []; }
-function changed() { updateUI(); scheduleSave(); }
+function changed(saveField = true) { if (saveField) { standaloneDraft = !worldEditing; saveCurrentField(); } updateUI(); scheduleSave(); }
 function syncWorldDraft() {
   if (!worldEditing) return;
   const world = worlds.find(w => w.id === worldEditing.worldId);
   if (world?.nodes.some(n => n.id === worldEditing.nodeId)) saveWorldNodeLevel(world, worldEditing.nodeId, level);
 }
-function replaceLevel(next) {
-  syncWorldDraft(); worldEditing = null; worldDraftBackup = null;
-  beltStart = null; stopGame(); remember(); level = clone(next); hover = null; scroll.scrollLeft = 0; changed(); scroll.scrollTop = worldDisplayHeight;
+function syncCollectionDrafts() {
+  syncWorldDraft();
+  for (const world of worlds) {
+    if (worldVersions.get(world.id) !== JSON.stringify(world)) world.updated = Date.now();
+    worldVersions.set(world.id, JSON.stringify(world));
+  }
+}
+function replaceLevel(next, { id = null, standalone = true } = {}) {
+  persist(); worldEditing = null; worldDraftBackup = null;
+  currentLevelId = id; standaloneDraft = standalone;
+  beltStart = null; stopGame(); remember(); level = clone(next); hover = null; scroll.scrollLeft = 0; changed(standalone); scroll.scrollTop = worldDisplayHeight;
 }
 function resizeWorldRaster() {
   const pixelsPerUnit = worldDisplayWidth / (activeLevel().width * TILE);
@@ -179,16 +256,18 @@ function updateUI() {
   $('#world-menu-play').disabled = !!room || roomBusy || !worlds.find(w => w.id === selectedWorldId)?.nodes.some(n => n.level);
   const displayLevel = activeLevel();
   // Keep characters and tiles at the same size when the HUD reserves screen space.
-  const pixelsPerUnit = $('#world-shell').clientHeight / (ROWS * TILE);
+  const pixelsPerUnit = $('#world-shell').clientHeight / (ROWS * TILE) * (game && campaignIndex !== null && campaignKind === 'regular' ? gameZoom / 100 : 1);
   worldDisplayWidth = displayLevel.width * TILE * pixelsPerUnit;
   worldDisplayHeight = displayLevel.tiles.length * TILE * pixelsPerUnit;
   worldSpace.style.width = `${Math.max(scroll.clientWidth, worldDisplayWidth)}px`;
   worldSpace.style.height = `${Math.max(scroll.clientHeight, worldDisplayHeight)}px`;
   resizeWorldRaster();
   $('#level-name').value = level.name;
-  $('#level-width').value = String(level.width);
-  $('#level-height').value = String(level.tiles.length - (level.undergroundDepth || 0));
-  $('#level-depth').value = String(level.undergroundDepth || 0);
+  for (const [selector, value] of [['#level-width', level.width], ['#level-height', level.tiles.length - (level.undergroundDepth || 0)], ['#level-depth', level.undergroundDepth || 0]]) {
+    const select = $(selector);
+    if (![...select.options].some(option => Number(option.value) === value)) select.add(new Option(`${value} blokjes`, String(value)));
+    select.value = String(value);
+  }
   for (const option of $('#level-height').options) option.disabled = Number(option.value) + (level.undergroundDepth || 0) > 64;
   for (const option of $('#level-depth').options) option.disabled = Number(option.value) + level.tiles.length - (level.undergroundDepth || 0) > 64;
   $('#world-height').textContent = level.tiles.length;
@@ -197,7 +276,7 @@ function updateUI() {
   $('#vertical-position-slider').value = scroll.scrollTop;
   $('#world-width').textContent = level.width;
   $('#theme-label').textContent = THEMES[level.theme];
-  $('#library-count').textContent = library.length;
+  $('#library-count').textContent = library.length + worlds.reduce((count, world) => count + world.nodes.filter(node => node.level).length, 0);
   $('#campaign-progress').textContent = campaignCompleted ? 'Alle 10 velden uitgespeeld! Speel ze gerust opnieuw.' : `Verder bij veld ${campaignProgress + 1} van 10`;
   $('#crazy-progress').textContent = crazyCompleted ? 'Alle 10 gekke velden uitgespeeld! Speel ze gerust opnieuw.' : `Verder bij gek veld ${crazyProgress + 1} van 10`;
   for (const button of $$('[data-campaign], [data-crazy], [data-together], [data-together-room], #campaign-start, #crazy-start, #adventure-start')) button.disabled = !!game || roomBusy;
@@ -533,6 +612,19 @@ function toggleInterface() {
 }
 $('#interface-button').addEventListener('click', toggleInterface);
 $('#menu-button').addEventListener('click', () => { pauseForDialog(); $('#settings-dialog').showModal(); });
+$('#game-zoom').value = String(gameZoom);
+$('#game-zoom').addEventListener('change', event => {
+  gameZoom = regularGameZoom(Number(event.target.value));
+  event.target.value = String(gameZoom);
+  persist();
+  updateUI();
+  if (game && campaignIndex !== null && campaignKind === 'regular') {
+    const scale = worldDisplayWidth / (activeLevel().width * TILE);
+    cameraPosition = followCamera(scroll.scrollLeft, game.player, scale, scroll.clientWidth, worldDisplayWidth, 0, true);
+    scroll.scrollLeft = cameraPosition;
+    scroll.scrollTop = Math.max(0, Math.min(worldDisplayHeight - scroll.clientHeight, (game.player.y + game.player.h / 2) * scale - scroll.clientHeight * .6));
+  }
+});
 function closeMenu() { $('#settings-dialog').close(); }
 function confirmAction(title, copy, action, label = 'Doorgaan') {
   closeMenu();
@@ -590,51 +682,88 @@ $('#level-depth').addEventListener('change', () => {
 });
 $('#random-level-button').addEventListener('click', () => {
   if (game || room) return;
-  replaceLevel(randomLevel(Number($('#new-level-width').value), Number($('#new-level-height').value), $('#new-level-theme').value));
+  let next;
+  try { next = resizeUnderground(randomLevel(Number($('#new-level-width').value), Number($('#new-level-height').value), $('#new-level-theme').value), Number($('#new-level-underground').value)); }
+  catch (error) { toast(error.message); return; }
+  replaceLevel(next);
   makePalette(); toast('Je willekeurige veld is klaar! Je vorige veld staat bij Ongedaan maken.');
 });
 $('#new-level-form').addEventListener('submit', event => {
   event.preventDefault();
   if (game || room) return;
-  const next = blankLevel(Number($('#new-level-width').value), Number($('#new-level-height').value));
+  let next;
+  try { next = resizeUnderground(blankLevel(Number($('#new-level-width').value), Number($('#new-level-height').value)), Number($('#new-level-underground').value)); }
+  catch (error) { toast(error.message); return; }
   next.name = $('#new-level-name').value.trim() || 'Mijn nieuwe avontuur';
   next.theme = $('#new-level-theme').value;
-  confirmAction('Een nieuw avontuur?', `Je maakt ‘${next.name}’ in ${THEMES[next.theme]} van ${next.width} × ${next.tiles.length} blokjes. Je huidige veld kun je terughalen met Ongedaan maken.`, () => {
+  confirmAction('Een nieuw avontuur?', `Je maakt ‘${next.name}’ in ${THEMES[next.theme]} van ${next.width} × ${next.tiles.length} blokjes. Je huidige veld blijft in Mijn velden staan.`, () => {
     replaceLevel(seedTerrainLevel(next)); makePalette(); toast('Je nieuwe veld is klaar. Veel bouwplezier!');
   }, 'Maak nieuw veld');
 });
 $('#general-help-button').addEventListener('click', () => $('#help-button').click());
 for (const button of $$('[data-example]')) button.addEventListener('click', () => confirmAction('Dit voorbeeld verbouwen?', 'Het voorbeeld wordt je nieuwe bouwveld. Je vorige veld kun je terughalen met Ongedaan maken.', () => { replaceLevel(seedTerrainLevel(exampleLevel(button.dataset.example))); makePalette(); toast('Veel bouwplezier! Maak dit voorbeeld helemaal van jullie.'); }, 'Open voorbeeld'));
 $('#save-button').addEventListener('click', () => {
-  if (library.length >= 100) { toast('Je hebt 100 levels. Download of verwijder eerst een level.'); return; }
-  const entry = { id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`, saved: Date.now(), level: clone(level) };
-  library.unshift(entry); if (!persist()) { library.shift(); return; }
+  if (!worldEditing) standaloneDraft = true;
+  if (!saveCurrentField() || !persist()) return;
   closeMenu();
-  updateUI(); toast(`‘${level.name}’ staat nu in Mijn levels!`);
+  updateUI(); toast(`‘${level.name}’ is bijgewerkt in ${worldEditing ? 'Mijn werelden' : 'Mijn velden'}.`);
 });
 function showLibrary() {
   closeMenu();
   library = normalizeLibrary(library);
   pauseForDialog(); const list = $('#library-list'); list.replaceChildren();
-  if (!library.length) { const empty = document.createElement('p'); empty.className = 'dialog-note'; empty.textContent = 'Nog geen levels. Bouw iets moois en klik op Bewaar level!'; list.append(empty); }
-  for (const entry of library) {
+  persist();
+  const worldFields = worlds.flatMap(world => world.nodes.filter(node => node.level).map(node => ({ id: `${world.id}:${node.id}`, level: node.level, world, node, saved: world.updated || Date.now() })));
+  if (!library.length && !worldFields.length) { const empty = document.createElement('p'); empty.className = 'dialog-note'; empty.textContent = 'Nog geen eigen velden. Open de levelbouwer en begin met bouwen. Je veld wordt automatisch bewaard.'; list.append(empty); }
+  for (const entry of [...library, ...worldFields]) {
     const row = document.createElement('div'); row.className = 'library-row';
     const info = document.createElement('div'), name = document.createElement('strong'), detail = document.createElement('small');
     name.textContent = entry.level.name;
-    detail.textContent = `${THEMES[entry.level.theme]} · ${savedLevelDetail(entry)}`;
+    detail.textContent = `${entry.world ? entry.world.name + ' · ' : ''}${entry.level.kind === 'platformer3d' ? '3D' : THEMES[entry.level.theme]} · ${savedLevelDetail(entry)}`;
     info.append(name, detail);
     const actions = document.createElement('div'); actions.className = 'library-actions';
-    const load = document.createElement('button'); load.className = 'button'; load.textContent = 'Open'; load.setAttribute('aria-label', `Open ${entry.level.name}`);
-    load.addEventListener('click', () => { $('#library-dialog').close(); replaceLevel(entry.level); makePalette(); toast('Level geopend. Klaar om te spelen of te verbouwen!'); });
+    const load = document.createElement('button'); load.className = 'button'; load.textContent = 'Bewerken'; load.setAttribute('aria-label', `Bewerk ${entry.level.name}`);
+    load.addEventListener('click', () => { $('#library-dialog').close(); if (entry.world) { openWorldMap('edit', entry.node.id, entry.world.id); } else { replaceLevel(entry.level, { id: entry.id }); makePalette(); } });
+    const play = document.createElement('button'); play.className = 'button primary'; play.textContent = 'Spelen'; play.setAttribute('aria-label', `Speel ${entry.level.name}`);
+    play.addEventListener('click', () => { $('#library-dialog').close(); chooseStartingCharacter(() => { if (entry.world) playWorldField(entry.world, entry.node); else { replaceLevel(entry.level, { id: entry.id }); makePalette(); startGame(); } }, { require3D: requires3D(entry.world) }); });
     const remove = document.createElement('button'); remove.className = 'icon-button'; remove.textContent = '×'; remove.setAttribute('aria-label', `Verwijder ${entry.level.name}`);
     remove.addEventListener('click', () => {
-      $('#library-dialog').close(); confirmAction('Dit level verwijderen?', `‘${entry.level.name}’ verdwijnt uit Mijn levels. Een gedownload bestand blijft gewoon bestaan.`, () => { const previous = library; library = library.filter(item => item.id !== entry.id); if (!persist()) library = previous; updateUI(); showLibrary(); }, 'Verwijder');
+      $('#library-dialog').close(); confirmAction('Dit veld verwijderen?', `‘${entry.level.name}’ verdwijnt uit Mijn velden. Een gedownload bestand blijft bestaan.`, () => { const previous = library; library = library.filter(item => item.id !== entry.id); if (!persist()) library = previous; else if (currentLevelId === entry.id) { currentLevelId = null; standaloneDraft = false; persist(); } updateUI(); showLibrary(); }, 'Verwijder');
     });
-    actions.append(load, remove); row.append(info, actions); list.append(row);
+    actions.append(play, load); if (!entry.world) actions.append(remove);
+    if (entry.level.kind !== 'platformer3d') { const image = document.createElement('canvas'); image.width = 320; image.height = 140; image.className = 'library-preview'; image.setAttribute('aria-hidden', 'true'); preview(image, entry.level, { focusStart: true }); row.append(image); }
+    row.append(info, actions); list.append(row);
   }
   $('#library-dialog').showModal();
 }
 $('#library-button').addEventListener('click', showLibrary);
+function showWorldLibrary() {
+  closeMenu(); pauseForDialog(); persist();
+  const list = $('#world-library-list'); list.replaceChildren();
+  if (!worlds.length) { const empty = document.createElement('p'); empty.className = 'dialog-note'; empty.textContent = 'Nog geen eigen werelden. Kies Bouw een wereld op het startscherm.'; list.append(empty); }
+  for (const world of worlds) {
+    const row = document.createElement('div'); row.className = 'library-row';
+    const info = document.createElement('div'), name = document.createElement('strong'), detail = document.createElement('small');
+    name.textContent = world.name; detail.textContent = `${world.nodes.filter(n => n.level).length} ingerichte velden · ${world.links.length} verbindingen`;
+    info.append(name, detail);
+    const actions = document.createElement('div'); actions.className = 'library-actions';
+    for (const [mode, label] of [['play', 'Spelen'], ['edit', 'Bewerken']]) {
+      const button = document.createElement('button'); button.className = `button${mode === 'play' ? ' primary' : ''}`; button.textContent = label; button.setAttribute('aria-label', `${label} ${world.name}`);
+      button.disabled = mode === 'play' && !world.nodes.some(n => n.level);
+      button.addEventListener('click', () => { $('#world-library-dialog').close(); const open = () => openWorldMap(mode, null, world.id); if (mode === 'play') chooseStartingCharacter(open, { require3D: requires3D(world) }); else open(); }); actions.append(button);
+    }
+    row.append(info, actions); list.append(row);
+  }
+  $('#world-library-dialog').showModal();
+}
+$('#world-library-button').addEventListener('click', showWorldLibrary);
+for (const button of $$('[data-collection-retry]')) button.addEventListener('click', async () => {
+  if (!collectionSync?.ready) { collectionStarted = false; await startCollectionSync(); }
+  else await collectionSync.save(collectionData());
+});
+window.addEventListener('online', () => { if (collectionSync?.ready) void collectionSync.save(collectionData()); else { collectionStarted = false; void startCollectionSync(); } });
+window.addEventListener('pagehide', persist);
+document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); });
 $('#help-button').addEventListener('click', () => { closeMenu(); pauseForDialog(); $('#help-dialog').showModal(); });
 for (const button of $$('[data-close]')) button.addEventListener('click', () => button.closest('dialog').close());
 for (const dialog of $$('dialog')) dialog.addEventListener('click', event => { if (event.target === dialog) { const box = dialog.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close(); } });
@@ -667,7 +796,7 @@ function playSound(event) {
     oscillator.connect(gain); gain.connect(audioContext.destination); oscillator.start(at); oscillator.stop(at + .15);
   });
 }
-function resetInput() { controllerInput = emptyGamepadControls(); keys.clear(); touchKeys.clear(); pendingActions.clear(); input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false }; }
+function resetInput() { controllerInput = emptyGamepadControls(); keys.clear(); touchKeys.clear(); pendingActions.clear(); input = { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false, special: false }; }
 function queueAction(action) {
   if (action === 'left' || action === 'right') pendingActions.delete(action === 'left' ? 'right' : 'left');
   pendingActions.add(action);
@@ -677,9 +806,13 @@ function updateInput() {
   const touches = [...touchKeys.values()];
   input = { left: keys.has('ArrowLeft') || keys.has('KeyA') || touches.includes('left'), right: keys.has('ArrowRight') || keys.has('KeyD') || touches.includes('right'), jump: keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW') || touches.includes('jump'), run: keys.has('ShiftLeft') || keys.has('ShiftRight') || touches.includes('run'), fire: keys.has('KeyF') || keys.has('KeyX') || touches.includes('fire'), mount: keys.has('KeyR') || keys.has('ArrowDown') || touches.includes('mount'), pipe: keys.has('ArrowDown') || keys.has('KeyS') || touches.includes('pipe') };
   for (const action of Object.keys(controllerInput)) input[action] ||= controllerInput[action];
+  input.special ||= keys.has('KeyE') || touches.includes('special');
 }
 function updatePowers() {
   const p = game?.player;
+  const special = !!CHARACTER_PROFILES[p?.character || character]?.callbacks?.onSpecial;
+  setHUDHidden($('#touch-special'), !special);
+  setHUDText($('#touch-special'), p?.callbackState?.specialCooldown > 0 ? `Kracht ${Math.ceil(p.callbackState.specialCooldown)}s` : 'Kracht E');
   const powers = [];
   if (p?.helperGift) powers.push(`Cadeautje van je paddenstoelenvriend: ${ITEMS.find(item => item.id === p.helperGift.id)?.name || 'beloning'}!`);
   if (p?.star > 0) powers.push(`★ Onoverwinnelijk: ${Math.ceil(p.star)} s`);
@@ -876,7 +1009,9 @@ const worldEditor = setupWorldEditor({
   editField: (world, node) => {
     if(node.level.kind==='platformer3d'){openWorld3D(world,node,'edit');return;}
     const backup = worldDraftBackup || clone(level);
-    replaceLevel(node.level);
+    const backupId = worldDraftBackup ? worldDraftBackupId : currentLevelId;
+    replaceLevel(node.level, { standalone: false });
+    worldDraftBackupId = backupId;
     worldDraftBackup = backup; worldEditing = { worldId: world.id, nodeId: node.id };
     undoStack = []; redoStack = []; makePalette(); updateUI(); persist();
     toast(`Je richt ‘${node.level.name}’ in. Gebruik Wereldkaart om terug te gaan.`);
@@ -884,15 +1019,16 @@ const worldEditor = setupWorldEditor({
   },
   playField: playWorldField
 });
-function openWorldMap(mode = 'edit') {
+function openWorldMap(mode = 'edit', nodeId = null, worldId = null) {
   if (room || roomBusy) { toast('Verlaat eerst de speelkamer om je wereld te openen.'); return; }
   const context = worldPlaying || worldEditing;
   syncWorldDraft();
   if (worldEditing && worldDraftBackup) {
-    const backup = clone(worldDraftBackup); replaceLevel(backup); undoStack = []; redoStack = []; makePalette();
+    const backup = clone(worldDraftBackup); replaceLevel(backup, { id: worldDraftBackupId, standalone: !!worldDraftBackupId }); worldDraftBackupId = null; undoStack = []; redoStack = []; makePalette();
   } else stopGame();
-  if (context) selectedWorldId = context.worldId;
-  closeMenu(); persist(); updateUI(); worldEditor.open(mode);
+  if (worldId) selectedWorldId = worldId;
+  else if (context && !nodeId) selectedWorldId = context.worldId;
+  closeMenu(); persist(); updateUI(); worldEditor.open(mode, selectedWorldId, nodeId);
 }
 $('#world-menu-edit').addEventListener('click',() => openWorldMap('edit'));
 $('#world-menu-play').addEventListener('click',() => openWorldMap('play'));
@@ -944,6 +1080,8 @@ for(const button of homeButtons())button.addEventListener('click',()=>{
     }catch(error){toast(error.message);openHome();}
   }
   else if(kind==='worlds')openWorldMap('edit');
+  else if(kind==='my-fields')showLibrary();
+  else if(kind==='my-worlds')showWorldLibrary();
   else if(kind==='regular')startCampaign(campaignCompleted?0:campaignProgress,'regular',false);
   else if(kind==='crazy')startCampaign(crazyCompleted?0:crazyProgress,'crazy',false);
   else if(kind==='minis')smallGames.open();
@@ -953,7 +1091,7 @@ for(const button of homeButtons())button.addEventListener('click',()=>{
     if(kind==='together') { const section=$('[data-section="together"]').closest('details');section.open=true;section.parentElement.closest('details').open=true; }
   }
   };
-  if(['wonderland','adventure','regular','crazy','minis','worlds','together','three'].includes(kind))chooseStartingCharacter(launch,{require3D:kind==='three'});
+  if(['wonderland','adventure','regular','crazy','minis','together','three'].includes(kind))chooseStartingCharacter(launch,{require3D:kind==='three'});
   else launch();
 });
 const wonderlandMap = setupWonderlandMap({state:()=>wonderland,save:persist,launch:startWonderland});
@@ -1080,7 +1218,7 @@ async function enterRoom(action, code = '', sourceLevel = level) {
     const result = await roomRequest(action === 'create' ? { action, level: sharedLevel, character } : { action, code });
     networkLevel = action === 'create' ? sharedLevel : validateLevel(result.level);
     guestPresent = false; remotePacket = {}; remoteTaps = {}; lastRoomFrame = -1;
-    Object.assign(tapCounts, { jump: 0, fire: 0, mount: 0, pipe: 0 });
+    Object.assign(tapCounts, { jump: 0, fire: 0, mount: 0, pipe: 0, special: 0 });
     game = result.snapshot ? unpackCoopGame(result.snapshot) : createCoopGame(networkLevel, action === 'create' ? character : result.character);
     if (!result.snapshot) game.state = 'waiting';
     if (action === 'join') game.player = game.players[1];
@@ -1123,7 +1261,7 @@ document.addEventListener('keydown', event => {
   if (!event.ctrlKey && !event.metaKey && event.code === 'KeyH') { toggleInterface(); return; }
   if (event.code === 'Escape') { togglePause(); return; }
   if (game) {
-    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyF', 'KeyX', 'KeyR', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyF', 'KeyX', 'KeyR', 'KeyE', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
       event.preventDefault();
       if (game.state === 'playing' && !keys.has(event.code) && actionKeys[event.code]) queueAction(actionKeys[event.code]);
       if (game.state === 'playing' && !keys.has(event.code) && event.code === 'ArrowDown') queueAction('mount');
@@ -1139,7 +1277,7 @@ document.addEventListener('keydown', event => {
 });
 document.addEventListener('keyup', event => { keys.delete(event.code); updateInput(); });
 for (const button of $$('[data-key]')) {
-  button.addEventListener('pointerdown', event => { if (!game || game.state !== 'playing') return; event.preventDefault(); button.setPointerCapture(event.pointerId); touchKeys.set(event.pointerId, button.dataset.key); if (['left', 'right', 'jump', 'fire', 'mount', 'pipe'].includes(button.dataset.key)) queueAction(button.dataset.key); updateInput(); });
+  button.addEventListener('pointerdown', event => { if (!game || game.state !== 'playing') return; event.preventDefault(); button.setPointerCapture(event.pointerId); touchKeys.set(event.pointerId, button.dataset.key); if (['left', 'right', 'jump', 'fire', 'mount', 'pipe', 'special'].includes(button.dataset.key)) queueAction(button.dataset.key); updateInput(); });
   const release = event => { touchKeys.delete(event.pointerId); updateInput(); };
   button.addEventListener('pointerup', release); button.addEventListener('pointercancel', release); button.addEventListener('lostpointercapture', release);
 }
@@ -1255,7 +1393,7 @@ async function startIllustratedGame() {
   $('#loading-retry').hidden = true;
   $('#loading-status').textContent = 'Je avontuur wordt klaargezet…';
   try {
-    await Promise.all([loadLook(), loadCrazyBackgrounds(), loadCharacterArt()]);
+    await Promise.all([loadLook(), loadCrazyBackgrounds(), loadCharacterArt(), loadCharacterCallbacks(), startCollectionSync()]);
     renderResolution = 2;
     for (const name of Object.keys(CHARACTER_PROFILES)) characterPortraits[name] = assetURL(CHARACTER_PROFILES[name].portrait);
     for (const button of $$('[data-character]')) button.querySelector('img').src = characterPortraits[button.dataset.character];
@@ -1265,6 +1403,7 @@ async function startIllustratedGame() {
     preview($('#home-regular-preview'), campaignLevel(0), { focusStart:true });
     preview($('#home-crazy-preview'), crazyLevel(0), { focusStart:true });
     preview($('#home-together-preview'), togetherLevel(), { focusStart:true });
+    preview($('#home-builder-preview'), level, { focusStart:true });
     drawMiniPreview($('#home-mini-preview').getContext('2d'),480,200);
     preview($('#featured-preview'), campaignLevel(0));
     preview($('#crazy-preview'), crazyLevel(0), { focusStart: true });
@@ -1280,7 +1419,7 @@ async function startIllustratedGame() {
       if (storageProblem) toast('De vorige sessie kon niet worden geladen. Je kunt een gedownload levelbestand openen.');
     });
   } catch (error) {
-    $('#loading-status').textContent = error.name === 'ImageLoadError' ? 'Niet alle afbeeldingen konden worden geladen. Bekijk de meldingen hieronder.' : `${error.message}. Probeer de afbeeldingen opnieuw te laden.`;
+    $('#loading-status').textContent = error.name === 'ImageLoadError' ? 'Niet alle afbeeldingen konden worden geladen. Bekijk de meldingen hieronder.' : `${error.message}. Verbeter het genoemde bestand en kies Opnieuw proberen.`;
     $('#loading-retry').hidden = false;
   }
 }

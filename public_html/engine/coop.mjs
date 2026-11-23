@@ -1,4 +1,5 @@
 import { resetPlayerVitals, ensurePlayerVitals } from './player-vitals.mjs';
+import { respawnCharacterCallbacks } from './characters/callbacks.mjs';
 import { isPinball, fitPinball, stepPinballTilt } from './pinball.mjs';
 import { DEFAULT_CHARACTER, nextCharacter, CHARACTER_PROFILES } from './characters/roster.mjs';
 import { TILE, createGame, stepGame, clone } from './engine.mjs?v=46';
@@ -45,6 +46,7 @@ export function stepCoopGame(game, inputs, dt = 1 / 120) {
       Object.assign(p, game.spawnPlayer, p.spawn, body, { coins: p.coins, safeSpot: { ...p.spawn }, trail: [], fartTrail: [], invincible: 2, respawn: 0, lastJump: false, lastMount: false });
       fitPinball(p);
       resetPlayerVitals(p);
+      respawnCharacterCallbacks(p);
       events.push('respawn');
     }
   }
@@ -64,8 +66,8 @@ export function unpackCoopGame(snapshot, index = 1) {
 
 export function remoteControls(packet = {}, previousTaps = {}) {
   const controls = {};
-  for (const key of ['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe']) controls[key] = packet[key] === true;
-  for (const action of ['jump', 'fire', 'mount', 'pipe']) {
+  for (const key of ['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe', 'special']) controls[key] = packet[key] === true;
+  for (const action of ['jump', 'fire', 'mount', 'pipe', 'special']) {
     const count = packet.taps?.[action] || 0;
     if (count !== (previousTaps[action] || 0)) controls[action] = true;
     previousTaps[action] = count;

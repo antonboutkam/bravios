@@ -4,6 +4,8 @@
 
 Hier pas je de JSON-bestanden en afbeeldingen van spelonderdelen aan. Iedere concrete onderdeelmap bevat een README, een profiel en de bijbehorende plaatjes. Begin met een bestaand voorbeeld en wijzig één eigenschap tegelijk.
 
+Voor een volgende stap kun je [de zes karaktercallbacks](characters/README.md#je-karakter-programmeren-met-callbacks) programmeren. Je koppelt functienamen in `character.json` aan eigen JavaScript-functies in `callbacks.js`; Anton bevat alle zes voorbeelden.
+
 | Map | Wat staat erin? | Begin bijvoorbeeld bij |
 | --- | --- | --- |
 | [characters/](characters/README.md) | Speelbare figuren, houdingen en karaktermakeronderdelen | `characters/boaz/character.json` |

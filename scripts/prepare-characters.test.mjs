@@ -12,6 +12,7 @@ import { RUN_POSES } from '../public_html/engine/characters/shared/poses.mjs';
 
 async function fixture(run) {
   const root = await mkdtemp(path.join(tmpdir(), 'bravios-characters-'));
+  await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
   const folder = path.join(root, 'luna');
   await mkdir(path.join(folder, 'images/platform'), { recursive: true });
   await mkdir(path.join(root, 'shared'));
@@ -180,4 +181,22 @@ test('proportionally sized frames use the same prepared canvas without changing 
   }
   assert.ok((await discoverCharacters(root))[0].views.side.poses['run-4']);
   const original = await readFile(path.join(folder, config.poses['run-4'])); assert.equal(original.readUInt32BE(16),1200);
+}));
+
+test('character callbacks validate files and exports and generate literal offline importers', async () => fixture(async ({ root, folder, config, save }) => {
+  config.callbacks={onSpawn:'begroet',onSpecial:'schild'};await save();
+  await assert.rejects(discoverCharacters(root),/callbacks.js/);
+  await writeFile(path.join(folder,'callbacks.js'),'export function begroet() {}\n');
+  await assert.rejects(discoverCharacters(root),/schild/);
+  await writeFile(path.join(folder,'callbacks.js'),'export function begroet() {}\nexport async function schild() {}\n');
+  await assert.rejects(discoverCharacters(root),/synchrone/);
+  await writeFile(path.join(folder,'callbacks.js'),'export function begroet() {\n');
+  await assert.rejects(discoverCharacters(root),/callbacks.js/);
+  await writeFile(path.join(folder,'callbacks.js'),'export function begroet(context) { context.showMessage("Hoi"); }\nexport function schild(context) { context.giveShield(3); }\n');
+  const profiles=await prepareCharacters(root);
+  assert.deepEqual(profiles[0].callbacks,config.callbacks);
+  const registry=await readFile(path.join(root,'callback-imports.mjs'),'utf8');
+  assert.match(registry,/import\("\.\/luna\/callbacks\.js"\)/);
+  config.callbacks={onLand:'land'};await save();
+  await assert.rejects(discoverCharacters(root),/Onbekende callback/);
 }));

@@ -86,7 +86,7 @@ test('offline modules zijn geïsoleerd en dynamische imports blijven uitgesteld'
   assert.equal((await context.launch()).read(),7);assert.deepEqual(context.events,[1,1,'lazy']);await context.launch();assert.equal(context.events.length,3);
   const graph=await collectModules(new URL('../',import.meta.url));for(const kind of SMALL_GAME_TYPES)assert.ok(graph.has(`games/${kind.id}/game.mjs`));
   assert.ok(!graph.has('small-games.mjs'),'de compatibiliteitslaag mag geen spellen vooraf laden');
-  const app=await readFile(new URL('../app.mjs',import.meta.url),'utf8');assert.ok(app.includes("from './games/shell.mjs'"));
+  const app=await readFile(new URL('../app.mjs',import.meta.url),'utf8');assert.match(app,/from '\.\/games\/shell\.mjs(?:\?[^']*)?'/);
 });
 
 test('platformadapter behoudt veld, positie en krachten en herstelt de oorspronkelijke pauzestand',async()=>{
@@ -125,7 +125,7 @@ test('alle offline runtime-modules behouden dezelfde exports als de native modul
 
 test('ieder opgesplitst spel tekent met gebalanceerde canvastransformaties',async()=>{
   const {hero,drawTile}=await import('../art.mjs');
-  for(const type of SMALL_GAME_TYPES){
+  for(const type of SMALL_GAME_TYPES.filter(type=>type.renderer!=='webgl')){
     let depth=0,painted=0;
     const context=new Proxy({}, {get(target,key){if(key in target)return target[key];if(key==='createLinearGradient')return ()=>({addColorStop(){}});return (...args)=>{if(key==='save')depth++;if(key==='restore')depth--;if(key==='fillRect'||key==='fill'||key==='drawImage')painted++;};}});
     const pack=await loadGamePack(type.id),session=pack.createSession({services:{hero,drawTile}});

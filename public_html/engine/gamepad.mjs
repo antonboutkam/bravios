@@ -1,6 +1,6 @@
 // Browser-standard layout: positions stay the same across Xbox / PlayStation labels.
 export function emptyGamepadControls() {
-  return { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false };
+  return { left: false, right: false, jump: false, run: false, fire: false, mount: false, pipe: false, special: false };
 }
 
 export class GamepadInput {
@@ -26,6 +26,7 @@ export class GamepadInput {
       fire: down(2),
       run: down(1),
       mount: down(3),
+      special: down(5),
       pipe: down(13) || pad.axes[1] > .5,
     };
     const current = { ...controls, cancel: down(1) || down(2), up: down(12) || pad.axes[1] < -.5, pause: down(9) };

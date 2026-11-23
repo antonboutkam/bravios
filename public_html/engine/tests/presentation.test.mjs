@@ -2,7 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGame, stepGame, exampleLevel, clone } from '../engine.mjs';
 import { createCoopGame, packCoopGame, unpackCoopGame } from '../coop.mjs';
-import { RenderQuality, FrameRateMeter, SceneEffects, followCamera } from '../presentation.mjs';
+import { RenderQuality, FrameRateMeter, SceneEffects, followCamera, regularGameZoom } from '../presentation.mjs';
+
+test('beeldgrootte heeft een veilige standaard en bewaart toegestane keuzes', () => {
+  for (const value of [100, 105, 110, 115, 120]) assert.equal(regularGameZoom(value), value);
+  for (const value of [undefined, null, 0, 999, '120']) assert.equal(regularGameZoom(value), 110);
+});
 
 test('aanhoudend traag tekenen verlaagt alleen extra pixeldichtheid, zonder heen en weer schakelen',()=>{
   for(const interval of [1000/60,1000/120]) {

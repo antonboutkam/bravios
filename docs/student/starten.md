@@ -27,7 +27,11 @@ Laat de terminal open. Open **http://localhost:8080** in je browser. `localhost`
 4. Keer terug naar de bouwer en verbeter je route.
 5. Kies **Download level** om een JSON-bestand te bewaren. Met **Open levelbestand** kun je dat later weer laden.
 
-De browser bewaart ook gegevens lokaal. Die opslag hoort bij je browserprofiel en het gebruikte adres. Op een andere computer, een andere poort of na het wissen van browsergegevens kunnen je levels ontbreken. Bewaar daarom een gedownload level als reservekopie.
+Je veld wordt tijdens het bouwen automatisch bijgewerkt in **Mijn velden**. Via het startscherm kun je daar **Spelen** of **Bewerken** kiezen. Onder **Bouw een wereld** maak je een kaart en verbind je velden. Je vindt die terug bij **Mijn werelden**.
+
+Wil je onder de bestaande grond bouwen? Kies **Onder de grond** bij een nieuw veld of in de wereldeditor. Bij een geopend 2D-veld staat **Hoe diep onder de grond?** onder de bouwinstellingen in het menu. Gum een doorgang door de grond en scroll naar beneden. Hoogte en ondergrond zijn samen maximaal 64 blokjes.
+
+Met de PHP- of Node-server wordt je collectie ook op de server bewaard. Controleer de bewaarstatus. Met Python of de offline versie bewaart alleen de browser. De collectie hoort bij je browser en het gebruikte adres; er zijn geen accounts. Na het wissen van browsergegevens of op een ander apparaat verschijnt zij niet vanzelf. Download je velden en werelden daarom ook als reservekopie.
 
 ## Probeer een codewijziging
 

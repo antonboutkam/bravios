@@ -109,6 +109,17 @@ try {
     checkRoom(strlen($host['code']) === 6 && strlen($host['token']) === 48, 'kamer krijgt code en eigen toegangssleutel');
     $snapshot = ['state' => 'waiting', 'width' => 40, 'tiles' => $level['tiles'], 'players' => [['x' => 70, 'y' => 420, 'character' => 'ravi'], ['x' => 70, 'y' => 420, 'character' => 'boaz']], 'enemies' => [], 'dinos' => [], 'fireballs' => [], 'hazards' => []];
     checkRoom(roomInput(['run' => true])['run'] === true && roomInput(['run' => 'true'])['run'] === false, 'rennen wordt als afzonderlijke ingedrukte knop gedeeld');
+    $specialInput = roomInput(['special' => true, 'taps' => ['special' => 3]]);
+    checkRoom($specialInput['special'] === true && $specialInput['taps']['special'] === 3, 'speciale knop en korte gastdruk blijven behouden');
+    checkRoom(roomInput(['special' => 'true', 'taps' => ['special' => -1]])['special'] === false, 'speciale knop accepteert alleen een boolean');
+    $callbackSnapshot = $snapshot;
+    $callbackSnapshot['players'][0]['callbackState'] = ['character' => 'ravi', 'spawned' => true, 'won' => false, 'lastSpecial' => false, 'data' => ['sprongen' => 3], 'bonusPoints' => 7, 'specialCooldown' => 4.5, 'shieldTime' => 2, 'message' => 'Schild!', 'messageTime' => 2, 'error' => '', 'disabled' => []];
+    checkRoom(roomSnapshot($callbackSnapshot, 40, count($level['tiles'])) === $callbackSnapshot, 'callbackdata, bonus, schild en wachttijd blijven behouden');
+    foreach ([['character' => 'anton'], ['spawned' => 'true'], ['specialCooldown' => 9], ['shieldTime' => 4], ['bonusPoints' => -1], ['messageTime' => INF], ['message' => str_repeat('x', 101)], ['disabled' => ['onLand']], ['data' => ['nested' => []]]] as $invalidCallback) {
+        $badCallback = $callbackSnapshot;
+        $badCallback['players'][0]['callbackState'] = [...$badCallback['players'][0]['callbackState'], ...$invalidCallback];
+        checkRoom(failsRoom(fn() => roomSnapshot($badCallback, 40, count($level['tiles'])), 400), 'ongeldige callbackspelstand wordt geweigerd');
+    }
     $runningSnapshot = $snapshot; $runningSnapshot['players'][0]['sprinting'] = true; $runningSnapshot['players'][0]['moveDistance'] = 123.5;
     checkRoom(roomSnapshot($runningSnapshot, 40, count($level['tiles'])) === $runningSnapshot, 'sprintstand en koprolafstand blijven in de gedeelde spelstand');
     foreach (['sprinting' => 'true', 'moveDistance' => -1] as $field => $value) {

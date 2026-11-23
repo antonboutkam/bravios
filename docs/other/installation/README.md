@@ -53,6 +53,10 @@ npm run start:network
 
 Open **http://localhost:8080**. This command starts the built-in PHP server with `public_html` as its document root. On a second device, use the server computer's local IP address and port 8080; both devices must be able to reach the server. Check the local network and firewall if necessary. The Node server does not execute `engine/room.php`.
 
+## Permanent collections
+
+PHP and Node serve `engine/collection.php` for permanent private field/world collections. The default directory is `<project>/data/collections`, outside the document root. The server user must be able to create and write it. Set `BRAVIOS_DATA_DIR` to an absolute private directory for hosting, and retain/back up that directory across deployments. Python and `speel.html` use browser storage only. See [storage architecture](../architecture/architectuur.md#levels-and-storage) for ownership, revisions and limitations.
+
 ## Offline build
 
 ```sh

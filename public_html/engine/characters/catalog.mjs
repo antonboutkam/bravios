@@ -125,6 +125,14 @@ export const CHARACTER_CATALOG = [
     }
   },
   {
+    "callbacks": {
+      "onSpawn": "begroetSpeler",
+      "onJump": "telSprongen",
+      "onCollectCoin": "beloonMuntje",
+      "onDamage": "reageerOpSchade",
+      "onSpecial": "activeerSchild",
+      "onWin": "vierOverwinning"
+    },
     "id": "anton",
     "name": "anton",
     "portrait": "gameplay/characters/anton/images/portrait.png",

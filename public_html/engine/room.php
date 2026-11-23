@@ -116,8 +116,8 @@ function roomAppearance(mixed $appearance): ?array {
 }
 function roomInput(mixed $input): array {
     $input = is_array($input) ? $input : []; $result = ['appearance' => roomAppearance($input['appearance'] ?? null)];
-    foreach (['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe'] as $key) $result[$key] = ($input[$key] ?? false) === true;
-    foreach (['jump', 'fire', 'mount', 'pipe'] as $key) {
+    foreach (['left', 'right', 'jump', 'run', 'fire', 'mount', 'pipe', 'special'] as $key) $result[$key] = ($input[$key] ?? false) === true;
+    foreach (['jump', 'fire', 'mount', 'pipe', 'special'] as $key) {
         $value = $input['taps'][$key] ?? 0;
         $result['taps'][$key] = is_int($value) && $value >= 0 && $value <= 100000000 ? $value : 0;
     }
@@ -136,6 +136,7 @@ function roomSnapshot(mixed $snapshot, int $width, int $height = 16): array {
         || !is_array($snapshot['tiles'] ?? null) || count($snapshot['tiles']) !== $height) roomFail(400, 'Ongeldige spelstand.');
     foreach ($snapshot['players'] as &$p) {
         if (!is_array($p) || !is_numeric($p['x'] ?? null) || !is_numeric($p['y'] ?? null) || !in_array($p['character'] ?? '', roomCharacterIds(), true)) roomFail(400, 'Ongeldige speler.');
+        if (array_key_exists('callbackState', $p)) roomCallbackState($p['callbackState'], $p['character']);
         if (array_key_exists('sprinting', $p) && !is_bool($p['sprinting'])) roomFail(400, 'Ongeldige sprintstand.');
         if (array_key_exists('moveDistance', $p) && (!is_numeric($p['moveDistance']) || !is_finite((float)$p['moveDistance']) || $p['moveDistance'] < 0 || $p['moveDistance'] >= 4800)) roomFail(400, 'Ongeldige animatieafstand.');
         if (array_key_exists('pinballAngle', $p) && (!is_numeric($p['pinballAngle']) || !is_finite((float)$p['pinballAngle']) || abs((float)$p['pinballAngle']) > 2 * M_PI)) roomFail(400, 'Ongeldige balrotatie.');
@@ -153,6 +154,26 @@ function roomSnapshot(mixed $snapshot, int $width, int $height = 16): array {
     if (array_key_exists('helpers', $snapshot) && !is_array($snapshot['helpers'])) roomFail(400, 'Ongeldige helpers.');
     foreach (['enemies', 'dinos', 'fireballs', 'hazards'] as $key) if (!is_array($snapshot[$key] ?? null)) roomFail(400, 'Ongeldige spelstand.');
     return $snapshot;
+}
+function roomCallbackState(mixed $state, string $character): void {
+    if (!is_array($state) || ($state['character'] ?? null) !== $character) roomFail(400, 'Ongeldige callbackspelstand.');
+    foreach (['spawned', 'won', 'lastSpecial'] as $key) if (!is_bool($state[$key] ?? null)) roomFail(400, 'Ongeldige callbackstatus.');
+    foreach (['bonusPoints' => 1000000, 'specialCooldown' => 8, 'shieldTime' => 3, 'messageTime' => 5] as $key => $max) {
+        if (!is_numeric($state[$key] ?? null) || !is_finite((float)$state[$key]) || $state[$key] < 0 || $state[$key] > $max) roomFail(400, 'Ongeldige callbackwaarde.');
+    }
+    foreach (['message' => 100, 'error' => 240] as $key => $max) {
+        if (!is_string($state[$key] ?? null) || preg_match_all('/./us', $state[$key]) > $max) roomFail(400, 'Ongeldige callbacktekst.');
+    }
+    $events = ['onSpawn', 'onJump', 'onCollectCoin', 'onDamage', 'onSpecial', 'onWin'];
+    if (!is_array($state['disabled'] ?? null) || count($state['disabled']) > 6 || count(array_filter($state['disabled'], fn($event) => !is_string($event) || !in_array($event, $events, true)))) roomFail(400, 'Ongeldige uitgeschakelde callbacks.');
+    if (!is_array($state['data'] ?? null) || count($state['data']) > 32) roomFail(400, 'Ongeldige callbackdata.');
+    foreach ($state['data'] as $key => $value) {
+        if (!is_string($key) || !preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,31}$/D', $key) || in_array($key, ['constructor', 'prototype'], true)) roomFail(400, 'Ongeldig callbackveld.');
+        if (is_null($value) || is_bool($value)) continue;
+        if (is_string($value) && preg_match_all('/./us', $value) <= 160) continue;
+        if ((is_int($value) || is_float($value)) && is_finite((float)$value) && abs($value) <= 1000000) continue;
+        roomFail(400, 'Ongeldige callbackdata.');
+    }
 }
 function roomHandle(array $body, string $directory, ?float $clock = null): array {
     $now = $clock ?? microtime(true); $action = $body['action'] ?? '';

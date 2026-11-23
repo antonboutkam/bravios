@@ -3,7 +3,7 @@ import { replaceStructureCatalog, structureAssets } from './structures/runtime.m
 import { loadEnemyCatalog } from './enemies/load-catalog.mjs';
 import { replaceEnemyCatalog, enemyAssets } from './enemies/runtime.mjs';
 import { CHARACTER_CATALOG } from './characters/catalog.mjs';
-import { loadCharacterCatalog } from './characters/load-catalog.mjs?v=health-power-1';
+import { loadCharacterCatalog } from './characters/load-catalog.mjs?v=callbacks-1';
 import { publicURL } from './paths.mjs';
 async function start() {
   const retry = document.querySelector('#loading-retry');
@@ -36,7 +36,7 @@ async function start() {
       const url = publicURL(path); url.searchParams.set('art', revision);
       return [path, url.href];
     }));
-    await import('./app.mjs?v=docked-hud-1');
+    await import('./app.mjs?v=regular-zoom-1');
   } catch (error) {
     document.querySelector('#loading-status').textContent = error.message;
     retry.hidden = false;

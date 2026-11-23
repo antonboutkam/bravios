@@ -1,4 +1,5 @@
 import { resetPlayerVitals, ensurePlayerVitals, rechargePower, spendPower } from './player-vitals.mjs';
+import { runCharacterCallback, stepCharacterCallbacks, finishCharacterCallbacks } from './characters/callbacks.mjs';
 import { STRUCTURE_CATALOG } from './structures/catalog.mjs';
 import { structureProfile, structureSetting, structureIs, structureCollision, structurePipes, structureRewards, structureTiles, structureSolidTile } from './structures/runtime.mjs';
 import { ENEMY_CATALOG } from './enemies/catalog.mjs';
@@ -390,7 +391,10 @@ function stepPSwitches(game, dt) {
     world.pSwitch = null;
   }
 }
-function collectCoin(game) { game.coins++; game.player.coins = (game.player.coins || 0) + 1; game.events.push('coin'); }
+function collectCoin(game) {
+  game.coins++; game.player.coins = (game.player.coins || 0) + 1; game.events.push('coin');
+  runCharacterCallback(game, game.player, 'onCollectCoin', { coins: game.player.coins, teamCoins: game.coins });
+}
 export function challengeResult(game) {
   if (!game.challenge) return null;
   const players = game.players || [game.player], scores = players.map(p => p.coins || 0);
@@ -1052,19 +1056,32 @@ function hurt(game, lethal = false) {
   if (p.vineId) clearVine(p);
   if (!lethal && p.shellHelmet) { p.shellHelmet = false; p.invincible = 1.5; game.events.push('hurt'); return; }
   if (!lethal && p.mounted) { dismountDino(game); p.invincible = 1.5; game.events.push('hurt'); return; }
+  if (!lethal && p.callbackState?.shieldTime > 0) { p.callbackState.shieldTime = 0; p.invincible = 1.5; p.vy = -280; game.events.push('hurt'); return; }
   if (!lethal && p.shield) { p.shield = false; p.invincible = 1.5; p.vy = -280; game.events.push('hurt'); return; }
+  const previousHealth = p.health;
   p.health = lethal ? 0 : Math.max(0, p.health - 1);
   if (p.health > 0) {
     p.cat = false; p.instinct = 0;
     p.invincible = 1.5; p.vy = -280; p.jumpCut = false;
-    game.events.push('hurt'); return;
+    game.events.push('hurt');
+    runCharacterCallback(game, p, 'onDamage', { damage: previousHealth - p.health, lethal: false });
+    return;
   }
   p.power = 0; p.fire = false; p.ice = false; p.cat = false;
   p.parachute = false; p.fallDistance = 0;
   p.bubblegun = false; p.shellHelmet = false; p.rainbowFart = 0; p.fartTrail = [];
   game.state = 'dead'; game.events.push('dead');
+  if (p.callbackState) p.callbackState.shieldTime = 0;
+  runCharacterCallback(game, p, 'onDamage', { damage: previousHealth, lethal: true });
 }
-export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
+export function stepGame(game, input = {}, dt = 1 / 120, advanceWorld = true) {
+  if (game.state !== 'playing') return;
+  const player = game.player;
+  stepGameState(game, input, dt, advanceWorld);
+  if (game.events.includes('jump')) runCharacterCallback(game, player, 'onJump');
+  finishCharacterCallbacks(game);
+}
+function stepGameState(game, input, dt, advanceWorld) {
   if (game.state !== 'playing') return;
   dt = Math.min(dt, 1 / 30);
   game.events = [];
@@ -1076,6 +1093,7 @@ export function stepGame(game, input, dt = 1 / 120, advanceWorld = true) {
   if (advanceWorld) { game.time += dt; stepPSwitches(game, dt); stepCrumbling(game, dt); }
   const p = game.player;
   ensurePlayerVitals(p);
+  stepCharacterCallbacks(game, p, input, dt);
   fitPinball(p, game.wonderland?.scale || 1);
   if (advanceWorld && !game.players) stepPinballTilt(game, [input], dt);
   rechargePower(p, dt);

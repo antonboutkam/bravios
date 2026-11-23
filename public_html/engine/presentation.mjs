@@ -105,6 +105,10 @@ export class SceneEffects {
   }
 }
 
+export function regularGameZoom(value) {
+  return [100, 105, 110, 115, 120].includes(value) ? value : 110;
+}
+
 export function followCamera(current, player, scale, viewportWidth, worldWidth, dt, reducedMotion = false) {
   const limit = Math.max(0, worldWidth - viewportWidth);
   const lookAhead = Math.max(-80, Math.min(80, player.vx * .22)) * scale;

@@ -6,16 +6,22 @@ import * as games from '../small-games.mjs';
 import { loadGamePack, SMALL_GAME_TYPES } from '../games/catalog.mjs';
 import { GameSessionHost } from '../runtime/game-session.mjs';
 import { participantRoster } from '../characters/roster.mjs';
+import { characters3D } from '../games/platformer3d/access.mjs';
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
 // Minimal DOM adapter: exercise the actual UI handlers and game state without a browser.
-function setup({ fullscreen=false, denied=false }={}) {
-  let active, state, pendingFrame, resize, exits=0, requests=0;
+function setup({ fullscreen=false, denied=false, prepareCake=async()=>{} }={}) {
+  let active, state, pendingFrame, resize, exits=0, requests=0, disposedViews=0;
   class Element {
-    constructor(tag='div',attrs={}) {this.tag=tag;this.attrs=attrs;this.children=[];this.listeners={};this.style={};this.dataset={};this.hidden=false;}
-    append(el){this.children.push(el);}
+    constructor(tag='div',attrs={}) {this.tag=tag;this.attrs=attrs;this.children=[];this.listeners={};this.style={};this.dataset={};this.hidden=false;for(const [key,value] of Object.entries(attrs))if(key.startsWith('data-'))this.dataset[key.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=value;}
+    append(el){this.children.push(el);el.parent=this;}
+    replaceChildren(...els){this.children=[];els.forEach(el=>this.append(el));}
+    remove(){if(this.parent)this.parent.children=this.parent.children.filter(child=>child!==this);}
+    setAttribute(key,value){this.attrs[key]=value;}
+    setPointerCapture(){}
+    closest(selector){return this.matches(selector)?this:null;}
     insertBefore(el){this.append(el);}
-    set innerHTML(html){this.html=html;this.children=[];for(const match of html.matchAll(/<(button|span|strong|small)\b([^>]*)>([^<]*)/g)){const attrs=Object.fromEntries([...match[2].matchAll(/(data-[\w-]+)(?:="([^"]*)")?/g)].map(m=>[m[1],m[2]??'']));const el=new Element(match[1],attrs);el.textContent=match[3];this.append(el);}}
+    set innerHTML(html){this.html=html;this.children=[];for(const match of html.matchAll(/<(div|button|span|strong|small)\b([^>]*)>([^<]*)/g)){const attrs=Object.fromEntries([...match[2].matchAll(/(data-[\w-]+)(?:="([^"]*)")?/g)].map(m=>[m[1],m[2]??'']));const el=new Element(match[1],attrs);el.textContent=match[3];this.append(el);}}
     cloneNode(){const el=new Element(this.tag,{...this.attrs});el.innerHTML=this.html;return el;}
     matches(selector){if(selector==='[data-small-kind]')return !!this.dataset.smallKind;if(selector.startsWith('.'))return this.attrs.class===selector.slice(1);const m=selector.match(/^\[([^=\]]+)(?:="([^"]*)")?\]$/);return m?m[1] in this.attrs&&(m[2]===undefined||this.attrs[m[1]]===m[2]):this.tag===selector;}
     querySelectorAll(selector){return this.children.flatMap(c=>[...(c.matches(selector)?[c]:[]),...c.querySelectorAll(selector)]);}
@@ -39,16 +45,16 @@ function setup({ fullscreen=false, denied=false }={}) {
   document.exitFullscreen=async()=>{exits++;document.fullscreenElement=null;document.dispatch('fullscreenchange');};
   const window=new Element();window.devicePixelRatio=2;
   const source=readFileSync(new URL('../games/shell.mjs',import.meta.url),'utf8').split('export function setupSmallGames')[1];
-  const loadTestPack=async id=>{const pack=await loadGamePack(id);return {createSession(context){const session=pack.createSession(context);state=session.state;session.render=()=>{};return session;}};};
+  const loadTestPack=async id=>{const pack=await loadGamePack(id);return {createSession(context){const session=pack.createSession({...context,services:{...context.services,createCakeStage:()=>({prepare:prepareCake,draw(){},dispose(){disposedViews++;}})}});state=session.state;session.render=()=>{};return session;}};};
   const ui=runInNewContext('function setupSmallGames'+source+'\nsetupSmallGames({load:loadTestPack});',{
     document,window,ResizeObserver:class{constructor(fn){resize=fn;}observe(){}},
     requestAnimationFrame:fn=>{pendingFrame=fn;return 1;},cancelAnimationFrame:()=>{pendingFrame=null;},
-    SMALL_GAME_TYPES,GameSessionHost,participantRoster,loadGamePack,loadTestPack,
+    SMALL_GAME_TYPES,GameSessionHost,participantRoster,characters3D,loadGamePack,loadTestPack,
   });
   return {ui,dialog,menu,play,canvas,stage,resize,document,window,
-    get state(){return state;},get active(){return active;},get exits(){return exits;},get requests(){return requests;},
+    get state(){return state;},get disposedViews(){return disposedViews;},get active(){return active;},get exits(){return exits;},get requests(){return requests;},
     frame(t){pendingFrame?.(t);},send(pressed=[],navigation={},second=[]){ui.handleController({pressed,navigation,controls:{}},{pressed:second});},
-    async choose(kind){menu.children.find(b=>b.dataset.smallKind===kind).click();await settle();},
+    async choose(kind){await menu.children.find(b=>b.dataset.smallKind===kind).onclick();await settle();},
   };
 }
 
@@ -103,4 +109,35 @@ test('tussenspel retourneert winst of annulering en stopt de canvas bij terugkee
   const cancelled=h.ui.play({game:'aim'});await settle();h.send(['fire']);assert.equal((await cancelled).outcome,'cancelled');
   await assert.rejects(h.ui.play({game:'missing'}),/Onbekend/);assert.equal(h.ui.isOpen(),false);
   const closed=h.ui.play({game:'rhythm'});h.dialog.close();assert.equal((await closed).outcome,'cancelled');await settle();assert.equal(h.canvas.width,1);
+});
+
+test('taartgooien kiest geschikte 3D-modellen en gebruikt een apart canvas; terugkeren herstelt de 2D-games',async()=>{
+ const h=setup();h.ui.open();await h.choose('cake-throw-two');
+ assert.match(h.dialog.querySelector('h2').textContent,/3D-personage/);
+ assert.equal(h.state,undefined);assert.equal(h.menu.children.length,4);
+ h.menu.children[0].click(); // Explicitly choose the other registered model.
+ await h.menu.children[2].onclick();
+ assert.equal(h.state.kind,'cake-throw');assert.equal(h.state.playerCount,2);assert.equal(h.state.players[0].character,characters3D()[1].id);
+ assert.equal(h.canvas.hidden,true);assert.equal(h.stage.children.filter(child=>child.tag==='canvas').length,1);
+ const old=h.state;old.players[0].cakes=1;h.send(['jump']);assert.equal(old.players[0].cakes,0);
+ old.state='won';old.winner=0;h.send(['jump']);await settle();
+ assert.equal(h.state.players[0].character,characters3D()[1].id,'opnieuw starten houdt de gekozen 3D-identiteit');assert.notEqual(h.state,old);
+ h.send(['fire']);assert.equal(h.menu.hidden,false);assert.equal(h.canvas.hidden,false);assert.equal(h.stage.children.filter(child=>child.tag==='canvas').length,0);assert.ok(h.disposedViews>0);
+ await h.choose('aim');h.send(['jump']);assert.equal(h.state.shots,1);
+});
+test('beide controllers en aanraakknoppen sturen de eigen taartgooier en pauze stopt de ronde',async()=>{
+ const h=setup();h.ui.open();await h.choose('cake-throw-two');await h.menu.children[2].onclick();
+ h.ui.handleController({pressed:[],navigation:{up:true},controls:{}},{pressed:[],navigation:{down:true}});h.frame(100);h.frame(200);
+ assert.ok(h.state.players[0].z<0);assert.ok(h.state.players[1].z>0);
+ h.state.players.forEach(p=>p.cakes=1);h.send(['jump'],{},['jump']);assert.deepEqual(h.state.cakes.map(c=>c.owner),[0,1]);
+ h.send(['pause']);const time=h.state.time;h.frame(300);assert.equal(h.state.time,time);h.send(['pause']);
+ const button=h.dialog.querySelectorAll('[data-mini-direction]').find(b=>b.dataset.miniPlayerIndex==='1'&&b.dataset.miniDirection==='right');
+ button.dispatch('pointerdown',{preventDefault(){},pointerId:1});const x=h.state.players[1].x;h.frame(400);h.frame(500);assert.ok(h.state.players[1].x>x);button.dispatch('pointercancel');
+ h.frame(600);const stopped=h.state.players[1].x;h.frame(700);assert.equal(h.state.players[1].x,stopped);
+});
+test('annuleren tijdens 3D-modellen laden kan een afgesloten taartspel niet alsnog openen',async()=>{
+ let ready;const h=setup({prepareCake:()=>new Promise(resolve=>{ready=resolve;})});h.ui.open();await h.choose('cake-throw');
+ const pending=h.menu.children[1].onclick();while(!ready)await settle();
+ h.send(['fire']);assert.equal(h.menu.hidden,false);assert.equal(h.canvas.hidden,false);assert.ok(h.disposedViews>0);
+ ready();await pending;assert.equal(h.play.hidden,true);assert.equal(h.stage.children.filter(child=>child.tag==='canvas').length,0);
 });

@@ -108,3 +108,125 @@ Pauze bevriest het herladen. Grotten en buizen bewaren beide balken. Een nieuw v
 ## Pinball
 
 [Pinball](pinball/README.md) is een zilveren bal voor 2D. Links en rechts kantelen de wereld; de bal rolt door de helling. Laat los om uit te rollen en stuur tegen om te remmen. Spring met de gewone springknop.
+
+## Je karakter programmeren met callbacks
+
+Een **callback** is een functie die het spel voor je aanroept wanneer er iets gebeurt. Bijvoorbeeld: je pakt een muntje en het spel roept jouw muntjesfunctie aan. Je roept die functie dus niet zelf aan vanuit een herhaallus.
+
+De zes callbacks werken in de **2D-platformer**, inclusief muntjesuitdagingen en online samenspel voor twee spelers. De losse kleine games en de 3D-platformer roepen deze callbacks nog niet aan. Je kunt wel hetzelfde character blijven gebruiken in die games.
+
+### 1. Koppel gebeurtenissen aan functienamen
+
+Voeg in je eigen `character.json` een veld `callbacks` toe, naast `poses` en `settings`. JSON bevat de namen van de functies; de JavaScript-code staat in een apart bestand. Dit is Antons volledige koppeling:
+
+```json
+"callbacks": {
+  "onSpawn": "begroetSpeler",
+  "onJump": "telSprongen",
+  "onCollectCoin": "beloonMuntje",
+  "onDamage": "reageerOpSchade",
+  "onSpecial": "activeerSchild",
+  "onWin": "vierOverwinning"
+}
+```
+
+Dit fragment vervangt niet het hele bestand. Let op de komma tussen de velden van je bestaande JSON. Je hoeft niet alle gebeurtenissen te gebruiken: begin bijvoorbeeld met alleen `onSpawn`. Zonder `callbacks`, of met `"callbacks": {}`, speelt je character zoals voorheen.
+
+### 2. Schrijf je functies in callbacks.js
+
+Maak **`callbacks.js` in dezelfde map als `character.json`**. Gebruik precies de functienamen uit je JSON en zet `export` vóór iedere gekoppelde functie:
+
+```js
+export function begroetSpeler(context) {
+  context.showMessage('Mijn karakter is klaar!', 3);
+}
+```
+
+`context` is de parameter: het spel geeft daarin gegevens en handige functies mee. `showMessage` toont drie seconden tekst boven je character en in de statusbalk. De tweede parameter is het aantal seconden.
+
+Gebruik gewone, synchrone functies met `export function`. Houd dit bestand zelfstandig: zet je hulpfuncties in hetzelfde bestand. Gebruik geen `async`, `await`, imports, `fetch`, timers of eigen animatielus. Het spel verzorgt het aanroepen en de tijd. Bovenaan het bestand definieer je alleen functies en vaste waarden; spelgedrag hoort binnen een callback.
+
+### De zes gebeurtenissen
+
+| Gebeurtenis | Wanneer roept het spel jouw functie aan? | Extra gegevens in `context.event` |
+| --- | --- | --- |
+| `onSpawn` | Eén keer bij de eerste actieve spelstap, nadat je character is gekozen. Opnieuw na terugkomen in co-op. Pauze, een grot of een buis veroorzaken geen nieuwe spawn. | Alleen `type`. |
+| `onJump` | Eén keer na een uitgevoerde sprong, ook bij losspringen van een slinger. Vasthouden, een geweigerde sprong, zwemmen en een automatische veersprong tellen niet als nieuwe sprong. | Alleen `type`. |
+| `onCollectCoin` | Na ieder echt opgepakt muntje, ook uit een vraagblok. Beide muntjestellers zijn dan al verhoogd. | `coins`: jouw muntjes; `teamCoins`: alle muntjes samen. |
+| `onDamage` | Nadat je echt levenspunten verliest. Ook bij de laatste treffer, lava of vallen. Een helm, schild of onkwetsbaarheid die de klap opvangt veroorzaakt geen callback. | `damage`: verloren levenspunten; `lethal`: of je door deze treffer afgaat. |
+| `onSpecial` | Bij een nieuwe druk op **E**, **RB / R1** (rechterschouderknop) of de aanraakknop **Kracht E**, als je kracht klaar is. | Alleen `type`. |
+| `onWin` | Eén keer bij een gewonnen veld. Bij samen muntjes verzamelen alleen als het doel gehaald is; bij een muntjeswedstrijd alleen voor de winnaar(s), inclusief gelijkspel. In een gewoon co-opveld krijgen beide spelers deze callback. | `coins`: jouw muntjes; `teamCoins`: alle muntjes samen. |
+
+`context.event.type` bevat altijd de gebeurtenisnaam, bijvoorbeeld `"onCollectCoin"`.
+
+De speciale kracht heeft een vaste **wachttijd van acht seconden actieve speeltijd**. Je ziet de resterende tijd in de statusbalk en de aanraakknop. Vasthouden herhaalt de kracht niet: laat los en druk opnieuw. Tijdens pauze lopen de wachttijd en het schild niet door. Tijdens afgaan of een jetpackvlucht kun je geen nieuwe kracht starten. Een druk tijdens de wachttijd wordt niet bewaard voor later.
+
+### Gegevens lezen en bewaren
+
+`context.player` is een momentopname die je alleen kunt lezen:
+
+| Veld | Betekenis |
+| --- | --- |
+| `character` | De ID van je character. |
+| `health`, `maxHealth` | Huidige en maximale levenspunten. |
+| `power`, `maxPower` | Huidige en maximale schietkracht. |
+| `coins` | Jouw echte muntjesteller. |
+| `bonusPoints` | Jouw aparte callbackbonuspunten. |
+
+Bewaar eigen tellers in **`context.data`**. Iedere speler heeft zijn eigen data, ook wanneer beiden hetzelfde character kiezen. Gebruik bijvoorbeeld:
+
+```js
+export function telSprongen(context) {
+  context.data.sprongen = (context.data.sprongen ?? 0) + 1;
+
+  if (context.data.sprongen % 3 === 0) {
+    context.showMessage(`Al ${context.data.sprongen} sprongen!`, 2);
+  }
+}
+```
+
+`?? 0` begint bij nul als de teller nog ontbreekt. `% 3` berekent de rest van delen door drie. Bij 3, 6 en 9 is die rest nul en verschijnt de tekst.
+
+De data en bonuspunten blijven tijdens dit veld bewaard, ook in grotten, buizen, co-opspelstanden en na co-oprespawn. Een herstart of nieuw veld begint opnieuw. Het tijdelijke schild en de speciale wachttijd worden bij co-oprespawn gewist. Gebruik geen gedeelde veranderlijke tellers buiten je functies: die zouden bij meerdere spelers door elkaar lopen.
+
+Je data mag maximaal 32 velden bevatten. Gebruik veldnamen die met een letter beginnen en daarna letters, cijfers of underscores bevatten (maximaal 32 tekens). Waarden zijn getallen tussen -1.000.000 en 1.000.000, tekst van maximaal 160 tekens, `true`, `false` of `null`. Gebruik geen objecten, arrays, functies of DOM-elementen als waarde.
+
+### Het spel veranderen
+
+| Functie | Wat gebeurt er? |
+| --- | --- |
+| `context.showMessage(tekst, seconden)` | Toont maximaal 100 tekens gedurende maximaal vijf seconden. Standaard twee seconden. Een volgende melding vervangt de vorige. |
+| `context.addBonusPoints(aantal)` | Voegt maximaal tien hele bonuspunten per aanroep toe. De statusbalk toont jouw bonus. |
+| `context.heal(aantal)` | Herstelt maximaal één levenspunt per aanroep, tot je maximale leven. Standaard één. Je kunt iemand die afgegaan is hiermee niet terugbrengen. |
+| `context.giveShield(seconden)` | Geeft een apart tijdelijk schild, standaard drie seconden en maximaal drie seconden. Het stopt één gewone treffer. Lava, verplettering en vallen blijven dodelijk. Een bestaand gewoon schild blijft afzonderlijk bewaard. |
+
+Negatieve en ongeldige getallen leveren geen beloning op; te grote waarden worden begrensd. De totale bonus is maximaal 1.000.000. Dit zijn grenzen per aanroep; schrijf zelf een voorwaarde als je een beloning maar af en toe wilt geven.
+
+Bonuspunten staan **los van echte muntjes**. Ze veranderen de muntjesuitdaging, muntjesvoorraad en avonturenwinkel niet. Je kunt zo leren met beloningen programmeren zonder de bestaande winregels te veranderen. Het spel voert wijzigingen uit nadat de callback zonder fout klaar is. Binnen dezelfde callback blijft `context.player` de oorspronkelijke momentopname.
+
+### Alle zes voorbeelden bij Anton
+
+Bekijk [Antons character.json](anton/character.json) en [Antons callbacks.js](anton/callbacks.js). Iedere functie bevat uitleg en een werkend voorbeeld:
+
+1. **`begroetSpeler`** houdt bij hoe vaak je verschijnt en kiest een eerste begroeting of terugkomsttekst.
+2. **`telSprongen`** telt echte sprongen en toont bij iedere derde sprong een melding.
+3. **`beloonMuntje`** geeft één bonuspunt per muntje. Ieder vijfde muntje herstelt één leven; met een volle levensbalk geeft het twee extra bonuspunten.
+4. **`reageerOpSchade`** telt treffers en kiest een andere tekst bij afgaan, één overgebleven leven of gewone schade.
+5. **`activeerSchild`** telt gebruikte schilden en activeert drie seconden bescherming tegen één treffer.
+6. **`vierOverwinning`** geeft vijf bonuspunten bij winst, plus vijf extra als je geen levenspunten bent kwijtgeraakt.
+
+Probeer ieder voorbeeld eerst in een gewoon eigen 2D-veld: kies Anton, start, spring drie keer, pak vijf muntjes, raak een vijand, druk E en bereik de finish. Probeer ook een vijfde muntje met een beschadigde én een volle levensbalk. Laat bij een tweede proef het schild een treffer opvangen en controleer dat de levensbalk gelijk blijft. Test de wachttijd door E vast te houden, los te laten en na acht seconden opnieuw te drukken.
+
+### Verversen, bouwen en fouten oplossen
+
+Voer vanuit de projectmap uit:
+
+```sh
+npm run characters:prepare
+```
+
+Deze controle meldt fouten in JSON, ontbrekende `callbacks.js`, JavaScript-syntaxfouten en ontbrekende of asynchrone exportfuncties. Start daarna het spel en ververs met **F5** na wijzigingen aan JSON of JavaScript. De website haalt de functies opnieuw op; je hoeft na een wijziging aan je callback geen server te herstarten. Voor de losse offlineversie voer je **`npm run build`** uit: die neemt de gekoppelde functies mee in `speel.html`, zodat ook E zonder netwerk werkt.
+
+Een onbekende gebeurtenis, ontbrekend bestand of ontbrekende export verschijnt bij het laden. Een fout tijdens een callback verschijnt in de statusbalk met character, gebeurtenis en functienaam. Het spel schakelt die ene gebeurtenis voor deze speler uit tot een nieuwe ronde; de andere callbacks blijven werken. De mislukte aanroep levert geen data of beloningen op. Verbeter het bestand, ververs en start opnieuw. Het is gewone lokale JavaScript-code, geen afgeschermde omgeving: een oneindige lus kan je browser nog steeds laten vastlopen.
+
+In online samenspel voert de hostcomputer de callbacks voor beide spelers uit. De andere speler stuurt de speciale knop door en ontvangt de resultaten, tellers en meldingen via de spelstand. Beide computers gebruiken daarom dezelfde projectbestanden met alle characters en functies. De callbacks worden niet opnieuw op de ontvangende computer uitgevoerd.

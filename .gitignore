@@ -19,6 +19,7 @@ secrets.json
 # Local server configuration, logs and personal system diagnostics
 /config/
 /log/
+/data/
 *.log
 /docs/lokale-gpu-diagnose.md
 /docs/metingen/lokale-gpu-*.json
